@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $false, Position = 0)]
-    [ValidateSet("setup", "test", "lint", "format", "typecheck", "golden", "check", "run")]
+    [ValidateSet("setup", "test", "lint", "format", "typecheck", "golden", "check", "migrate", "run")]
     [string]$Command = "check"
 )
 
@@ -33,6 +33,7 @@ try {
         }
         "typecheck" { Invoke-Uv @("run", "mypy") }
         "golden" { Invoke-Uv @("run", "python", "tests/golden/validate.py") }
+        "migrate" { Invoke-Uv @("run", "alembic", "upgrade", "head") }
         "check" {
             Invoke-Uv @("run", "ruff", "check", "src", "tests")
             Invoke-Uv @("run", "ruff", "format", "--check", "src", "tests")

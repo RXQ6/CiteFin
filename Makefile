@@ -4,7 +4,7 @@ UV_PYTHON_INSTALL_DIR ?= $(CURDIR)/.uv-python
 export UV_CACHE_DIR
 export UV_PYTHON_INSTALL_DIR
 
-.PHONY: setup test lint format typecheck check run golden verify-feature
+.PHONY: setup test lint format typecheck check run golden migrate verify-feature
 
 setup:
 	uv sync --frozen
@@ -29,7 +29,7 @@ golden:
 check: lint typecheck golden test
 
 verify-feature:
-	@if [ "$(FEATURE)" = "F001" ]; then \
+	@if [ "$(FEATURE)" = "F001" ] || [ "$(FEATURE)" = "F002" ]; then \
 		$(MAKE) check; \
 	else \
 		echo "No executable verifier is registered for $(FEATURE)"; \
@@ -38,3 +38,6 @@ verify-feature:
 
 run:
 	uv run uvicorn citefin.main:app --reload --host 127.0.0.1 --port 8000
+
+migrate:
+	uv run alembic upgrade head

@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 
 from citefin import __version__
+from citefin.api.analysis_runs import router as analysis_runs_router
 from citefin.api.health import router as health_router
 
 
@@ -18,6 +19,7 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json",
     )
     application.include_router(health_router, prefix="/api/v1")
+    application.include_router(analysis_runs_router, prefix="/api/v1")
     return application
 
 

@@ -11,6 +11,23 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    env:
+      CITEFIN_ENVIRONMENT: test
+      CITEFIN_DATABASE_URL: postgresql+psycopg://citefin:citest@localhost:5432/citefin_test
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: citefin_test
+          POSTGRES_USER: citefin
+          POSTGRES_PASSWORD: citest
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U citefin -d citefin_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -19,6 +36,9 @@ jobs:
           enable-cache: true
       - name: Install dependencies
         run: make setup
+      - name: Verify PostgreSQL migrations
+        run: |
+          uv run alembic upgrade head
+          uv run alembic check
       - name: Run quality gate
         run: make check
-

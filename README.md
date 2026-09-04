@@ -38,6 +38,20 @@ Windows PowerShell without GNU Make:
 
 The local API is available at `http://127.0.0.1:8000`, with interactive documentation at `/docs` and health endpoints at `/api/v1/health/live` and `/api/v1/health/ready`.
 
+Apply database migrations before using analysis endpoints:
+
+```powershell
+.\scripts\dev.ps1 migrate
+```
+
+The F002 API creates an analysis run and its initial audit/checkpoint bundle:
+
+```text
+POST /api/v1/analysis-runs
+X-User-ID: <user identifier>
+Idempotency-Key: <stable request key>
+```
+
 ## Project controls
 
 - Read `AGENTS.md` before starting work.
@@ -48,4 +62,3 @@ The local API is available at `http://127.0.0.1:8000`, with interactive document
 ## Current status
 
 The product scope, data model, workflow, feature DAG, and initial synthetic golden dataset are defined. Product implementation proceeds feature-by-feature from F001.
-
