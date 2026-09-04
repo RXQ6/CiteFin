@@ -11,9 +11,6 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    env:
-      CITEFIN_ENVIRONMENT: test
-      CITEFIN_DATABASE_URL: postgresql+psycopg://citefin:citest@localhost:5432/citefin_test
     services:
       postgres:
         image: postgres:17-alpine
@@ -37,6 +34,9 @@ jobs:
       - name: Install dependencies
         run: make setup
       - name: Verify PostgreSQL migrations
+        env:
+          CITEFIN_ENVIRONMENT: test
+          CITEFIN_DATABASE_URL: postgresql+psycopg://citefin:citest@localhost:5432/citefin_test
         run: |
           uv run alembic upgrade head
           uv run alembic check
