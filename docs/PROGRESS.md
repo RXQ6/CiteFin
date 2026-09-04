@@ -4,10 +4,10 @@
 
 ## 当前状态
 
-- 最后更新：2026-09-04
+- 最后更新：2026-09-05
 - 更新人：Codex
 - 当前阶段：按已确认功能表完成并验证 F001、F002；依用户要求停在 F003 之前
-- 最新已独立验证实现 commit：`ef24f95`（feat: add immutable annual-report ingestion）
+- 最新已独立验证实现 commit：`7315d26`（fix: align F001-F018 with authoritative product plan）
 - 测试状态：25/25 pytest 通过，覆盖率 92.20%；3/3 合成黄金用例通过
 - 质量状态：Ruff、格式检查、严格 mypy、SQLite 升级、PostgreSQL 17 升级和 Alembic 零漂移检查均通过
 - 本次变更摘要：将 F001–F018 与权威产品功能表完全对齐；F001 为项目初始化与健康检查，F002 为财报上传与文件存储；运行初始化改用内部 `CAP-*` 能力编号。

@@ -175,7 +175,7 @@ docker compose config: passed
 - 可检索文本阈值不能替代公司、期间、年报类型和语言语义确认。
 - 本次验证未构建并启动完整 Docker Compose 栈，只验证了 Compose 配置和 CI PostgreSQL 迁移。
 
-## 2026-09-04：F001/F002 权威功能表复核
+## 2026-09-05：F001/F002 权威功能表复核
 
 ### 复核范围
 
@@ -204,3 +204,10 @@ docker compose config: passed
 - 新增清单契约测试首次被 Ruff 导入排序规则拦截；运行项目格式化入口修复后，完整门禁从头重跑通过。
 - F001 和 F002 在当前冻结验收范围内通过；未实现、未启动 F003。
 - F002 只保证上传与不可变文件存储，不声明真实中文年报语义解析正确；该能力从 F003 开始验收。
+
+### 独立验证
+
+- 验证者：GitHub Actions `CI` 工作流，PostgreSQL 17 服务容器。
+- 被验证 commit：`7315d26088bf80580f083015ced58d3bedf50846`。
+- 结果：[CI run 33892520145](https://github.com/RXQ6/CiteFin/actions/runs/33892520145) 成功。
+- 验证内容：PostgreSQL 全量迁移、Alembic 零漂移、功能清单契约测试及完整 `make check`。
