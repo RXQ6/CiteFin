@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "citefin"
+version = "0.1.0"
+description = "Evidence-driven financial analysis agent for traceable annual-report research."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+license = { text = "Proprietary" }
+authors = [{ name = "CiteFin Contributors" }]
+dependencies = [
+  "fastapi>=0.115,<1.0",
+  "langchain>=1.0,<2.0",
+  "langgraph>=1.0,<2.0",
+  "pydantic>=2.9,<3.0",
+  "pydantic-settings>=2.5,<3.0",
+  "structlog>=24.4,<26.0",
+  "uvicorn[standard]>=0.30,<1.0",
+]
+
+[dependency-groups]
+dev = [
+  "httpx>=0.27,<1.0",
+  "mypy>=1.13,<2.0",
+  "pytest>=8.3,<10.0",
+  "pytest-asyncio>=0.24,<2.0",
+  "pytest-cov>=6.0,<8.0",
+  "ruff>=0.8,<1.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/citefin"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers --cov=src/citefin --cov-report=term-missing --cov-fail-under=90"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+extend-exclude = [".venv", ".uv-cache", ".uv-python", "tmp"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["citefin"]
+mypy_path = "src"
+plugins = ["pydantic.mypy"]
