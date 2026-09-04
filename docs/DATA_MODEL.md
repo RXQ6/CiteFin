@@ -14,7 +14,7 @@
 ```text
 AnalysisRun
 ├── Task
-├── SourceDocument
+├── SourceDocument ── StoredObject
 │   ├── DocumentPage
 │   └── FinancialFact
 ├── CalculatedMetric ── MetricDefinition
@@ -127,7 +127,7 @@ created → validating → running → candidate_complete → evaluating → ver
 | `document_type` | enum | MVP 固定为 `annual_report` |
 | `file_name` | string | 必填 |
 | `media_type` | string | MVP 固定为 `application/pdf` |
-| `sha256` | string | 全局去重依据 |
+| `sha256` | string | 外键到全局去重的 `StoredObject` |
 | `storage_uri` | string | 不可变对象地址 |
 | `company_name` | string/null | 从文档提取 |
 | `security_code` | string/null | 从文档提取 |
@@ -138,6 +138,10 @@ created → validating → running → candidate_complete → evaluating → ver
 | `text_extractable` | boolean | MVP 必须为真 |
 | `parser_version` | string | 必填 |
 | `ingested_at` | datetime | 必填 |
+
+`StoredObject` 保存物理对象的全局内容地址：`sha256`、`storage_uri`、`media_type`、`byte_size` 和
+`created_at`。同一 SHA-256 只能对应一个不可变对象；`SourceDocument` 按 `run_id + sha256` 唯一，
+因此多个运行可以引用同一物理对象而不共享业务归属。
 
 ### 4.4 DocumentPage
 
@@ -331,7 +335,7 @@ Checkpoint 不代替业务表，业务真值仍写入对应实体。
 
 ### 5.2 唯一性
 
-- `SourceDocument.sha256` 防止重复文件。
+- `StoredObject.sha256` 防止物理文件重复；`SourceDocument.run_id + sha256` 防止同一运行重复关联。
 - `AnalysisRun.user_id + idempotency_key` 唯一。
 - `FinancialFact` 按既定事实粒度唯一；冲突不得静默去重。
 

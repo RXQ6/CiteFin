@@ -68,7 +68,7 @@
       "id": "F002",
       "title": "年度报告上传与不可变存储",
       "description": "接收可检索文本 PDF，计算哈希并保存不可变来源对象。",
-      "status": "in_progress",
+      "status": "verified",
       "owner": "codex",
       "blocked_by": ["F001"],
       "acceptance": [
@@ -79,7 +79,12 @@
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F002",
-        "evidence": []
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-04f002-财报上传与不可变文件存储",
+          "tests/integration/test_document_upload_api.py",
+          "migrations/versions/20260904_0002_source_documents.py",
+          "https://github.com/RXQ6/CiteFin/actions/runs/33889907495"
+        ]
       }
     },
     {

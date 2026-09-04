@@ -133,3 +133,44 @@ alembic check: No new upgrade operations detected
 - 尚未进行高并发请求压测；并发幂等由数据库唯一约束和 IntegrityError 回读路径保护。
 - F001 尚未接入真实认证，`X-User-ID` 只用于当前接口契约与测试。
 - 当前 Checkpoint 是初始恢复边界，不代表后续 LangGraph 节点已经实现。
+
+## 2026-09-04：F002 财报上传与不可变文件存储
+
+### 验证范围
+
+- 可检索 PDF 上传、文件名净化和来源元数据持久化。
+- 50 MiB 默认有界读取与超限 `413`。
+- 非 PDF、错误扩展名、损坏、加密和图片型 PDF 的稳定错误码。
+- 错误用户不能探测或上传到其他用户的分析运行。
+- 同一运行重复内容返回原 `source_id`，不新增来源、对象或审计事件。
+- 不同运行上传同一内容时保留两个来源记录，但只保存一个物理对象。
+- 对象落盘内容与 SHA-256 地址一致，上传产生 `document_uploaded` 审计事件。
+- 从 F001 数据库升级到 F002，SQLite 与 PostgreSQL 17 均无 ORM 漂移。
+- Compose 配置包含迁移前置服务和对象存储持久卷。
+
+### 本地结果
+
+```text
+Ruff and format: passed; 28 files
+mypy: Success; 17 source files
+golden: 3/3 cases passed
+pytest: 23 passed
+coverage: 92.20% (required 90%)
+alembic upgrade: 20260904_0001 -> 20260904_0002
+alembic check: No new upgrade operations detected
+docker compose config: passed
+```
+
+### 独立验证
+
+- 验证者：GitHub Actions `CI` 工作流，PostgreSQL 17 服务容器。
+- 被验证 commit：`ef24f95889b6d30a49f3ee7c8228717f18a72303`。
+- 结果：[CI run 33889907495](https://github.com/RXQ6/CiteFin/actions/runs/33889907495) 成功。
+- 验证内容：依赖锁定安装、PostgreSQL 全量迁移、Alembic 零漂移及完整 `make check`。
+- 状态迁移：F002 从 `in_progress` 转为 `verified`。
+
+### 已知限制
+
+- 测试 PDF 为代码生成的最小文档；真实中文上市公司年报仍需进入人工复核黄金集。
+- 可检索文本阈值不能替代公司、期间、年报类型和语言语义确认。
+- 本次验证未构建并启动完整 Docker Compose 栈，只验证了 Compose 配置和 CI PostgreSQL 迁移。

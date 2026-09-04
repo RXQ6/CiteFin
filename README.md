@@ -74,4 +74,4 @@ immutable object instead of creating another physical copy.
 
 ## Current status
 
-INFRA-001 and F001 are independently verified. F002 annual-report ingestion is under independent verification.
+INFRA-001, F001, and F002 are independently verified. The next single work item is F003 page-level text and table extraction.
