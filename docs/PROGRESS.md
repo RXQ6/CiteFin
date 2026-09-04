@@ -6,7 +6,7 @@
 
 - 最后更新：2026-09-04
 - 更新人：Codex
-- 当前阶段：功能编号已与产品规划对齐，准备实现 F002 财报上传与文件存储
+- 当前阶段：F002 财报上传与不可变文件存储正在实现
 - 最新实现 commit：`06306a5`（fix: isolate PostgreSQL migration environment）
 - 测试状态：14/14 pytest 通过，覆盖率 94.24%；3/3 合成黄金用例通过
 - 质量状态：Ruff、格式检查、严格 mypy、SQLite 迁移、PostgreSQL 17 迁移和 Alembic 零漂移检查均通过

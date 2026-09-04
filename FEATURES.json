@@ -68,8 +68,8 @@
       "id": "F002",
       "title": "年度报告上传与不可变存储",
       "description": "接收可检索文本 PDF，计算哈希并保存不可变来源对象。",
-      "status": "not_started",
-      "owner": null,
+      "status": "in_progress",
+      "owner": "codex",
       "blocked_by": ["F001"],
       "acceptance": [
         "仅接受符合 MVP 边界的 PDF",
