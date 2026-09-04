@@ -5,7 +5,18 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import JSON, Date, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citefin.db.base import Base
@@ -43,6 +54,9 @@ class AnalysisRun(Base):
         back_populates="run", cascade="all, delete-orphan"
     )
     checkpoints: Mapped[list[WorkflowCheckpoint]] = relationship(
+        back_populates="run", cascade="all, delete-orphan"
+    )
+    source_documents: Mapped[list[SourceDocument]] = relationship(
         back_populates="run", cascade="all, delete-orphan"
     )
 
@@ -113,3 +127,50 @@ class WorkflowCheckpoint(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     run: Mapped[AnalysisRun] = relationship(back_populates="checkpoints")
+
+
+class StoredObject(Base):
+    """One immutable, globally deduplicated binary object."""
+
+    __tablename__ = "stored_objects"
+
+    sha256: Mapped[str] = mapped_column(String(64), primary_key=True)
+    storage_uri: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    media_type: Mapped[str] = mapped_column(String(128), nullable=False)
+    byte_size: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    documents: Mapped[list[SourceDocument]] = relationship(back_populates="stored_object")
+
+
+class SourceDocument(Base):
+    """A run-scoped reference to an immutable annual-report object."""
+
+    __tablename__ = "source_documents"
+    __table_args__ = (
+        UniqueConstraint("run_id", "sha256", name="uq_source_documents_run_id_sha256"),
+    )
+
+    source_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_runs.run_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    document_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    file_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    media_type: Mapped[str] = mapped_column(String(128), nullable=False)
+    sha256: Mapped[str] = mapped_column(
+        ForeignKey("stored_objects.sha256", ondelete="RESTRICT"), nullable=False, index=True
+    )
+    storage_uri: Mapped[str] = mapped_column(Text, nullable=False)
+    company_name: Mapped[str | None] = mapped_column(String(200))
+    security_code: Mapped[str | None] = mapped_column(String(6))
+    period_end: Mapped[date | None] = mapped_column(Date)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    language: Mapped[str] = mapped_column(String(16), nullable=False)
+    page_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    text_extractable: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    parser_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    ingested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    run: Mapped[AnalysisRun] = relationship(back_populates="source_documents")
+    stored_object: Mapped[StoredObject] = relationship(back_populates="documents")

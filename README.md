@@ -52,6 +52,19 @@ X-User-ID: <user identifier>
 Idempotency-Key: <stable request key>
 ```
 
+F002 attaches a searchable annual-report PDF to an owned analysis run:
+
+```text
+POST /api/v1/analysis-runs/{run_id}/documents
+X-User-ID: <same user that owns the run>
+Content-Type: multipart/form-data
+file: <annual-report.pdf>
+```
+
+The upload is limited to 50 MiB by default. Encrypted, malformed, image-only, and non-PDF
+files are rejected with a stable error code. Repeated content reuses its SHA-256-addressed
+immutable object instead of creating another physical copy.
+
 ## Project controls
 
 - Read `AGENTS.md` before starting work.
@@ -61,4 +74,4 @@ Idempotency-Key: <stable request key>
 
 ## Current status
 
-INFRA-001 and F001 are independently verified. The next single work item is F002: immutable annual-report upload and source metadata validation.
+INFRA-001 and F001 are independently verified. F002 annual-report ingestion is under independent verification.

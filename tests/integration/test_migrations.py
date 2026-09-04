@@ -1,4 +1,4 @@
-"""Migration smoke test for a clean F002 database."""
+"""Migration smoke test for a clean CiteFin database."""
 
 from pathlib import Path
 
@@ -21,6 +21,8 @@ def test_upgrade_head_creates_analysis_run_bundle(tmp_path: Path) -> None:
         "alembic_version",
         "analysis_runs",
         "audit_events",
+        "source_documents",
+        "stored_objects",
         "tasks",
         "workflow_checkpoints",
     }.issubset(inspect(engine).get_table_names())
