@@ -42,7 +42,7 @@ PASS manifest: cases=3
 - 尚无双人复核的真实年度报告，因此不能计算真实解析准确率。
 - 尚未验证报告生成、证据引用正确性、Checkpoint 恢复或 Goal Gate。
 
-## 2026-09-04：INFRA-001 可重复工程基线
+## 2026-09-04：F001 项目初始化与健康检查
 
 ### 验证范围
 
@@ -63,7 +63,7 @@ docker compose config --quiet
 Linux 和 CI 的等价入口：
 
 ```bash
-make verify-feature FEATURE=INFRA-001
+make verify-feature FEATURE=F001
 ```
 
 ### 结果
@@ -79,7 +79,7 @@ docker compose config: passed
 
 ### 结论
 
-- INFRA-001 的本地可执行验收证据全部通过，状态可转移为 `candidate_complete`；`verified` 仍需独立 CI 成功证据。
+- F001 的本地可执行验收证据全部通过，状态可转移为 `candidate_complete`；`verified` 仍需独立 CI 成功证据。
 - `scripts/dev.ps1` 对失败子命令立即退出，避免产生伪成功交接。
 - CI 使用相同锁文件和 Make 质量门禁，后续提交可重复验证基线。
 
@@ -94,9 +94,9 @@ docker compose config: passed
 - 被验证 commit：`6e344af47cacbf46d82580e5bbc87118ddff4f39`。
 - 结果：`success`。
 - 证据：[CI run 33873094637](https://github.com/RXQ6/CiteFin/actions/runs/33873094637)。
-- 状态迁移：INFRA-001 从 `candidate_complete` 转为 `verified`。
+- 状态迁移：F001 从 `candidate_complete` 转为 `verified`。
 
-## 2026-09-04：F001 分析运行与幂等创建
+## 2026-09-04：内部能力——分析运行与幂等创建
 
 ### 验证范围
 
@@ -126,12 +126,12 @@ alembic check: No new upgrade operations detected
 - 通过运行：[33875648380](https://github.com/RXQ6/CiteFin/actions/runs/33875648380)。
 - 被验证 commit：`06306a53a35b9ace095a0231478684d24d938f5c`。
 - 结果：PostgreSQL 迁移、Alembic 零漂移和完整 `make check` 全部成功。
-- 状态迁移：F001 从 `in_progress` 转为 `verified`。
+- 结论：该能力作为 F002 的内部前置接口通过验证，但不占用产品功能编号。
 
 ### 已知限制
 
 - 尚未进行高并发请求压测；并发幂等由数据库唯一约束和 IntegrityError 回读路径保护。
-- F001 尚未接入真实认证，`X-User-ID` 只用于当前接口契约与测试。
+- 尚未接入真实认证，`X-User-ID` 只用于当前接口契约与测试。
 - 当前 Checkpoint 是初始恢复边界，不代表后续 LangGraph 节点已经实现。
 
 ## 2026-09-04：F002 财报上传与不可变文件存储
@@ -174,3 +174,33 @@ docker compose config: passed
 - 测试 PDF 为代码生成的最小文档；真实中文上市公司年报仍需进入人工复核黄金集。
 - 可检索文本阈值不能替代公司、期间、年报类型和语言语义确认。
 - 本次验证未构建并启动完整 Docker Compose 栈，只验证了 Compose 配置和 CI PostgreSQL 迁移。
+
+## 2026-09-04：F001/F002 权威功能表复核
+
+### 复核范围
+
+- F001–F018 的 ID、名称和依赖与用户确认的产品功能表一致。
+- 只有 F001、F002 为 `verified`；F003–F018 均为 `not_started`，WIP=0。
+- 项目开发 Feature 编号与金融分析运行时 `Task.feature_id` 分离。
+- F001/F002 完整代码门禁、合成黄金数据、迁移和 Compose 配置重新执行。
+
+### 结果
+
+```text
+catalog: F001..F018 valid; dependencies valid; verified=F001,F002; in_progress=0
+Ruff and format: passed; 29 files
+mypy: Success; 17 source files
+golden: 3/3 cases passed
+pytest: 25 passed
+coverage: 92.20% (required 90%)
+alembic upgrade: base -> 20260904_0001 -> 20260904_0002
+alembic check: No new upgrade operations detected
+docker compose config: passed
+```
+
+### 执行说明与结论
+
+- 沙箱内首次执行因系统 Python 进程权限被拒绝而中断；使用同一锁定虚拟环境在获准执行上下文中从头重跑后全部通过，不属于代码或测试失败。
+- 新增清单契约测试首次被 Ruff 导入排序规则拦截；运行项目格式化入口修复后，完整门禁从头重跑通过。
+- F001 和 F002 在当前冻结验收范围内通过；未实现、未启动 F003。
+- F002 只保证上传与不可变文件存储，不声明真实中文年报语义解析正确；该能力从 F003 开始验收。

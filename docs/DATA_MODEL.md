@@ -101,7 +101,7 @@ created → validating → running → candidate_complete → evaluating → ver
 | --- | --- | --- |
 | `task_id` | string | 主键 |
 | `run_id` | string | 外键 |
-| `feature_id` | string | 对应 `FEATURES.json` |
+| `feature_id` | string | 运行时能力标识；不得复用项目开发 `FEATURES.json` 编号 |
 | `task_type` | string | 受控类型 |
 | `title` | string | 必填 |
 | `status` | enum | `not_started/ready/in_progress/blocked/candidate_complete/verified/failed` |
@@ -115,6 +115,8 @@ created → validating → running → candidate_complete → evaluating → ver
 | `finished_at` | datetime/null | 终态写入 |
 
 约束：同一个执行者同一时刻最多持有一个 `in_progress` 任务；依赖未全部 `verified` 时不得认领。
+`FEATURES.json` 描述项目建设阶段和依赖；`Task.feature_id` 描述一次金融分析运行中的能力任务。
+两者生命周期不同，禁止用 F001、F002 等项目 Feature ID 标记运行时任务。
 
 ### 4.3 SourceDocument
 
@@ -317,7 +319,7 @@ Evaluator 不得调用业务工具；它只读取已经持久化的事实、指�
 
 ### 4.14 AuditEvent 与 WorkflowCheckpoint
 
-`AuditEvent` 保存不可变事件：节点进入/退出、工具请求、权限结果、状态迁移、人工决定和评测结果。F001
+`AuditEvent` 保存不可变事件：节点进入/退出、工具请求、权限结果、状态迁移、人工决定和评测结果。
 最小字段为 `event_id`、`run_id`、`trace_id`、`node`、`event_type`、`status`、`payload` 和
 `created_at`。
 

@@ -1,4 +1,4 @@
-"""End-to-end API and persistence tests for F002."""
+"""End-to-end API and persistence tests for internal run creation."""
 
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -28,7 +28,7 @@ class ApiHarness:
 
 @pytest.fixture
 def api_harness(tmp_path: Path) -> Iterator[ApiHarness]:
-    database_path = tmp_path / "f002.db"
+    database_path = tmp_path / "analysis-runs.db"
     engine = build_engine(f"sqlite+pysqlite:///{database_path.as_posix()}")
     Base.metadata.create_all(engine)
     sessions = sessionmaker(bind=engine, expire_on_commit=False)
@@ -81,6 +81,7 @@ def test_create_run_persists_complete_initial_bundle(api_harness: ApiHarness) ->
         event = session.scalar(select(AuditEvent))
         checkpoint = session.scalar(select(WorkflowCheckpoint))
         assert task is not None and task.status == "ready"
+        assert task.feature_id == "CAP-RUN-GUARD"
         assert event is not None and event.event_type == "run_created"
         assert checkpoint is not None and checkpoint.state_version == 1
         assert checkpoint.state_data["run_id"] == body["run_id"]

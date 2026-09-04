@@ -99,7 +99,7 @@ def create_analysis_run(session: Session, command: CreateAnalysisRunCommand) -> 
     task = Task(
         task_id=task_id,
         run_id=run_id,
-        feature_id="F001",
+        feature_id="CAP-RUN-GUARD",
         task_type="request_validation",
         title="请求与身份校验",
         status="ready",
