@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0.0",
+  "case_id": "G001_standard_profitable",
+  "case_version": "1.0.0",
+  "as_of": "2026-03-21T00:00:00Z",
+  "company": {
+    "name": "华岳制造股份有限公司",
+    "security_code": "600001",
+    "market": "SSE"
+  },
+  "report": {
+    "document_type": "annual_report",
+    "period_start": "2025-01-01",
+    "period_end": "2025-12-31",
+    "published_at": "2026-03-20T00:00:00Z",
+    "language": "zh-CN",
+    "scope": "consolidated",
+    "currency": "CNY",
+    "display_unit": "thousand_yuan",
+    "scale_to_yuan": "1000"
+  },
+  "expected_facts": [
+    {"concept":"cash_and_cash_equivalents","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"220000","normalized_value":"220000000","page_number":1,"row_label":"货币资金","column_label":"2025年12月31日"},
+    {"concept":"accounts_receivable","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"240000","normalized_value":"240000000","page_number":1,"row_label":"应收账款","column_label":"2025年12月31日"},
+    {"concept":"accounts_receivable","statement_type":"balance_sheet","period_end":"2024-12-31","period_type":"instant","raw_value":"180000","normalized_value":"180000000","page_number":1,"row_label":"应收账款","column_label":"2024年12月31日"},
+    {"concept":"inventory","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"180000","normalized_value":"180000000","page_number":1,"row_label":"存货","column_label":"2025年12月31日"},
+    {"concept":"inventory","statement_type":"balance_sheet","period_end":"2024-12-31","period_type":"instant","raw_value":"150000","normalized_value":"150000000","page_number":1,"row_label":"存货","column_label":"2024年12月31日"},
+    {"concept":"current_assets","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"600000","normalized_value":"600000000","page_number":1,"row_label":"流动资产合计","column_label":"2025年12月31日"},
+    {"concept":"total_assets","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"1500000","normalized_value":"1500000000","page_number":1,"row_label":"资产总计","column_label":"2025年12月31日"},
+    {"concept":"total_assets","statement_type":"balance_sheet","period_end":"2024-12-31","period_type":"instant","raw_value":"1300000","normalized_value":"1300000000","page_number":1,"row_label":"资产总计","column_label":"2024年12月31日"},
+    {"concept":"short_term_debt","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"200000","normalized_value":"200000000","page_number":1,"row_label":"短期借款","column_label":"2025年12月31日"},
+    {"concept":"current_liabilities","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"350000","normalized_value":"350000000","page_number":1,"row_label":"流动负债合计","column_label":"2025年12月31日"},
+    {"concept":"total_liabilities","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"700000","normalized_value":"700000000","page_number":1,"row_label":"负债合计","column_label":"2025年12月31日"},
+    {"concept":"total_equity","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"800000","normalized_value":"800000000","page_number":1,"row_label":"所有者权益合计","column_label":"2025年12月31日"},
+    {"concept":"total_equity","statement_type":"balance_sheet","period_end":"2024-12-31","period_type":"instant","raw_value":"700000","normalized_value":"700000000","page_number":1,"row_label":"所有者权益合计","column_label":"2024年12月31日"},
+    {"concept":"revenue","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"1200000","normalized_value":"1200000000","page_number":2,"row_label":"营业收入","column_label":"2025年度"},
+    {"concept":"revenue","statement_type":"income_statement","period_start":"2024-01-01","period_end":"2024-12-31","period_type":"duration","raw_value":"1000000","normalized_value":"1000000000","page_number":2,"row_label":"营业收入","column_label":"2024年度"},
+    {"concept":"cost_of_revenue","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"780000","normalized_value":"780000000","page_number":2,"row_label":"营业成本","column_label":"2025年度"},
+    {"concept":"gross_profit","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"420000","normalized_value":"420000000","page_number":2,"row_label":"毛利润","column_label":"2025年度"},
+    {"concept":"ebit","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"180000","normalized_value":"180000000","page_number":2,"row_label":"息税前利润","column_label":"2025年度"},
+    {"concept":"interest_expense","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"25000","normalized_value":"25000000","page_number":2,"row_label":"利息费用","column_label":"2025年度"},
+    {"concept":"net_profit","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"120000","normalized_value":"120000000","page_number":2,"row_label":"净利润","column_label":"2025年度"},
+    {"concept":"net_profit","statement_type":"income_statement","period_start":"2024-01-01","period_end":"2024-12-31","period_type":"duration","raw_value":"100000","normalized_value":"100000000","page_number":2,"row_label":"净利润","column_label":"2024年度"},
+    {"concept":"operating_cash_flow","statement_type":"cashflow_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"150000","normalized_value":"150000000","page_number":3,"row_label":"经营活动产生的现金流量净额","column_label":"2025年度"},
+    {"concept":"capital_expenditure","statement_type":"cashflow_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"60000","normalized_value":"60000000","page_number":3,"row_label":"购建固定资产、无形资产和其他长期资产支付的现金","column_label":"2025年度"}
+  ],
+  "expected_metrics": [
+    {"metric_code":"revenue_growth","value":"0.2","unit":"ratio","status":"calculated"},
+    {"metric_code":"net_profit_growth","value":"0.2","unit":"ratio","status":"calculated"},
+    {"metric_code":"gross_margin","value":"0.35","unit":"ratio","status":"calculated"},
+    {"metric_code":"net_margin","value":"0.1","unit":"ratio","status":"calculated"},
+    {"metric_code":"roa","value":"0.0857142857142857","unit":"ratio","status":"calculated"},
+    {"metric_code":"roe","value":"0.16","unit":"ratio","status":"calculated"},
+    {"metric_code":"debt_to_assets","value":"0.466666666666667","unit":"ratio","status":"calculated"},
+    {"metric_code":"current_ratio","value":"1.71428571428571","unit":"multiple","status":"calculated"},
+    {"metric_code":"quick_ratio","value":"1.2","unit":"multiple","status":"calculated"},
+    {"metric_code":"ocf_to_net_profit","value":"1.25","unit":"multiple","status":"calculated"},
+    {"metric_code":"free_cash_flow","value":"90000000","unit":"CNY","status":"calculated"},
+    {"metric_code":"accounts_receivable_growth","value":"0.333333333333333","unit":"ratio","status":"calculated"},
+    {"metric_code":"inventory_growth","value":"0.2","unit":"ratio","status":"calculated"},
+    {"metric_code":"interest_coverage","value":"7.2","unit":"multiple","status":"calculated"},
+    {"metric_code":"cash_to_short_debt","value":"1.1","unit":"multiple","status":"calculated"}
+  ],
+  "expected_risks": [],
+  "required_evidence_checks": [
+    {"claim":"2025年度营业收入同比增长20%","evidence_type":"metric","metric_code":"revenue_growth","source_pages":[2]},
+    {"claim":"经营现金流覆盖净利润，经营现金流/净利润为1.25","evidence_type":"metric","metric_code":"ocf_to_net_profit","source_pages":[2,3]},
+    {"claim":"2025年末资产总额为15亿元","evidence_type":"fact","concept":"total_assets","source_pages":[1]}
+  ]
+}

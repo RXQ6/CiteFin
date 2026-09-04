@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "case_id": "G003_unit_and_zero_denominator",
+  "case_version": "1.0.0",
+  "as_of": "2026-04-11T00:00:00Z",
+  "company": {"name":"云汀软件股份有限公司","security_code":"600003","market":"SSE"},
+  "report": {"document_type":"annual_report","period_start":"2025-01-01","period_end":"2025-12-31","published_at":"2026-04-10T00:00:00Z","language":"zh-CN","scope":"consolidated","currency":"CNY","display_unit":"million_yuan","scale_to_yuan":"1000000"},
+  "expected_facts": [
+    {"concept":"cash_and_cash_equivalents","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"150","normalized_value":"150000000","page_number":1,"row_label":"货币资金","column_label":"2025年12月31日"},
+    {"concept":"accounts_receivable","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"100","normalized_value":"100000000","page_number":1,"row_label":"应收账款","column_label":"2025年12月31日"},
+    {"concept":"accounts_receivable","statement_type":"balance_sheet","period_end":"2024-12-31","period_type":"instant","raw_value":"80","normalized_value":"80000000","page_number":1,"row_label":"应收账款","column_label":"2024年12月31日"},
+    {"concept":"inventory","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"60","normalized_value":"60000000","page_number":1,"row_label":"存货","column_label":"2025年12月31日"},
+    {"concept":"inventory","statement_type":"balance_sheet","period_end":"2024-12-31","period_type":"instant","raw_value":"50","normalized_value":"50000000","page_number":1,"row_label":"存货","column_label":"2024年12月31日"},
+    {"concept":"current_assets","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"360","normalized_value":"360000000","page_number":1,"row_label":"流动资产合计","column_label":"2025年12月31日"},
+    {"concept":"total_assets","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"900","normalized_value":"900000000","page_number":1,"row_label":"资产总计","column_label":"2025年12月31日"},
+    {"concept":"total_assets","statement_type":"balance_sheet","period_end":"2024-12-31","period_type":"instant","raw_value":"800","normalized_value":"800000000","page_number":1,"row_label":"资产总计","column_label":"2024年12月31日"},
+    {"concept":"short_term_debt","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"0","normalized_value":"0","page_number":1,"row_label":"短期借款","column_label":"2025年12月31日"},
+    {"concept":"current_liabilities","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"240","normalized_value":"240000000","page_number":1,"row_label":"流动负债合计","column_label":"2025年12月31日"},
+    {"concept":"total_liabilities","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"400","normalized_value":"400000000","page_number":1,"row_label":"负债合计","column_label":"2025年12月31日"},
+    {"concept":"total_equity","statement_type":"balance_sheet","period_end":"2025-12-31","period_type":"instant","raw_value":"500","normalized_value":"500000000","page_number":1,"row_label":"所有者权益合计","column_label":"2025年12月31日"},
+    {"concept":"total_equity","statement_type":"balance_sheet","period_end":"2024-12-31","period_type":"instant","raw_value":"450","normalized_value":"450000000","page_number":1,"row_label":"所有者权益合计","column_label":"2024年12月31日"},
+    {"concept":"revenue","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"500","normalized_value":"500000000","page_number":2,"row_label":"营业收入","column_label":"2025年度"},
+    {"concept":"revenue","statement_type":"income_statement","period_start":"2024-01-01","period_end":"2024-12-31","period_type":"duration","raw_value":"400","normalized_value":"400000000","page_number":2,"row_label":"营业收入","column_label":"2024年度"},
+    {"concept":"cost_of_revenue","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"300","normalized_value":"300000000","page_number":2,"row_label":"营业成本","column_label":"2025年度"},
+    {"concept":"gross_profit","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"200","normalized_value":"200000000","page_number":2,"row_label":"毛利润","column_label":"2025年度"},
+    {"concept":"ebit","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"40","normalized_value":"40000000","page_number":2,"row_label":"息税前利润","column_label":"2025年度"},
+    {"concept":"interest_expense","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"0","normalized_value":"0","page_number":2,"row_label":"利息费用","column_label":"2025年度"},
+    {"concept":"net_profit","statement_type":"income_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"20","normalized_value":"20000000","page_number":2,"row_label":"净利润","column_label":"2025年度"},
+    {"concept":"net_profit","statement_type":"income_statement","period_start":"2024-01-01","period_end":"2024-12-31","period_type":"duration","raw_value":"0","normalized_value":"0","page_number":2,"row_label":"净利润","column_label":"2024年度"},
+    {"concept":"operating_cash_flow","statement_type":"cashflow_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"30","normalized_value":"30000000","page_number":3,"row_label":"经营活动产生的现金流量净额","column_label":"2025年度"},
+    {"concept":"capital_expenditure","statement_type":"cashflow_statement","period_start":"2025-01-01","period_end":"2025-12-31","period_type":"duration","raw_value":"40","normalized_value":"40000000","page_number":3,"row_label":"购建固定资产、无形资产和其他长期资产支付的现金","column_label":"2025年度"}
+  ],
+  "expected_metrics": [
+    {"metric_code":"revenue_growth","value":"0.25","unit":"ratio","status":"calculated"},
+    {"metric_code":"net_profit_growth","value":null,"unit":"ratio","status":"zero_denominator","reason":"prior_period_value_is_zero"},
+    {"metric_code":"gross_margin","value":"0.4","unit":"ratio","status":"calculated"},
+    {"metric_code":"net_margin","value":"0.04","unit":"ratio","status":"calculated"},
+    {"metric_code":"roa","value":"0.0235294117647059","unit":"ratio","status":"calculated"},
+    {"metric_code":"roe","value":"0.0421052631578947","unit":"ratio","status":"calculated"},
+    {"metric_code":"debt_to_assets","value":"0.444444444444444","unit":"ratio","status":"calculated"},
+    {"metric_code":"current_ratio","value":"1.5","unit":"multiple","status":"calculated"},
+    {"metric_code":"quick_ratio","value":"1.25","unit":"multiple","status":"calculated"},
+    {"metric_code":"ocf_to_net_profit","value":"1.5","unit":"multiple","status":"calculated"},
+    {"metric_code":"free_cash_flow","value":"-10000000","unit":"CNY","status":"calculated"},
+    {"metric_code":"accounts_receivable_growth","value":"0.25","unit":"ratio","status":"calculated"},
+    {"metric_code":"inventory_growth","value":"0.2","unit":"ratio","status":"calculated"},
+    {"metric_code":"interest_coverage","value":null,"unit":"multiple","status":"zero_denominator","reason":"interest_expense_is_zero"},
+    {"metric_code":"cash_to_short_debt","value":null,"unit":"multiple","status":"zero_denominator","reason":"short_term_debt_is_zero"}
+  ],
+  "expected_risks": [
+    {"risk_code":"R_NEGATIVE_FREE_CASH_FLOW","severity":"medium","evidence_metric_codes":["free_cash_flow"]},
+    {"risk_code":"R_METRIC_NOT_APPLICABLE","severity":"low","evidence_metric_codes":["net_profit_growth","interest_coverage","cash_to_short_debt"]}
+  ],
+  "required_evidence_checks": [
+    {"claim":"报告金额单位为百万元，营业收入标准化金额为5亿元","evidence_type":"fact","concept":"revenue","source_pages":[2]},
+    {"claim":"上期净利润为零，净利润增长率不可计算","evidence_type":"metric","metric_code":"net_profit_growth","source_pages":[2]},
+    {"claim":"短期借款为零，现金短债比不适用而不是无穷大","evidence_type":"metric","metric_code":"cash_to_short_debt","source_pages":[1]}
+  ]
+}

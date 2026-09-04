@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_version": "0.1.0",
+  "intended_use": [
+    "fact_extraction_contract",
+    "normalization_contract",
+    "metric_calculation",
+    "risk_rules",
+    "evidence_mapping",
+    "workflow_smoke_test"
+  ],
+  "limitations": [
+    "当前仅包含合成数据，不能证明真实 PDF 解析准确率",
+    "不覆盖金融行业、扫描件、季报或多公司比较"
+  ],
+  "cases": [
+    {
+      "case_id": "G001_standard_profitable",
+      "case_version": "1.0.0",
+      "title": "标准盈利制造企业",
+      "source_file": "cases/G001_standard_profitable/source.md",
+      "expected_file": "cases/G001_standard_profitable/expected.json",
+      "source_sha256": "29142845fd69ccf66257a835895b6a860ef8565128107041ad9a61e6ad350826",
+      "data_kind": "synthetic",
+      "review_status": "single_reviewed",
+      "eligible_for_ci": true,
+      "eligible_for_product_accuracy": false,
+      "tags": ["normal", "manufacturing", "thousand_yuan"]
+    },
+    {
+      "case_id": "G002_profit_cashflow_stress",
+      "case_version": "1.0.0",
+      "title": "利润与现金流承压企业",
+      "source_file": "cases/G002_profit_cashflow_stress/source.md",
+      "expected_file": "cases/G002_profit_cashflow_stress/expected.json",
+      "source_sha256": "55884d97bc439565d0c24c85b829b908e22e112843cadf5a25e336615e19b677",
+      "data_kind": "synthetic",
+      "review_status": "single_reviewed",
+      "eligible_for_ci": true,
+      "eligible_for_product_accuracy": false,
+      "tags": ["risk", "negative_ocf", "working_capital", "thousand_yuan"]
+    },
+    {
+      "case_id": "G003_unit_and_zero_denominator",
+      "case_version": "1.0.0",
+      "title": "单位换算与零分母边界",
+      "source_file": "cases/G003_unit_and_zero_denominator/source.md",
+      "expected_file": "cases/G003_unit_and_zero_denominator/expected.json",
+      "source_sha256": "fc8a67b35262af3b3e83632bfc4984e22e204dc309bc8a78baaa2ec8522f7ffa",
+      "data_kind": "synthetic",
+      "review_status": "single_reviewed",
+      "eligible_for_ci": true,
+      "eligible_for_product_accuracy": false,
+      "tags": ["edge_case", "million_yuan", "zero_denominator"]
+    }
+  ]
+}
