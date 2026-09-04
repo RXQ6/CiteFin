@@ -95,3 +95,41 @@ docker compose config: passed
 - 结果：`success`。
 - 证据：[CI run 33873094637](https://github.com/RXQ6/CiteFin/actions/runs/33873094637)。
 - 状态迁移：F001 从 `candidate_complete` 转为 `verified`。
+
+## 2026-09-04：F002 分析运行与幂等创建
+
+### 验证范围
+
+- 同一用户与幂等键重复请求返回原 `run_id` 和原始持久化包。
+- 相同幂等键在不同用户范围内相互隔离。
+- 创建运行时原子写入 AnalysisRun、根 Task、AuditEvent 和初始 WorkflowCheckpoint。
+- 非法 A 股证券代码、未来报告期、重复及冲突关注点返回 `422`。
+- 未配置数据库时返回具有错误码和修复提示的 `503`。
+- UUIDv7 前缀 ID、SQLite 空库迁移、Alembic ORM 零漂移。
+- PostgreSQL 17 空库升级和零漂移检查。
+
+### 本地结果
+
+```text
+Ruff and format: passed; 24 files
+mypy: Success; 14 source files
+golden: 3/3 cases passed
+pytest: 14 passed
+coverage: 94.24% (required 90%)
+alembic check: No new upgrade operations detected
+```
+
+### 独立 CI 反馈与修复
+
+- 首次运行 [33875453465](https://github.com/RXQ6/CiteFin/actions/runs/33875453465)：PostgreSQL 迁移通过，但 job 级数据库环境变量污染了安全默认值和 SQLite 隔离测试，质量门禁失败。
+- 修复：将 PostgreSQL URL 限定在迁移步骤内，使产品测试不继承外部数据库配置。
+- 通过运行：[33875648380](https://github.com/RXQ6/CiteFin/actions/runs/33875648380)。
+- 被验证 commit：`06306a53a35b9ace095a0231478684d24d938f5c`。
+- 结果：PostgreSQL 迁移、Alembic 零漂移和完整 `make check` 全部成功。
+- 状态迁移：F002 从 `in_progress` 转为 `verified`。
+
+### 已知限制
+
+- 尚未进行高并发请求压测；并发幂等由数据库唯一约束和 IntegrityError 回读路径保护。
+- F002 尚未接入真实认证，`X-User-ID` 只用于当前接口契约与测试。
+- 当前 Checkpoint 是初始恢复边界，不代表后续 LangGraph 节点已经实现。

@@ -6,11 +6,11 @@
 
 - 最后更新：2026-09-04
 - 更新人：Codex
-- 当前阶段：F002 分析运行与幂等创建正在实现
-- 最新实现 commit：`6e344af`（feat: bootstrap reproducible FastAPI baseline）
-- 测试状态：3/3 pytest 通过，分支覆盖率 100%；3/3 合成黄金用例通过
-- 质量状态：Ruff、格式检查、严格 mypy、Docker Compose 配置检查均通过
-- 本次变更摘要：完成 Python/FastAPI 工程骨架、统一 harness、健康检查、容器依赖和 CI，并推送至 GitHub。
+- 当前阶段：F002 已由独立 CI 验证，准备进入 F003 年度报告上传
+- 最新实现 commit：`06306a5`（fix: isolate PostgreSQL migration environment）
+- 测试状态：14/14 pytest 通过，覆盖率 94.24%；3/3 合成黄金用例通过
+- 质量状态：Ruff、格式检查、严格 mypy、SQLite 迁移、PostgreSQL 17 迁移和 Alembic 零漂移检查均通过
+- 本次变更摘要：实现幂等分析运行接口，以及 AnalysisRun、Task、AuditEvent、WorkflowCheckpoint 的原子持久化。
 
 ## 已完成
 
@@ -32,11 +32,15 @@
 - [x] 完成 F001 本地质量门禁并将状态转移为 `candidate_complete`。
 - [x] GitHub Actions 独立验证实现 commit `6e344af`，F001 转移为 `verified`。
 - [x] 初始化 Git 仓库并推送至 `RXQ6/CiteFin` 的 `main` 分支。
+- [x] 建立 SQLAlchemy 2 与 Alembic 数据库基础设施。
+- [x] 实现 `POST /api/v1/analysis-runs` 和用户范围幂等语义。
+- [x] 在同一事务内创建 AnalysisRun、根 Task、AuditEvent 和初始 WorkflowCheckpoint。
+- [x] 拒绝非法 A 股代码、未来报告期、重复或冲突的分析关注点。
+- [x] GitHub Actions 在 PostgreSQL 17 上完成迁移和零漂移验证，F002 转移为 `verified`。
 
 ## 进行中
 
 - [ ] 对 MVP 规格进行人工确认并冻结版本 `v1.0`。
-- [ ] 实现 F002：分析运行、幂等创建、初始审计事件和 Checkpoint。
 - [ ] 选择并双人复核首批真实年度报告黄金用例。
 
 ## 已知问题
@@ -46,13 +50,16 @@
 - `docs/architecture.md` 等非 MVP 必需专题文档仍待建立。
 - 当前 readiness 只检查依赖配置是否存在，F002 后再增加真实连接探测。
 - Windows 环境没有全局 `make`；使用等价入口 `scripts/dev.ps1`，CI 继续验证 Make 入口。
+- `X-User-ID` 只是 F002 的临时身份边界，生产使用前必须替换为认证主体，不能信任任意客户端值。
+- 当前只创建 LangGraph 初始 Checkpoint 记录，尚未执行后续工作流节点。
+- AuditEvent 通过服务层保持追加写；数据库级禁止 UPDATE/DELETE 的权限策略尚未建立。
 
 ## 下一步
 
-1. 将 F002 从 `not_started` 转为 `in_progress`，一次只实现这一项功能。
-2. 建立 AnalysisRun、AuditEvent 和 Checkpoint 的数据库模型与迁移。
-3. 实现带用户级幂等键的运行创建接口及契约测试。
-4. 为 F002 注册独立验证命令并在通过后更新证据引用。
+1. 将 F003 从 `not_started` 转为 `in_progress`，保持 WIP=1。
+2. 定义 PDF 上传大小、媒体类型、加密和可检索文本校验边界。
+3. 建立不可变对象存储适配器，并保存 SHA-256、页数和来源元数据。
+4. 为重复文件、图片型 PDF 和加密 PDF 建立可操作错误及独立验证。
 
 ## 恢复提示
 

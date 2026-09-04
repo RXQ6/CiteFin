@@ -61,4 +61,4 @@ Idempotency-Key: <stable request key>
 
 ## Current status
 
-The product scope, data model, workflow, feature DAG, and initial synthetic golden dataset are defined. Product implementation proceeds feature-by-feature from F001.
+F001 and F002 are independently verified. The next single work item is F003: immutable annual-report upload and source metadata validation.

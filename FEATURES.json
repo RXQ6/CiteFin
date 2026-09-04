@@ -46,7 +46,7 @@
       "id": "F002",
       "title": "分析运行与幂等创建",
       "description": "根据用户、幂等键、公司和报告期创建 AnalysisRun。",
-      "status": "in_progress",
+      "status": "verified",
       "owner": "codex",
       "blocked_by": ["F001"],
       "acceptance": [
@@ -56,7 +56,12 @@
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F002",
-        "evidence": []
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-04f002-分析运行与幂等创建",
+          "tests/integration/test_analysis_runs_api.py",
+          "tests/integration/test_migrations.py",
+          "https://github.com/RXQ6/CiteFin/actions/runs/33875648380"
+        ]
       }
     },
     {

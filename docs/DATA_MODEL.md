@@ -313,9 +313,13 @@ Evaluator 不得调用业务工具；它只读取已经持久化的事实、指�
 
 ### 4.14 AuditEvent 与 WorkflowCheckpoint
 
-`AuditEvent` 保存不可变事件：节点进入/退出、工具请求、权限结果、状态迁移、人工决定和评测结果。
+`AuditEvent` 保存不可变事件：节点进入/退出、工具请求、权限结果、状态迁移、人工决定和评测结果。F002
+最小字段为 `event_id`、`run_id`、`trace_id`、`node`、`event_type`、`status`、`payload` 和
+`created_at`。
 
-`WorkflowCheckpoint` 保存 LangGraph 恢复数据：`run_id`、`thread_id`、`checkpoint_id`、`node`、`state_version`、`state_uri`、`created_at`。Checkpoint 不代替业务表，业务真值仍写入对应实体。
+`WorkflowCheckpoint` 保存 LangGraph 恢复数据：`run_id`、`thread_id`、`checkpoint_id`、`node`、
+`state_version`、`state_uri`、`state_data`、`created_at`。`state_data` 只保存控制状态和业务实体引用；
+Checkpoint 不代替业务表，业务真值仍写入对应实体。
 
 ## 5. 数据质量规则
 
@@ -364,4 +368,3 @@ tests/golden/
 ```
 
 `source.md` 是可版本化的合成财报片段；`expected.json` 保存人工确认的事实、指标、风险和证据定位。真实 PDF 进入黄金集前必须完成双人复核、来源授权检查和哈希登记。
-
