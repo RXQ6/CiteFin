@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "project": "finance-data-thinking",
+  "project": "citefin",
   "mvp": "annual-report-evidence-analysis-v1",
   "wip_limit_per_worker": 1,
   "allowed_statuses": [
@@ -23,8 +23,8 @@
       "id": "F001",
       "title": "项目初始化与可重复基线",
       "description": "建立 Python、FastAPI、测试、Lint、Docker Compose 和统一 Make 入口。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": [],
       "acceptance": [
         "make setup 从干净环境成功",
@@ -34,7 +34,11 @@
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F001",
-        "evidence": []
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-04f001-可重复工程基线",
+          "tests/integration/test_health_api.py",
+          ".github/workflows/ci.yml"
+        ]
       }
     },
     {

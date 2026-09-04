@@ -38,7 +38,52 @@ PASS manifest: cases=3
 
 ### 已知限制
 
-- 尚无产品代码、pytest、Make 或 CI；当前校验器是黄金数据自检工具，后续应接入 `make test`。
 - 合成 Markdown 不能代表真实 PDF 表格解析表现。
 - 尚无双人复核的真实年度报告，因此不能计算真实解析准确率。
 - 尚未验证报告生成、证据引用正确性、Checkpoint 恢复或 Goal Gate。
+
+## 2026-09-04：F001 可重复工程基线
+
+### 验证范围
+
+- Ruff 规则和格式。
+- Python 3.12 严格 mypy 类型检查。
+- FastAPI liveness/readiness 集成测试与配置单元测试。
+- 90% 最低覆盖率门禁。
+- 3 个合成黄金用例复算。
+- Docker Compose 配置解析。
+
+### 执行方式
+
+```powershell
+.\scripts\dev.ps1 check
+docker compose config --quiet
+```
+
+Linux 和 CI 的等价入口：
+
+```bash
+make verify-feature FEATURE=F001
+```
+
+### 结果
+
+```text
+Ruff: passed; 12 files formatted
+mypy: Success, 5 source files
+golden: 3/3 cases passed
+pytest: 3 passed
+coverage: 100% (required 90%)
+docker compose config: passed
+```
+
+### 结论
+
+- F001 的本地可执行验收证据全部通过，状态可转移为 `candidate_complete`；`verified` 仍需独立 CI 成功证据。
+- `scripts/dev.ps1` 对失败子命令立即退出，避免产生伪成功交接。
+- CI 使用相同锁文件和 Make 质量门禁，后续提交可重复验证基线。
+
+### 已知限制
+
+- 未启动完整容器栈；本次只验证 Compose 配置，不代表 PostgreSQL/Redis 运行连接已验证。
+- Starlette TestClient 触发上游 AnyIO 别名弃用警告，不影响当前测试结果。

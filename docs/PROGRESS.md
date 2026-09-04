@@ -6,11 +6,11 @@
 
 - 最后更新：2026-09-04
 - 更新人：Codex
-- 当前阶段：MVP 范围与工程规格冻结
-- 最新 Git commit：无；当前目录尚未初始化为 Git 仓库
-- 测试状态：尚未建立产品测试套件；3 个合成黄金用例已通过独立复算与勾稽校验
-- Lint 状态：尚未配置
-- 本次变更摘要：冻结财报分析 MVP，建立产品范围、数据模型、工作流、功能清单和首批黄金测试数据。
+- 当前阶段：F001 本地门禁通过，等待独立 CI 验证后进入 F002
+- 最新实现 commit：`6e344af`（feat: bootstrap reproducible FastAPI baseline）
+- 测试状态：3/3 pytest 通过，分支覆盖率 100%；3/3 合成黄金用例通过
+- 质量状态：Ruff、格式检查、严格 mypy、Docker Compose 配置检查均通过
+- 本次变更摘要：完成 Python/FastAPI 工程骨架、统一 harness、健康检查、容器依赖和 CI，并推送至 GitHub。
 
 ## 已完成
 
@@ -26,27 +26,33 @@
 - [x] 建立 `FEATURES.json`，包含 18 个有依赖和验收证据的 MVP 功能。
 - [x] 建立 3 个合成黄金用例，覆盖正常、风险和零分母/单位换算边界。
 - [x] 建立 `docs/VALIDATION.md`，记录规格和黄金数据验证结果。
+- [x] 初始化 Python 3.12、uv、FastAPI、pytest、Ruff、mypy 和 GitHub Actions。
+- [x] 建立 PostgreSQL、Redis 与 API 的 Docker Compose 基线。
+- [x] 建立 `/api/v1/health/live` 和 `/api/v1/health/ready` 健康检查。
+- [x] 完成 F001 本地质量门禁并将状态转移为 `candidate_complete`。
+- [x] 初始化 Git 仓库并推送至 `RXQ6/CiteFin` 的 `main` 分支。
 
 ## 进行中
 
 - [ ] 对 MVP 规格进行人工确认并冻结版本 `v1.0`。
-- [ ] 初始化 F001 工程基线和验证命令。
+- [ ] 等待 GitHub Actions 独立验证 F001，通过后转移为 `verified`。
+- [ ] 实现 F002：分析运行、幂等创建、初始审计事件和 Checkpoint。
 - [ ] 选择并双人复核首批真实年度报告黄金用例。
 
 ## 已知问题
 
-- 尚未初始化代码、依赖、测试、Lint 或 CI。
-- 当前目录不是 Git 仓库，尚不能创建原子提交检查点。
 - 当前黄金集仅为合成数据，不能用于声明真实 PDF 解析准确率。
 - 尚未确定真实年度报告的选样公司、来源 URL、授权记录和双人复核者。
 - `docs/architecture.md` 等非 MVP 必需专题文档仍待建立。
+- 当前 readiness 只检查依赖配置是否存在，F002 后再增加真实连接探测。
+- Windows 环境没有全局 `make`；使用等价入口 `scripts/dev.ps1`，CI 继续验证 Make 入口。
 
 ## 下一步
 
-1. 人工审阅并确认 `PRODUCT_SCOPE.md`、`DATA_MODEL.md` 和 `WORKFLOW.md` 的冻结边界。
-2. 初始化 Git、Make、Python/FastAPI、pytest、Lint 和 Docker Compose，完成 F001。
-3. 将 `FEATURES.json` 接入任务选择器和验证器，保持单执行者 WIP=1。
-4. 选择第一份真实年度报告，按 `tests/golden/README.md` 完成双人标注和复核。
+1. 取得 F001 的 GitHub Actions 独立成功证据并转移为 `verified`。
+2. 将 F002 从 `not_started` 转为 `in_progress`，一次只实现这一项功能。
+3. 建立 AnalysisRun、AuditEvent 和 Checkpoint 的数据库模型与迁移。
+4. 实现带用户级幂等键的运行创建接口及契约测试。
 
 ## 恢复提示
 
