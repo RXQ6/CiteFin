@@ -87,3 +87,11 @@ docker compose config: passed
 
 - 未启动完整容器栈；本次只验证 Compose 配置，不代表 PostgreSQL/Redis 运行连接已验证。
 - Starlette TestClient 触发上游 AnyIO 别名弃用警告，不影响当前测试结果。
+
+### 独立验证
+
+- 验证者：GitHub Actions `CI` 工作流。
+- 被验证 commit：`6e344af47cacbf46d82580e5bbc87118ddff4f39`。
+- 结果：`success`。
+- 证据：[CI run 33873094637](https://github.com/RXQ6/CiteFin/actions/runs/33873094637)。
+- 状态迁移：F001 从 `candidate_complete` 转为 `verified`。

@@ -6,7 +6,7 @@
 
 - 最后更新：2026-09-04
 - 更新人：Codex
-- 当前阶段：F001 本地门禁通过，等待独立 CI 验证后进入 F002
+- 当前阶段：F001 已由独立 CI 验证，准备进入 F002
 - 最新实现 commit：`6e344af`（feat: bootstrap reproducible FastAPI baseline）
 - 测试状态：3/3 pytest 通过，分支覆盖率 100%；3/3 合成黄金用例通过
 - 质量状态：Ruff、格式检查、严格 mypy、Docker Compose 配置检查均通过
@@ -30,12 +30,12 @@
 - [x] 建立 PostgreSQL、Redis 与 API 的 Docker Compose 基线。
 - [x] 建立 `/api/v1/health/live` 和 `/api/v1/health/ready` 健康检查。
 - [x] 完成 F001 本地质量门禁并将状态转移为 `candidate_complete`。
+- [x] GitHub Actions 独立验证实现 commit `6e344af`，F001 转移为 `verified`。
 - [x] 初始化 Git 仓库并推送至 `RXQ6/CiteFin` 的 `main` 分支。
 
 ## 进行中
 
 - [ ] 对 MVP 规格进行人工确认并冻结版本 `v1.0`。
-- [ ] 等待 GitHub Actions 独立验证 F001，通过后转移为 `verified`。
 - [ ] 实现 F002：分析运行、幂等创建、初始审计事件和 Checkpoint。
 - [ ] 选择并双人复核首批真实年度报告黄金用例。
 
@@ -49,10 +49,10 @@
 
 ## 下一步
 
-1. 取得 F001 的 GitHub Actions 独立成功证据并转移为 `verified`。
-2. 将 F002 从 `not_started` 转为 `in_progress`，一次只实现这一项功能。
-3. 建立 AnalysisRun、AuditEvent 和 Checkpoint 的数据库模型与迁移。
-4. 实现带用户级幂等键的运行创建接口及契约测试。
+1. 将 F002 从 `not_started` 转为 `in_progress`，一次只实现这一项功能。
+2. 建立 AnalysisRun、AuditEvent 和 Checkpoint 的数据库模型与迁移。
+3. 实现带用户级幂等键的运行创建接口及契约测试。
+4. 为 F002 注册独立验证命令并在通过后更新证据引用。
 
 ## 恢复提示
 

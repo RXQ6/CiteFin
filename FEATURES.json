@@ -23,7 +23,7 @@
       "id": "F001",
       "title": "项目初始化与可重复基线",
       "description": "建立 Python、FastAPI、测试、Lint、Docker Compose 和统一 Make 入口。",
-      "status": "candidate_complete",
+      "status": "verified",
       "owner": "codex",
       "blocked_by": [],
       "acceptance": [
@@ -37,7 +37,8 @@
         "evidence": [
           "docs/VALIDATION.md#2026-09-04f001-可重复工程基线",
           "tests/integration/test_health_api.py",
-          ".github/workflows/ci.yml"
+          ".github/workflows/ci.yml",
+          "https://github.com/RXQ6/CiteFin/actions/runs/33873094637"
         ]
       }
     },
