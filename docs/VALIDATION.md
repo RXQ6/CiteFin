@@ -42,7 +42,7 @@ PASS manifest: cases=3
 - 尚无双人复核的真实年度报告，因此不能计算真实解析准确率。
 - 尚未验证报告生成、证据引用正确性、Checkpoint 恢复或 Goal Gate。
 
-## 2026-09-04：F001 可重复工程基线
+## 2026-09-04：INFRA-001 可重复工程基线
 
 ### 验证范围
 
@@ -63,7 +63,7 @@ docker compose config --quiet
 Linux 和 CI 的等价入口：
 
 ```bash
-make verify-feature FEATURE=F001
+make verify-feature FEATURE=INFRA-001
 ```
 
 ### 结果
@@ -79,7 +79,7 @@ docker compose config: passed
 
 ### 结论
 
-- F001 的本地可执行验收证据全部通过，状态可转移为 `candidate_complete`；`verified` 仍需独立 CI 成功证据。
+- INFRA-001 的本地可执行验收证据全部通过，状态可转移为 `candidate_complete`；`verified` 仍需独立 CI 成功证据。
 - `scripts/dev.ps1` 对失败子命令立即退出，避免产生伪成功交接。
 - CI 使用相同锁文件和 Make 质量门禁，后续提交可重复验证基线。
 
@@ -94,9 +94,9 @@ docker compose config: passed
 - 被验证 commit：`6e344af47cacbf46d82580e5bbc87118ddff4f39`。
 - 结果：`success`。
 - 证据：[CI run 33873094637](https://github.com/RXQ6/CiteFin/actions/runs/33873094637)。
-- 状态迁移：F001 从 `candidate_complete` 转为 `verified`。
+- 状态迁移：INFRA-001 从 `candidate_complete` 转为 `verified`。
 
-## 2026-09-04：F002 分析运行与幂等创建
+## 2026-09-04：F001 分析运行与幂等创建
 
 ### 验证范围
 
@@ -126,10 +126,10 @@ alembic check: No new upgrade operations detected
 - 通过运行：[33875648380](https://github.com/RXQ6/CiteFin/actions/runs/33875648380)。
 - 被验证 commit：`06306a53a35b9ace095a0231478684d24d938f5c`。
 - 结果：PostgreSQL 迁移、Alembic 零漂移和完整 `make check` 全部成功。
-- 状态迁移：F002 从 `in_progress` 转为 `verified`。
+- 状态迁移：F001 从 `in_progress` 转为 `verified`。
 
 ### 已知限制
 
 - 尚未进行高并发请求压测；并发幂等由数据库唯一约束和 IntegrityError 回读路径保护。
-- F002 尚未接入真实认证，`X-User-ID` 只用于当前接口契约与测试。
+- F001 尚未接入真实认证，`X-User-ID` 只用于当前接口契约与测试。
 - 当前 Checkpoint 是初始恢复边界，不代表后续 LangGraph 节点已经实现。

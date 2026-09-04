@@ -313,7 +313,7 @@ Evaluator 不得调用业务工具；它只读取已经持久化的事实、指�
 
 ### 4.14 AuditEvent 与 WorkflowCheckpoint
 
-`AuditEvent` 保存不可变事件：节点进入/退出、工具请求、权限结果、状态迁移、人工决定和评测结果。F002
+`AuditEvent` 保存不可变事件：节点进入/退出、工具请求、权限结果、状态迁移、人工决定和评测结果。F001
 最小字段为 `event_id`、`run_id`、`trace_id`、`node`、`event_type`、`status`、`payload` 和
 `created_at`。
 

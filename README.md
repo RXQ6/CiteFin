@@ -44,7 +44,7 @@ Apply database migrations before using analysis endpoints:
 .\scripts\dev.ps1 migrate
 ```
 
-The F002 API creates an analysis run and its initial audit/checkpoint bundle:
+The F001 API creates an analysis run and its initial audit/checkpoint bundle:
 
 ```text
 POST /api/v1/analysis-runs
@@ -61,4 +61,4 @@ Idempotency-Key: <stable request key>
 
 ## Current status
 
-F001 and F002 are independently verified. The next single work item is F003: immutable annual-report upload and source metadata validation.
+INFRA-001 and F001 are independently verified. The next single work item is F002: immutable annual-report upload and source metadata validation.

@@ -20,7 +20,7 @@
   },
   "features": [
     {
-      "id": "F001",
+      "id": "INFRA-001",
       "title": "项目初始化与可重复基线",
       "description": "建立 Python、FastAPI、测试、Lint、Docker Compose 和统一 Make 入口。",
       "status": "verified",
@@ -33,9 +33,9 @@
         "服务健康检查返回版本与依赖状态"
       ],
       "verification": {
-        "command": "make verify-feature FEATURE=F001",
+        "command": "make verify-feature FEATURE=INFRA-001",
         "evidence": [
-          "docs/VALIDATION.md#2026-09-04f001-可重复工程基线",
+          "docs/VALIDATION.md#2026-09-04infra-001-可重复工程基线",
           "tests/integration/test_health_api.py",
           ".github/workflows/ci.yml",
           "https://github.com/RXQ6/CiteFin/actions/runs/33873094637"
@@ -43,21 +43,21 @@
       }
     },
     {
-      "id": "F002",
+      "id": "F001",
       "title": "分析运行与幂等创建",
       "description": "根据用户、幂等键、公司和报告期创建 AnalysisRun。",
       "status": "verified",
       "owner": "codex",
-      "blocked_by": ["F001"],
+      "blocked_by": ["INFRA-001"],
       "acceptance": [
         "同一用户和幂等键只产生一个 run_id",
         "非法公司代码或未来报告期被拒绝",
         "创建运行时产生初始 AuditEvent 和 Checkpoint"
       ],
       "verification": {
-        "command": "make verify-feature FEATURE=F002",
+        "command": "make verify-feature FEATURE=F001",
         "evidence": [
-          "docs/VALIDATION.md#2026-09-04f002-分析运行与幂等创建",
+          "docs/VALIDATION.md#2026-09-04f001-分析运行与幂等创建",
           "tests/integration/test_analysis_runs_api.py",
           "tests/integration/test_migrations.py",
           "https://github.com/RXQ6/CiteFin/actions/runs/33875648380"
@@ -65,17 +65,35 @@
       }
     },
     {
-      "id": "F003",
+      "id": "F002",
       "title": "年度报告上传与不可变存储",
       "description": "接收可检索文本 PDF，计算哈希并保存不可变来源对象。",
       "status": "not_started",
       "owner": null,
-      "blocked_by": ["F001", "F002"],
+      "blocked_by": ["F001"],
       "acceptance": [
         "仅接受符合 MVP 边界的 PDF",
         "保存 sha256、页数、文件名和 storage_uri",
         "重复文件不会产生冲突副本",
         "加密或图片型 PDF 返回可操作错误"
+      ],
+      "verification": {
+        "command": "make verify-feature FEATURE=F002",
+        "evidence": []
+      }
+    },
+    {
+      "id": "F003",
+      "title": "页级文本和表格解析",
+      "description": "提取页面文本、表格位置和页级哈希。",
+      "status": "not_started",
+      "owner": null,
+      "blocked_by": ["F002"],
+      "acceptance": [
+        "页码从 1 开始且与原 PDF 一致",
+        "每页保存 text_sha256",
+        "解析器版本可追踪",
+        "失败页和错误原因被记录"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F003",
@@ -84,16 +102,16 @@
     },
     {
       "id": "F004",
-      "title": "页级文本和表格解析",
-      "description": "提取页面文本、表格位置和页级哈希。",
+      "title": "合并三表识别与核心事实提取",
+      "description": "定位合并资产负债表、利润表和现金流量表并提取本期及上期事实。",
       "status": "not_started",
       "owner": null,
       "blocked_by": ["F003"],
       "acceptance": [
-        "页码从 1 开始且与原 PDF 一致",
-        "每页保存 text_sha256",
-        "解析器版本可追踪",
-        "失败页和错误原因被记录"
+        "三张报表均可定位到来源页",
+        "每个事实含原始标签、行列、期间、单位和原始值",
+        "多个候选表产生冲突而非静默覆盖",
+        "黄金集必需事实提取准确率不低于 98%"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F004",
@@ -102,16 +120,16 @@
     },
     {
       "id": "F005",
-      "title": "合并三表识别与核心事实提取",
-      "description": "定位合并资产负债表、利润表和现金流量表并提取本期及上期事实。",
+      "title": "财务事实标准化",
+      "description": "统一概念、期间、合并口径、币种、单位和符号。",
       "status": "not_started",
       "owner": null,
       "blocked_by": ["F004"],
       "acceptance": [
-        "三张报表均可定位到来源页",
-        "每个事实含原始标签、行列、期间、单位和原始值",
-        "多个候选表产生冲突而非静默覆盖",
-        "黄金集必需事实提取准确率不低于 98%"
+        "raw_value 保持不变",
+        "normalized_value 正确换算为元",
+        "缺失值不会被替换为 0",
+        "事实唯一粒度冲突会阻断计算"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F005",
@@ -120,16 +138,16 @@
     },
     {
       "id": "F006",
-      "title": "财务事实标准化",
-      "description": "统一概念、期间、合并口径、币种、单位和符号。",
+      "title": "金融数据质量闸门",
+      "description": "执行完整性、唯一性、有效性、勾稽和时间穿越检查。",
       "status": "not_started",
       "owner": null,
       "blocked_by": ["F005"],
       "acceptance": [
-        "raw_value 保持不变",
-        "normalized_value 正确换算为元",
-        "缺失值不会被替换为 0",
-        "事实唯一粒度冲突会阻断计算"
+        "资产负债表勾稽规则可执行",
+        "毛利润勾稽规则可执行",
+        "披露单位决定金额容差",
+        "阻断与非阻断问题分级并保存证据"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F006",
@@ -138,16 +156,16 @@
     },
     {
       "id": "F007",
-      "title": "金融数据质量闸门",
-      "description": "执行完整性、唯一性、有效性、勾稽和时间穿越检查。",
+      "title": "15项确定性指标计算",
+      "description": "用版本化公式和 Decimal 计算 MVP 指标。",
       "status": "not_started",
       "owner": null,
       "blocked_by": ["F006"],
       "acceptance": [
-        "资产负债表勾稽规则可执行",
-        "毛利润勾稽规则可执行",
-        "披露单位决定金额容差",
-        "阻断与非阻断问题分级并保存证据"
+        "15 项指标都有定义版本和输入事实 ID",
+        "黄金集计算结果 100% 通过",
+        "零分母和缺失输入返回 null_with_reason",
+        "相同输入和版本产生相同结果"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F007",
@@ -156,16 +174,16 @@
     },
     {
       "id": "F008",
-      "title": "15项确定性指标计算",
-      "description": "用版本化公式和 Decimal 计算 MVP 指标。",
+      "title": "LangGraph 状态与主工作流",
+      "description": "实现从请求校验到最终保存的版本化状态图。",
       "status": "not_started",
       "owner": null,
-      "blocked_by": ["F007"],
+      "blocked_by": ["F001", "F003", "F007"],
       "acceptance": [
-        "15 项指标都有定义版本和输入事实 ID",
-        "黄金集计算结果 100% 通过",
-        "零分母和缺失输入返回 null_with_reason",
-        "相同输入和版本产生相同结果"
+        "所有节点输入输出通过 Schema 校验",
+        "每次状态迁移具有 run_id、task_id 和 trace_id",
+        "错误按类型进入确认、修订、阻断或失败路径",
+        "主流程可在黄金用例上完成一次运行"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F008",
@@ -174,16 +192,16 @@
     },
     {
       "id": "F009",
-      "title": "LangGraph 状态与主工作流",
-      "description": "实现从请求校验到最终保存的版本化状态图。",
+      "title": "持久化任务图与 WIP 控制",
+      "description": "建立任务依赖、认领、验收和 WIP=1 规则。",
       "status": "not_started",
       "owner": null,
-      "blocked_by": ["F002", "F004", "F008"],
+      "blocked_by": ["F001"],
       "acceptance": [
-        "所有节点输入输出通过 Schema 校验",
-        "每次状态迁移具有 run_id、task_id 和 trace_id",
-        "错误按类型进入确认、修订、阻断或失败路径",
-        "主流程可在黄金用例上完成一次运行"
+        "依赖未 verified 的任务不可认领",
+        "同一执行者不能同时持有两个 in_progress 任务",
+        "执行者不能直接设置 verified",
+        "任务迁移产生审计事件"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F009",
@@ -192,16 +210,16 @@
     },
     {
       "id": "F010",
-      "title": "持久化任务图与 WIP 控制",
-      "description": "建立任务依赖、认领、验收和 WIP=1 规则。",
+      "title": "财务分析与原子 Claim",
+      "description": "基于确认事实和指标生成类型明确的原子结论。",
       "status": "not_started",
       "owner": null,
-      "blocked_by": ["F002"],
+      "blocked_by": ["F007", "F008"],
       "acceptance": [
-        "依赖未 verified 的任务不可认领",
-        "同一执行者不能同时持有两个 in_progress 任务",
-        "执行者不能直接设置 verified",
-        "任务迁移产生审计事件"
+        "Claim 区分事实、计算、推断和限制",
+        "重大数字只能引用事实或指标",
+        "模型不得修改确认事实和计算结果",
+        "无证据推断被标记为 unsupported"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F010",
@@ -210,16 +228,16 @@
     },
     {
       "id": "F011",
-      "title": "财务分析与原子 Claim",
-      "description": "基于确认事实和指标生成类型明确的原子结论。",
+      "title": "确定性风险识别",
+      "description": "识别增长、现金流、偿债、营运资金和数据质量风险。",
       "status": "not_started",
       "owner": null,
-      "blocked_by": ["F008", "F009"],
+      "blocked_by": ["F007", "F010"],
       "acceptance": [
-        "Claim 区分事实、计算、推断和限制",
-        "重大数字只能引用事实或指标",
-        "模型不得修改确认事实和计算结果",
-        "无证据推断被标记为 unsupported"
+        "每项风险具有规则版本、严重度和证据",
+        "盈利与现金流背离可被识别",
+        "短期偿债和营运资金异常可被识别",
+        "数据不足时生成限制而非确定性风险结论"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F011",
@@ -228,16 +246,16 @@
     },
     {
       "id": "F012",
-      "title": "确定性风险识别",
-      "description": "识别增长、现金流、偿债、营运资金和数据质量风险。",
+      "title": "Claim-Evidence 证据映射",
+      "description": "将重大结论关联到原始页码、事实、指标或规则。",
       "status": "not_started",
       "owner": null,
-      "blocked_by": ["F008", "F011"],
+      "blocked_by": ["F004", "F007", "F010", "F011"],
       "acceptance": [
-        "每项风险具有规则版本、严重度和证据",
-        "盈利与现金流背离可被识别",
-        "短期偿债和营运资金异常可被识别",
-        "数据不足时生成限制而非确定性风险结论"
+        "重大数字证据覆盖率为 100%",
+        "重大结论证据覆盖率为 100%",
+        "不存在指向缺失页码、事实或指标的孤儿证据",
+        "证据标明 supports、contradicts 或 qualifies"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F012",
@@ -246,16 +264,16 @@
     },
     {
       "id": "F013",
-      "title": "Claim-Evidence 证据映射",
-      "description": "将重大结论关联到原始页码、事实、指标或规则。",
+      "title": "结构化财务分析报告",
+      "description": "生成包含事实、指标、风险、限制和引用的版本化报告。",
       "status": "not_started",
       "owner": null,
-      "blocked_by": ["F005", "F008", "F011", "F012"],
+      "blocked_by": ["F010", "F011", "F012"],
       "acceptance": [
-        "重大数字证据覆盖率为 100%",
-        "重大结论证据覆盖率为 100%",
-        "不存在指向缺失页码、事实或指标的孤儿证据",
-        "证据标明 supports、contradicts 或 qualifies"
+        "报告通过版本化 Schema",
+        "报告中的 Claim ID 与正文引用一致",
+        "事实、计算、推断和限制明确分区",
+        "生成后状态仅为 candidate_complete"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F013",
@@ -264,16 +282,16 @@
     },
     {
       "id": "F014",
-      "title": "结构化财务分析报告",
-      "description": "生成包含事实、指标、风险、限制和引用的版本化报告。",
+      "title": "独立 Evaluator 与 Goal Gate",
+      "description": "独立验证计算、证据、完整性、表达和合规，并控制最终完成。",
       "status": "not_started",
       "owner": null,
-      "blocked_by": ["F011", "F012", "F013"],
+      "blocked_by": ["F009", "F013"],
       "acceptance": [
-        "报告通过版本化 Schema",
-        "报告中的 Claim ID 与正文引用一致",
-        "事实、计算、推断和限制明确分区",
-        "生成后状态仅为 candidate_complete"
+        "Evaluator 不调用业务工具",
+        "失败结果包含 error_code、node_hint 和 repair_instruction",
+        "评测失败时不能进入 verified",
+        "仅 Goal Gate 可以设置 verified"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F014",
@@ -282,16 +300,16 @@
     },
     {
       "id": "F015",
-      "title": "独立 Evaluator 与 Goal Gate",
-      "description": "独立验证计算、证据、完整性、表达和合规，并控制最终完成。",
+      "title": "Checkpoint、Journal 与最小恢复",
+      "description": "保存关键节点状态，并从失败点恢复而不是全量重跑。",
       "status": "not_started",
       "owner": null,
-      "blocked_by": ["F010", "F014"],
+      "blocked_by": ["F008", "F009"],
       "acceptance": [
-        "Evaluator 不调用业务工具",
-        "失败结果包含 error_code、node_hint 和 repair_instruction",
-        "评测失败时不能进入 verified",
-        "仅 Goal Gate 可以设置 verified"
+        "关键节点均创建 Checkpoint",
+        "恢复前校验来源哈希与工作流版本",
+        "确定性节点结果可安全复用",
+        "黄金流程中断后恢复成功率为 100%"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F015",
@@ -300,16 +318,16 @@
     },
     {
       "id": "F016",
-      "title": "Checkpoint、Journal 与最小恢复",
-      "description": "保存关键节点状态，并从失败点恢复而不是全量重跑。",
+      "title": "运行、报告、证据与事件 API",
+      "description": "通过 FastAPI 提供创建、查询、确认、报告和 SSE 生命周期事件。",
       "status": "not_started",
       "owner": null,
-      "blocked_by": ["F009", "F010"],
+      "blocked_by": ["F002", "F008", "F012", "F014", "F015"],
       "acceptance": [
-        "关键节点均创建 Checkpoint",
-        "恢复前校验来源哈希与工作流版本",
-        "确定性节点结果可安全复用",
-        "黄金流程中断后恢复成功率为 100%"
+        "API 请求响应符合 OpenAPI 契约",
+        "SSE 提供节点、阻断、评测和完成事件",
+        "报告中的证据可以按 ID 查询",
+        "权限和错误响应不泄露内部敏感信息"
       ],
       "verification": {
         "command": "make verify-feature FEATURE=F016",
@@ -318,29 +336,11 @@
     },
     {
       "id": "F017",
-      "title": "运行、报告、证据与事件 API",
-      "description": "通过 FastAPI 提供创建、查询、确认、报告和 SSE 生命周期事件。",
-      "status": "not_started",
-      "owner": null,
-      "blocked_by": ["F003", "F009", "F013", "F015", "F016"],
-      "acceptance": [
-        "API 请求响应符合 OpenAPI 契约",
-        "SSE 提供节点、阻断、评测和完成事件",
-        "报告中的证据可以按 ID 查询",
-        "权限和错误响应不泄露内部敏感信息"
-      ],
-      "verification": {
-        "command": "make verify-feature FEATURE=F017",
-        "evidence": []
-      }
-    },
-    {
-      "id": "F018",
       "title": "最小前端与端到端验收",
       "description": "完成上传、运行进度、报告、证据和评测结果界面。",
       "status": "not_started",
       "owner": null,
-      "blocked_by": ["F017"],
+      "blocked_by": ["F016"],
       "acceptance": [
         "用户可以完成上传到查看已验证报告的全流程",
         "点击重大结论可以查看证据定位",
@@ -348,7 +348,7 @@
         "黄金用例端到端测试通过"
       ],
       "verification": {
-        "command": "make verify-feature FEATURE=F018",
+        "command": "make verify-feature FEATURE=F017",
         "evidence": []
       }
     }

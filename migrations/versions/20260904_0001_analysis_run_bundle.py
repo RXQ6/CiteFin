@@ -1,4 +1,4 @@
-"""Create the F002 analysis-run persistence bundle.
+"""Create the F001 analysis-run persistence bundle.
 
 Revision ID: 20260904_0001
 Revises: None
@@ -113,7 +113,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Remove the F002 persistence bundle in dependency order."""
+    """Remove the F001 persistence bundle in dependency order."""
 
     op.drop_index("ix_workflow_checkpoints_thread_id", table_name="workflow_checkpoints")
     op.drop_index("ix_workflow_checkpoints_run_id", table_name="workflow_checkpoints")
