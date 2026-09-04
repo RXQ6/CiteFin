@@ -6,7 +6,7 @@
 
 - 最后更新：2026-09-04
 - 更新人：Codex
-- 当前阶段：F001 已由独立 CI 验证，准备进入 F002
+- 当前阶段：F002 分析运行与幂等创建正在实现
 - 最新实现 commit：`6e344af`（feat: bootstrap reproducible FastAPI baseline）
 - 测试状态：3/3 pytest 通过，分支覆盖率 100%；3/3 合成黄金用例通过
 - 质量状态：Ruff、格式检查、严格 mypy、Docker Compose 配置检查均通过

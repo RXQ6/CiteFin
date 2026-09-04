@@ -46,8 +46,8 @@
       "id": "F002",
       "title": "分析运行与幂等创建",
       "description": "根据用户、幂等键、公司和报告期创建 AnalysisRun。",
-      "status": "not_started",
-      "owner": null,
+      "status": "in_progress",
+      "owner": "codex",
       "blocked_by": ["F001"],
       "acceptance": [
         "同一用户和幂等键只产生一个 run_id",
