@@ -32,13 +32,11 @@ class LocalObjectStore:
                 digest.update(chunk)
         return digest.hexdigest()
 
-    def put_pdf(self, content: bytes, sha256: str) -> StoredObjectResult:
-        """Create a PDF exactly once or verify and reuse its existing object."""
-
+    def _put(self, content: bytes, sha256: str, suffix: str) -> StoredObjectResult:
         directory = self.root / sha256[:2]
         directory.mkdir(parents=True, exist_ok=True)
-        target = directory / f"{sha256}.pdf"
-        storage_uri = f"local://sha256/{sha256[:2]}/{sha256}.pdf"
+        target = directory / f"{sha256}.{suffix}"
+        storage_uri = f"local://sha256/{sha256[:2]}/{sha256}.{suffix}"
         try:
             descriptor = os.open(target, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
         except FileExistsError:
@@ -57,3 +55,28 @@ class LocalObjectStore:
             target.unlink(missing_ok=True)
             raise
         return StoredObjectResult(storage_uri=storage_uri, created=True)
+
+    def put_pdf(self, content: bytes, sha256: str) -> StoredObjectResult:
+        """Create a PDF exactly once or verify and reuse its existing object."""
+
+        return self._put(content, sha256, "pdf")
+
+    def put_json(self, content: bytes, sha256: str) -> StoredObjectResult:
+        """Create one canonical JSON artifact or verify an identical existing object."""
+
+        return self._put(content, sha256, "json")
+
+    def read_pdf(self, sha256: str, storage_uri: str) -> bytes:
+        """Read and verify a PDF from its canonical local content address."""
+
+        expected_uri = f"local://sha256/{sha256[:2]}/{sha256}.pdf"
+        if storage_uri != expected_uri:
+            raise StorageIntegrityError("Stored PDF URI does not match its content address")
+        path = self.root / sha256[:2] / f"{sha256}.pdf"
+        try:
+            content = path.read_bytes()
+        except OSError as error:
+            raise StorageIntegrityError("Stored PDF is unavailable") from error
+        if hashlib.sha256(content).hexdigest() != sha256:
+            raise StorageIntegrityError("Stored PDF failed content-address verification")
+        return content

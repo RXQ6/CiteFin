@@ -21,6 +21,7 @@ def test_upgrade_head_creates_analysis_run_bundle(tmp_path: Path) -> None:
         "alembic_version",
         "analysis_runs",
         "audit_events",
+        "document_pages",
         "source_documents",
         "stored_objects",
         "tasks",

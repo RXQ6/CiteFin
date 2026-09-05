@@ -29,7 +29,7 @@ golden:
 check: lint typecheck golden test
 
 verify-feature:
-	@if [ "$(FEATURE)" = "F001" ] || [ "$(FEATURE)" = "F002" ]; then \
+	@if [ "$(FEATURE)" = "F001" ] || [ "$(FEATURE)" = "F002" ] || [ "$(FEATURE)" = "F003" ]; then \
 		$(MAKE) check; \
 	else \
 		echo "No executable verifier is registered for $(FEATURE)"; \

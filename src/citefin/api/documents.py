@@ -1,7 +1,7 @@
 """Annual-report upload contract with bounded reads and actionable failures."""
 
 from datetime import date, datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, File, HTTPException, Response, UploadFile, status
 from pydantic import BaseModel
@@ -9,6 +9,7 @@ from starlette.concurrency import run_in_threadpool
 
 from citefin.api.analysis_runs import UserIdHeader
 from citefin.api.dependencies import DatabaseSession, SettingsDependency
+from citefin.services.document_parsing import DocumentParsingError, parse_annual_report
 from citefin.services.documents import DocumentIngestionError, ingest_annual_report
 from citefin.storage import LocalObjectStore
 
@@ -40,6 +41,30 @@ class SourceDocumentResponse(BaseModel):
     ingested_at: datetime
     idempotent_replay: bool
     storage_reused: bool
+
+
+class DocumentPageResponse(BaseModel):
+    """Page-level parse metadata without copying full page text into API state."""
+
+    page_number: int
+    text_sha256: str
+    text_length: int
+    parser_version: str
+    bbox_index_uri: str | None
+    bbox_index_sha256: str | None
+    parse_status: str
+    error: dict[str, Any] | None
+
+
+class DocumentParsingResponse(BaseModel):
+    """Deterministic parse outcome for one immutable source document."""
+
+    source_id: str
+    page_count: int
+    failed_page_count: int
+    status: str
+    idempotent_replay: bool
+    pages: list[DocumentPageResponse]
 
 
 async def _read_bounded(upload: UploadFile, maximum_bytes: int) -> bytes:
@@ -115,4 +140,58 @@ async def upload_annual_report(
         ingested_at=document.ingested_at,
         idempotent_replay=ingestion.idempotent_replay,
         storage_reused=ingestion.storage_reused,
+    )
+
+
+@router.post(
+    "/{run_id}/documents/{source_id}/parse",
+    response_model=DocumentParsingResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def parse_source_document(
+    run_id: str,
+    source_id: str,
+    response: Response,
+    session: DatabaseSession,
+    settings: SettingsDependency,
+    user_id: UserIdHeader,
+) -> DocumentParsingResponse:
+    """Extract reproducible page text and coordinate indexes from an owned PDF."""
+
+    try:
+        parsing = await run_in_threadpool(
+            parse_annual_report,
+            session,
+            LocalObjectStore(settings.object_storage_root),
+            run_id=run_id,
+            source_id=source_id,
+            user_id=user_id,
+            max_pages=settings.max_pdf_pages,
+        )
+    except DocumentParsingError as error:
+        raise HTTPException(
+            status_code=error.status_code,
+            detail={"code": error.code, "message": error.message},
+        ) from error
+    if parsing.idempotent_replay:
+        response.status_code = status.HTTP_200_OK
+    return DocumentParsingResponse(
+        source_id=source_id,
+        page_count=len(parsing.pages),
+        failed_page_count=parsing.failed_page_count,
+        status="partial_failure" if parsing.failed_page_count else "parsed",
+        idempotent_replay=parsing.idempotent_replay,
+        pages=[
+            DocumentPageResponse(
+                page_number=page.page_number,
+                text_sha256=page.text_sha256,
+                text_length=len(page.text),
+                parser_version=page.parser_version,
+                bbox_index_uri=page.bbox_index_uri,
+                bbox_index_sha256=page.bbox_index_sha256,
+                parse_status=page.parse_status,
+                error=page.error,
+            )
+            for page in parsing.pages
+        ],
     )

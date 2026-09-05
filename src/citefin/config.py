@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     object_storage_root: Path = Path("data/objects")
     max_upload_bytes: int = 50 * 1024 * 1024
     min_pdf_text_characters: int = 50
+    max_pdf_pages: int = 2000
 
 
 @lru_cache

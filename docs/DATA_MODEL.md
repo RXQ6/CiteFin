@@ -155,7 +155,17 @@ created → validating → running → candidate_complete → evaluating → ver
 | `page_number` | integer | 从 1 开始，联合主键 |
 | `text` | text | 原始页面文本 |
 | `text_sha256` | string | 防止静默改写 |
+| `parser_version` | string | 页级解析器与坐标算法版本 |
 | `bbox_index_uri` | string/null | 表格或文本坐标索引 |
+| `bbox_index_sha256` | string/null | 坐标索引不可变对象哈希；成功页必填 |
+| `parse_status` | enum | `parsed/failed` |
+| `error` | object/null | 失败页保存 code、message 和异常类型 |
+| `created_at` | datetime | 必填 |
+
+坐标索引是规范 JSON 派生对象，坐标系固定为 PDF point、左下角原点，并记录页面宽高和
+`bbox_method`。索引保存带 bbox 的文本块与表格候选区域；表格候选只表示重复的对齐文本行或
+“标签+数值”行，不代表已经识别出报表类型或财务语义。后续 F004 必须结合标题、期间与合并口径
+重新验证候选，不能把 F003 的启发式候选直接视为财务事实。
 
 ### 4.5 FinancialFact
 

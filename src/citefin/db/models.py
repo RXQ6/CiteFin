@@ -9,6 +9,7 @@ from sqlalchemy import (
     JSON,
     BigInteger,
     Boolean,
+    CheckConstraint,
     Date,
     DateTime,
     ForeignKey,
@@ -174,3 +175,31 @@ class SourceDocument(Base):
 
     run: Mapped[AnalysisRun] = relationship(back_populates="source_documents")
     stored_object: Mapped[StoredObject] = relationship(back_populates="documents")
+    pages: Mapped[list[DocumentPage]] = relationship(
+        back_populates="source_document", cascade="all, delete-orphan"
+    )
+
+
+class DocumentPage(Base):
+    """Immutable page-level text, locator index, and structured parse outcome."""
+
+    __tablename__ = "document_pages"
+    __table_args__ = (CheckConstraint("page_number >= 1", name="page_number_positive"),)
+
+    source_id: Mapped[str] = mapped_column(
+        ForeignKey("source_documents.source_id", ondelete="CASCADE"), primary_key=True
+    )
+    page_number: Mapped[int] = mapped_column(Integer, primary_key=True)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    text_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    parser_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    bbox_index_uri: Mapped[str | None] = mapped_column(Text)
+    bbox_index_sha256: Mapped[str | None] = mapped_column(
+        ForeignKey("stored_objects.sha256", ondelete="RESTRICT")
+    )
+    parse_status: Mapped[str] = mapped_column(String(32), nullable=False)
+    error: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    source_document: Mapped[SourceDocument] = relationship(back_populates="pages")
+    bbox_index_object: Mapped[StoredObject | None] = relationship()

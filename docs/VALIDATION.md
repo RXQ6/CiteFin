@@ -260,3 +260,44 @@ coverage: 92.20% (required 90%)
 
 - 基线通过，可将 F003 转为 `in_progress`，WIP=1。
 - F003 只实现页级文本、页级哈希、表格/文本坐标索引和结构化失败留痕；不提前实现 F004 三表识别。
+
+## 2026-09-06：F003 PDF文本与表格解析
+
+### 验证范围
+
+- 两页 PDF 按原始顺序持久化为从 1 开始的 `DocumentPage`。
+- 每页保存原始提取文本、SHA-256、pypdf 与 bbox 算法版本。
+- 规范 JSON 坐标索引保存页面尺寸、坐标系、文本块 bbox 和表格候选 bbox，并作为不可变对象登记 URI 与哈希。
+- 同一来源重复解析返回原页面，不新增页面或解析审计事件。
+- 其他用户无法探测或解析不属于自己的来源文件。
+- 默认 2000 页解析上限返回稳定错误码，避免异常 PDF 造成无界工作。
+- 单页提取失败时保留页码、空文本哈希和 `PARSER_PAGE_EXTRACTION_FAILED`，其他页仍持久化。
+- 源 PDF 读取和派生 JSON 重用均校验内容地址完整性。
+- SQLite 从空库升级到 F003，并与 ORM 元数据零漂移。
+- F001/F002 接口、功能清单、黄金数据和 Compose 配置回归。
+
+### 本地结果
+
+```text
+Ruff and format: passed; 33 files
+mypy: Success; 18 source files
+golden: 3/3 cases passed
+pytest: 32 passed, 1 warning
+coverage: 91.54% (required 90%)
+alembic upgrade: base -> 20260904_0001 -> 20260904_0002 -> 20260906_0003
+alembic check: No new upgrade operations detected
+docker compose config: passed
+```
+
+### 结论
+
+- F003 四项验收条件均有机器可执行证据，本地状态可转为 `candidate_complete`。
+- 实现未调用 LLM、外部网络或 OCR，未提前执行 F004 的三表语义识别。
+- 本地 Docker 命令因沙箱无法读取用户级 Docker 配置而输出警告，但 Compose 配置解析返回 0。
+
+### 已知限制与待独立验证
+
+- 测试使用代码生成的可检索两页 PDF，只证明页级契约和定位结构，不证明真实中文年报解析准确率。
+- bbox 宽度是版本化估算；复杂字体、旋转页和跨页表格需要纳入双人复核的真实 PDF 黄金集。
+- 表格区域是候选定位，三张合并报表的识别准确性从 F004 开始验收。
+- PostgreSQL 17 全量迁移和完整门禁等待 GitHub Actions 独立验证。
