@@ -239,3 +239,24 @@ coverage: 92.20% (required 90%)
 - F001/F002 当前代码基线通过初始化测试；失败过程均由本机解释器、镜像或沙箱临时目录造成，未发现测试断言失败。
 - Starlette TestClient 仍有 AnyIO 别名弃用警告，不影响本次结果。
 - `FEATURES.json` 未修改：F001、F002 保持 `verified`，F003 保持 `not_started`。
+
+## 2026-09-06：F003 启动基线
+
+### 验证范围
+
+- F002 已为 `verified`，满足 F003 唯一前置依赖。
+- Windows 锁定环境初始化与现有完整 pytest 基线。
+- F003 场景边界与产品范围、数据模型和 `document_parse` 节点契约一致。
+
+### 结果
+
+```text
+setup: Checked 73 packages
+pytest: 25 passed, 1 warning
+coverage: 92.20% (required 90%)
+```
+
+### 结论
+
+- 基线通过，可将 F003 转为 `in_progress`，WIP=1。
+- F003 只实现页级文本、页级哈希、表格/文本坐标索引和结构化失败留痕；不提前实现 F004 三表识别。
