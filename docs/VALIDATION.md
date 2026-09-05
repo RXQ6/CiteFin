@@ -309,3 +309,4 @@ docker compose config: passed
 - 结果：[CI run 33978087346](https://github.com/RXQ6/CiteFin/actions/runs/33978087346) 成功。
 - 验证内容：锁定依赖安装、PostgreSQL 全量迁移、Alembic 零漂移及完整 `make check`。
 - 状态迁移：F003 从 `candidate_complete` 转为 `verified`。
+- 状态记录提交 `3cc70c1` 的最终回归 [CI run 33978374798](https://github.com/RXQ6/CiteFin/actions/runs/33978374798) 同样成功。
