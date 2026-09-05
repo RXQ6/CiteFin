@@ -211,3 +211,31 @@ docker compose config: passed
 - 被验证 commit：`7315d26088bf80580f083015ced58d3bedf50846`。
 - 结果：[CI run 33892520145](https://github.com/RXQ6/CiteFin/actions/runs/33892520145) 成功。
 - 验证内容：PostgreSQL 全量迁移、Alembic 零漂移、功能清单契约测试及完整 `make check`。
+
+## 2026-09-05：会话初始化验证
+
+### 验证范围
+
+- 完整恢复项目状态并检查 Git 基线。
+- 使用 Windows 等价入口执行锁定依赖初始化与 pytest 基线。
+- 确认本次恢复没有启动或修改 F003。
+
+### 环境问题与处理
+
+- 首次 `scripts/dev.ps1 setup` 成功检查 73 个包，但原 `.venv` 指向已不存在的系统 Python 3.12.5，导致 pytest 进程无法创建并返回 101。
+- 使用 Codex 随附的 CPython 3.12.14 重建 `.venv`；清华镜像对锁定的 `pathspec==1.1.1` 返回 403，因此从未修改的 `uv.lock` 导出精确版本清单，并通过官方 PyPI 补齐本地依赖。
+- 标准测试在受限环境的系统临时目录遇到 `WinError 5`；将 pytest `--basetemp` 定向到项目内全新可写目录并关闭不可写的缓存插件后，从头重跑相同测试集。
+
+### 最终结果
+
+```text
+setup: Checked 73 packages
+pytest: 25 passed, 1 warning
+coverage: 92.20% (required 90%)
+```
+
+### 结论与已知限制
+
+- F001/F002 当前代码基线通过初始化测试；失败过程均由本机解释器、镜像或沙箱临时目录造成，未发现测试断言失败。
+- Starlette TestClient 仍有 AnyIO 别名弃用警告，不影响本次结果。
+- `FEATURES.json` 未修改：F001、F002 保持 `verified`，F003 保持 `not_started`。
