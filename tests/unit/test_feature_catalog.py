@@ -37,11 +37,10 @@ def test_feature_catalog_matches_authoritative_product_plan() -> None:
     assert [feature["id"] for feature in features if feature["status"] == "verified"] == [
         "F001",
         "F002",
+        "F003",
     ]
     assert not [feature for feature in features if feature["status"] == "in_progress"]
-    assert [feature["id"] for feature in features if feature["status"] == "candidate_complete"] == [
-        "F003"
-    ]
+    assert not [feature for feature in features if feature["status"] == "candidate_complete"]
 
 
 def test_feature_catalog_dependencies_and_evidence_are_well_formed() -> None:

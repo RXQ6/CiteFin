@@ -300,4 +300,12 @@ docker compose config: passed
 - 测试使用代码生成的可检索两页 PDF，只证明页级契约和定位结构，不证明真实中文年报解析准确率。
 - bbox 宽度是版本化估算；复杂字体、旋转页和跨页表格需要纳入双人复核的真实 PDF 黄金集。
 - 表格区域是候选定位，三张合并报表的识别准确性从 F004 开始验收。
-- PostgreSQL 17 全量迁移和完整门禁等待 GitHub Actions 独立验证。
+- PostgreSQL 17 全量迁移和完整门禁已由 GitHub Actions 独立验证。
+
+### 独立验证
+
+- 验证者：GitHub Actions `CI` 工作流，PostgreSQL 17 服务容器。
+- 被验证 commit：`8a7f497fd5dfba3ba5363299ee46d686af1e36d4`。
+- 结果：[CI run 33978087346](https://github.com/RXQ6/CiteFin/actions/runs/33978087346) 成功。
+- 验证内容：锁定依赖安装、PostgreSQL 全量迁移、Alembic 零漂移及完整 `make check`。
+- 状态迁移：F003 从 `candidate_complete` 转为 `verified`。

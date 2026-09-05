@@ -6,8 +6,8 @@
 
 - 最后更新：2026-09-06
 - 更新人：Codex
-- 当前阶段：F001、F002 已验证；F003“PDF文本与表格解析”本地候选完成，等待独立 CI 验证
-- 最新已独立验证实现 commit：`7315d26`（fix: align F001-F018 with authoritative product plan）
+- 当前阶段：F001–F003 已验证；依用户当前授权停在 F004 之前
+- 最新已独立验证实现 commit：`8a7f497`（feat: add F003 page parsing and locators — preserve auditable PDF evidence）
 - 测试状态：32/32 pytest 通过，覆盖率 91.54%；3/3 合成黄金用例通过
 - 质量状态：Ruff、格式检查、严格 mypy、SQLite 升级、PostgreSQL 17 升级和 Alembic 零漂移检查均通过
 - 本次变更摘要：F003 已实现页级文本与哈希、不可变坐标索引、表格候选、结构化失败、幂等重放、用户隔离与页数上限；未实现 F004 语义识别。
@@ -52,7 +52,7 @@
 
 ## 进行中
 
-- 无。F003 已为 `candidate_complete`，WIP=0，等待独立验证。
+- 无。F003 已为 `verified`，WIP=0；未启动 F004。
 
 ## 已知问题
 
@@ -72,7 +72,7 @@
 
 ## 下一步
 
-提交并推送 F003 候选实现，由 GitHub Actions 在 PostgreSQL 17 上执行迁移、零漂移和完整门禁；独立验证成功后才可转为 `verified`，不提前启动 F004。
+项目当前停止。用户明确授权后，才从 F004“三张财务报表识别”选择原子工作单元并转为 `in_progress`；不得提前实现 F004。
 
 ## 恢复提示
 

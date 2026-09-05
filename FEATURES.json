@@ -63,7 +63,7 @@
       "id": "F003",
       "title": "PDF文本与表格解析",
       "description": "按原始页码提取文本、表格位置、页级哈希和失败原因。",
-      "status": "candidate_complete",
+      "status": "verified",
       "owner": "codex",
       "blocked_by": ["F002"],
       "acceptance": ["页码从 1 开始并与原 PDF 一致", "每页保存 text_sha256 和解析器版本", "表格坐标可用于后续证据定位", "失败页和结构化错误被保留"],
@@ -72,7 +72,8 @@
         "evidence": [
           "docs/VALIDATION.md#2026-09-06f003-pdf文本与表格解析",
           "tests/integration/test_document_parsing_api.py",
-          "migrations/versions/20260906_0003_document_pages.py"
+          "migrations/versions/20260906_0003_document_pages.py",
+          "https://github.com/RXQ6/CiteFin/actions/runs/33978087346"
         ]
       }
     },
