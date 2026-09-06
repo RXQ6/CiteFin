@@ -420,3 +420,9 @@ alembic check: No new upgrade operations detected
 - GitHub Actions `CI`：`success`；PostgreSQL 17、全量迁移、Alembic 零漂移和完整检查通过。
 - 证据：[CI run 34018998550](https://github.com/RXQ6/CiteFin/actions/runs/34018998550)。
 - 该 CI 证明工程门禁通过，不替代真实中文年报的 Reviewer A/B 双盲复核、冲突裁决或 Goal Gate。
+
+## 2026-09-06：F004 30 目标复核包
+
+- 已制作 `docs/F004_REVIEW_PACKET.md`，明确 30 行目标队列、A/B 盲审字段、冲突裁决字段和交付标准。
+- 复核包不包含机器预标注结论；当前没有新增人工标签或准确率统计。
+- 下一步是由真实独立复核者填写 `data/real_reports/review_queue.csv`，不能由同一 Agent 生成 A/B 两套答案。
