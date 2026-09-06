@@ -1,0 +1,98 @@
+{
+  "algorithm_version": "statement-identification-v1",
+  "generated_at": "2026-09-06",
+  "purpose": "machine preannotation only; not an independent gold label",
+  "report_period_end": "2024-12-31",
+  "results": [
+    {
+      "security_code": "000651",
+      "overall_status": "awaiting_user",
+      "statements": {
+        "balance_sheet": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 25, "reason": "multiple_consolidated_candidates"},
+        "income_statement": {"status": "ambiguous", "scope": "unknown", "period_end": null, "page_number": null, "candidate_count": 10, "reason": "multiple_consolidated_candidates"},
+        "cashflow_statement": {"status": "located", "scope": "consolidated", "period_end": "2024-01-12", "page_number": 114, "candidate_count": 7, "reason": "located"}
+      }
+    },
+    {
+      "security_code": "002283",
+      "overall_status": "awaiting_user",
+      "statements": {
+        "balance_sheet": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 22, "reason": "multiple_consolidated_candidates"},
+        "income_statement": {"status": "ambiguous", "scope": "unknown", "period_end": null, "page_number": null, "candidate_count": 6, "reason": "multiple_consolidated_candidates"},
+        "cashflow_statement": {"status": "located", "scope": "consolidated", "period_end": "2024-12-31", "page_number": 80, "candidate_count": 6, "reason": "located"}
+      }
+    },
+    {
+      "security_code": "002475",
+      "overall_status": "awaiting_user",
+      "statements": {
+        "balance_sheet": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 25, "reason": "multiple_consolidated_candidates"},
+        "income_statement": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 7, "reason": "multiple_consolidated_candidates"},
+        "cashflow_statement": {"status": "located", "scope": "consolidated", "period_end": "2024-12-31", "page_number": 130, "candidate_count": 5, "reason": "located"}
+      }
+    },
+    {
+      "security_code": "002594",
+      "overall_status": "awaiting_user",
+      "statements": {
+        "balance_sheet": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 28, "reason": "multiple_consolidated_candidates"},
+        "income_statement": {"status": "ambiguous", "scope": "unknown", "period_end": null, "page_number": null, "candidate_count": 4, "reason": "multiple_consolidated_candidates"},
+        "cashflow_statement": {"status": "ambiguous", "scope": "unknown", "period_end": null, "page_number": null, "candidate_count": 9, "reason": "multiple_consolidated_candidates"}
+      }
+    },
+    {
+      "security_code": "002678",
+      "overall_status": "awaiting_user",
+      "statements": {
+        "balance_sheet": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 21, "reason": "multiple_consolidated_candidates"},
+        "income_statement": {"status": "located", "scope": "consolidated", "period_end": "2024-12-31", "page_number": 69, "candidate_count": 7, "reason": "located"},
+        "cashflow_statement": {"status": "located", "scope": "consolidated", "period_end": "2024-12-31", "page_number": 72, "candidate_count": 5, "reason": "located"}
+      }
+    },
+    {
+      "security_code": "300750",
+      "overall_status": "awaiting_user",
+      "statements": {
+        "balance_sheet": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 32, "reason": "multiple_consolidated_candidates"},
+        "income_statement": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 9, "reason": "multiple_consolidated_candidates"},
+        "cashflow_statement": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 7, "reason": "multiple_consolidated_candidates"}
+      }
+    },
+    {
+      "security_code": "600031",
+      "overall_status": "awaiting_user",
+      "statements": {
+        "balance_sheet": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 30, "reason": "multiple_consolidated_candidates"},
+        "income_statement": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 8, "reason": "multiple_consolidated_candidates"},
+        "cashflow_statement": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 7, "reason": "multiple_consolidated_candidates"}
+      }
+    },
+    {
+      "security_code": "600660",
+      "overall_status": "awaiting_user",
+      "statements": {
+        "balance_sheet": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 22, "reason": "multiple_consolidated_candidates"},
+        "income_statement": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 11, "reason": "multiple_consolidated_candidates"},
+        "cashflow_statement": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 8, "reason": "multiple_consolidated_candidates"}
+      }
+    },
+    {
+      "security_code": "600887",
+      "overall_status": "awaiting_user",
+      "statements": {
+        "balance_sheet": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 31, "reason": "multiple_consolidated_candidates"},
+        "income_statement": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 11, "reason": "multiple_consolidated_candidates"},
+        "cashflow_statement": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 10, "reason": "multiple_consolidated_candidates"}
+      }
+    },
+    {
+      "security_code": "601012",
+      "overall_status": "awaiting_user",
+      "statements": {
+        "balance_sheet": {"status": "ambiguous", "scope": "parent", "period_end": null, "page_number": null, "candidate_count": 28, "reason": "multiple_consolidated_candidates"},
+        "income_statement": {"status": "located", "scope": "consolidated", "period_end": "2024-12-31", "page_number": 124, "candidate_count": 6, "reason": "located"},
+        "cashflow_statement": {"status": "located", "scope": "consolidated", "period_end": "2024-12-31", "page_number": 127, "candidate_count": 6, "reason": "located"}
+      }
+    }
+  ]
+}

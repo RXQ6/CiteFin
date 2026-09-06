@@ -45,6 +45,7 @@ def test_period_matching_handles_exact_year_conflict_and_missing() -> None:
         date(2025, 12, 31),
         date(2024, 12, 31),
     ]
+    assert _period_candidates("2024年1-12月") == []
     assert _period_for_page("2025-12-31", EXPECTED_PERIOD) == (
         EXPECTED_PERIOD,
         "document_and_user_input",
@@ -142,8 +143,14 @@ def test_locator_index_is_verified_and_page_mismatch_is_rejected(tmp_path) -> No
         _load_locator(store, page)
 
 
-def _candidate(scope: str, *, period_conflict: bool = False, page_number: int = 1) -> dict:
-    return {
+def _candidate(
+    scope: str,
+    *,
+    period_conflict: bool = False,
+    page_number: int = 1,
+    primary_score: int | None = None,
+) -> dict:
+    candidate = {
         "page_number": page_number,
         "title": "Consolidated Balance Sheet 2025-12-31",
         "scope": scope,
@@ -156,6 +163,9 @@ def _candidate(scope: str, *, period_conflict: bool = False, page_number: int = 
         "bbox_index_sha256": "bbox-hash",
         "locator": {"page_number": page_number},
     }
+    if primary_score is not None:
+        candidate["primary_score"] = primary_score
+    return candidate
 
 
 def test_outcome_rules_preserve_ambiguity_and_missing_reasons() -> None:
@@ -171,6 +181,26 @@ def test_outcome_rules_preserve_ambiguity_and_missing_reasons() -> None:
         EXPECTED_PERIOD,
     )
     assert multiple["status"] == "ambiguous"
+    primary = _outcome(
+        "balance_sheet",
+        [
+            _candidate("consolidated", page_number=1, primary_score=10),
+            _candidate("consolidated", page_number=2, primary_score=6),
+        ],
+        EXPECTED_PERIOD,
+    )
+    assert primary["status"] == "located"
+    assert primary["page_number"] == 1
+    assert primary["reason"]["code"] == "located_primary_candidate"
+    tied_primary = _outcome(
+        "balance_sheet",
+        [
+            _candidate("consolidated", page_number=1, primary_score=10),
+            _candidate("consolidated", page_number=2, primary_score=10),
+        ],
+        EXPECTED_PERIOD,
+    )
+    assert tied_primary["status"] == "ambiguous"
     parent = _outcome("balance_sheet", [_candidate("parent")], EXPECTED_PERIOD)
     assert parent["reason"]["code"] == "only_parent_statement_found"
     unknown = _outcome("balance_sheet", [_candidate("unknown")], EXPECTED_PERIOD)

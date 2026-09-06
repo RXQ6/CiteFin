@@ -91,7 +91,9 @@
           "docs/VALIDATION.md#2026-09-06f004-三张财务报表识别",
           "tests/integration/test_statement_identification_api.py",
           "tests/unit/test_statement_identification.py",
-          "migrations/versions/20260906_0004_statement_identifications.py"
+          "migrations/versions/20260906_0004_statement_identifications.py",
+          "docs/F004_REAL_REPORT_REVIEW_PLAN.md",
+          "https://github.com/RXQ6/CiteFin/actions/runs/34015101188"
         ]
       }
     },

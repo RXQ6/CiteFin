@@ -39,9 +39,12 @@ _TITLE_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     ),
 }
 _DATE_PATTERN = re.compile(
-    r"(?P<year>20\d{2})\s*(?:年|[-/.])\s*"
-    r"(?P<month>1[0-2]|0?[1-9])\s*(?:月|[-/.])\s*"
-    r"(?P<day>3[01]|[12]\d|0?[1-9])\s*日?"
+    r"(?P<year>20\d{2})\s*(?:"
+    r"年\s*(?P<cn_month>1[0-2]|0?[1-9])\s*月\s*"
+    r"(?P<cn_day>3[01]|[12]\d|0?[1-9])\s*日?"
+    r"|[-/.]\s*(?P<num_month>1[0-2]|0?[1-9])\s*[-/.]\s*"
+    r"(?P<num_day>3[01]|[12]\d|0?[1-9])"
+    r")"
 )
 _YEAR_PATTERN = re.compile(r"(?P<year>20\d{2})\s*(?:年|年度)")
 
@@ -101,11 +104,14 @@ def _period_candidates(text: str) -> list[date]:
     values: list[date] = []
     for match in _DATE_PATTERN.finditer(text):
         try:
+            month = match.group("cn_month") or match.group("num_month")
+            day = match.group("cn_day") or match.group("num_day")
+            assert month is not None and day is not None
             values.append(
                 date(
                     int(match.group("year")),
-                    int(match.group("month")),
-                    int(match.group("day")),
+                    int(month),
+                    int(day),
                 )
             )
         except ValueError:
@@ -185,13 +191,59 @@ def _page_candidates(
             if re.search(r"目录|目次|contents|table\s+of\s+contents", context, re.IGNORECASE):
                 continue
             period_end, period_source, period_conflict = _period_for_page(text, expected)
+            nearby_title = text[max(0, match.start() - 16) : min(len(text), match.end() + 16)]
+            title_excerpt = _title_excerpt(text, match)
+            continuation = bool(re.search(r"续|续表|continued", nearby_title, re.IGNORECASE))
+            explicit_consolidated = bool(
+                re.search(
+                    r"合并\s*(?:资产负债表|利润表|现金流量表)|"
+                    r"consolidated\s+(?:balance|income|cash\s+flow)",
+                    title_excerpt,
+                    re.IGNORECASE,
+                )
+            )
+            main_title = bool(
+                re.search(
+                    r"合并\s*(?:资产负债表|利润表|现金流量表)(?=\s|[（(附注单位：:0-9])|"
+                    r"consolidated\s+(?:balance\s+sheet|income\s+statement|"
+                    r"cash\s+flows?\s+statement)(?=\s|[-/:0-9]|$)",
+                    title_excerpt,
+                    re.IGNORECASE,
+                )
+            )
+            table_anchor = bool(
+                re.search(r"编制单位|单位\s*[:：]|prepared\s+by", text, re.IGNORECASE)
+            )
+            audit_context = bool(
+                re.search(
+                    r"审计报告|财务报表附注|audit\s+report|notes\s+to",
+                    text,
+                    re.IGNORECASE,
+                )
+            )
+            summary_context = bool(
+                re.search(r"五年业绩摘要|five[- ]year summary", text, re.IGNORECASE)
+            )
+            primary_score = (
+                (6 if main_title else 0)
+                + (4 if table_anchor else 0)
+                + (2 if period_source == "document_and_user_input" else 0)
+                - (4 if continuation else 0)
+                - (5 if audit_context and not table_anchor and not explicit_consolidated else 0)
+                - (6 if summary_context else 0)
+            )
             candidate = {
                 "page_number": page.page_number,
-                "title": _title_excerpt(text, match),
+                "title": title_excerpt,
                 "scope": _scope(context),
                 "period_end": period_end.isoformat() if period_end else None,
                 "period_source": period_source,
                 "period_conflict": period_conflict,
+                "primary_score": primary_score,
+                "main_title": main_title,
+                "summary_context": summary_context,
+                "continuation": continuation,
+                "table_anchor": table_anchor,
                 "table_id": table_id,
                 "bbox": bbox,
                 "page_text_sha256": page.text_sha256,
@@ -217,6 +269,17 @@ def _outcome(
     selected: dict[str, Any] | None = None
     status = "missing"
     reason: dict[str, Any]
+
+    def primary_candidate(items: list[dict[str, Any]]) -> dict[str, Any] | None:
+        scored = [item for item in items if "primary_score" in item]
+        if not scored:
+            return None
+        highest = max(int(item["primary_score"]) for item in scored)
+        top = [item for item in scored if int(item["primary_score"]) == highest]
+        if highest < 5 or len(top) != 1:
+            return None
+        return top[0]
+
     if len(consolidated) == 1:
         selected = consolidated[0]
         if selected["period_conflict"]:
@@ -232,11 +295,22 @@ def _outcome(
                 "message": "One consolidated statement candidate matched the requested period.",
             }
     elif len(consolidated) > 1:
-        status = "ambiguous"
-        reason = {
-            "code": "multiple_consolidated_candidates",
-            "message": "Multiple consolidated statement candidates require user confirmation.",
-        }
+        selected = primary_candidate(consolidated)
+        if selected is not None and not selected["period_conflict"]:
+            status = "located"
+            reason = {
+                "code": "located_primary_candidate",
+                "message": (
+                    "One primary consolidated statement candidate outranked "
+                    "repeated headers and notes."
+                ),
+            }
+        else:
+            status = "ambiguous"
+            reason = {
+                "code": "multiple_consolidated_candidates",
+                "message": "Multiple consolidated statement candidates require user confirmation.",
+            }
     elif parent:
         reason = {
             "code": "only_parent_statement_found",
