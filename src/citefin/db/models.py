@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import (
@@ -14,6 +15,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    Numeric,
     String,
     Text,
     UniqueConstraint,
@@ -58,6 +60,9 @@ class AnalysisRun(Base):
         back_populates="run", cascade="all, delete-orphan"
     )
     source_documents: Mapped[list[SourceDocument]] = relationship(
+        back_populates="run", cascade="all, delete-orphan"
+    )
+    financial_facts: Mapped[list[FinancialFact]] = relationship(
         back_populates="run", cascade="all, delete-orphan"
     )
 
@@ -181,6 +186,77 @@ class SourceDocument(Base):
     statement_identifications: Mapped[list[StatementIdentification]] = relationship(
         back_populates="source_document", cascade="all, delete-orphan"
     )
+    financial_facts: Mapped[list[FinancialFact]] = relationship(
+        back_populates="source_document", cascade="all, delete-orphan"
+    )
+
+
+class FinancialFact(Base):
+    """A versioned, source-linked fact normalized from an identified statement row."""
+
+    __tablename__ = "financial_facts"
+    __table_args__ = (
+        CheckConstraint(
+            "statement_type IN ('balance_sheet', 'income_statement', 'cashflow_statement')",
+            name="financial_fact_statement_type_allowed",
+        ),
+        CheckConstraint(
+            "period_type IN ('instant', 'duration')",
+            name="financial_fact_period_type_allowed",
+        ),
+        CheckConstraint(
+            "scope = 'consolidated'",
+            name="financial_fact_scope_consolidated",
+        ),
+        CheckConstraint(
+            "display_unit IN ('yuan', 'thousand_yuan', 'million_yuan')",
+            name="financial_fact_display_unit_allowed",
+        ),
+        CheckConstraint(
+            "validation_status IN ('extracted', 'conflict')",
+            name="financial_fact_validation_status_allowed",
+        ),
+        CheckConstraint(
+            "confidence >= 0 AND confidence <= 1",
+            name="financial_fact_confidence_range",
+        ),
+    )
+
+    fact_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_runs.run_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    source_id: Mapped[str] = mapped_column(
+        ForeignKey("source_documents.source_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    statement_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    concept: Mapped[str] = mapped_column(String(96), nullable=False)
+    label_raw: Mapped[str] = mapped_column(Text, nullable=False)
+    period_start: Mapped[date | None] = mapped_column(Date)
+    period_end: Mapped[date] = mapped_column(Date, nullable=False)
+    period_type: Mapped[str] = mapped_column(String(16), nullable=False)
+    scope: Mapped[str] = mapped_column(String(32), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
+    display_unit: Mapped[str] = mapped_column(String(24), nullable=False)
+    raw_value: Mapped[Decimal] = mapped_column(Numeric(38, 8), nullable=False)
+    normalized_value: Mapped[Decimal] = mapped_column(Numeric(38, 8), nullable=False)
+    sign_convention: Mapped[str] = mapped_column(String(64), nullable=False)
+    page_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    section: Mapped[str] = mapped_column(String(200), nullable=False)
+    table_id: Mapped[str | None] = mapped_column(String(64))
+    row_label: Mapped[str] = mapped_column(Text, nullable=False)
+    column_label: Mapped[str] = mapped_column(Text, nullable=False)
+    bbox: Mapped[list[float] | None] = mapped_column(JSON)
+    extraction_method: Mapped[str] = mapped_column(String(32), nullable=False)
+    confidence: Mapped[Decimal] = mapped_column(Numeric(5, 4), nullable=False)
+    validation_status: Mapped[str] = mapped_column(String(16), nullable=False)
+    mapping_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    identity_key: Mapped[str] = mapped_column(String(512), nullable=False, index=True)
+    conflict_group_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    run: Mapped[AnalysisRun] = relationship(back_populates="financial_facts")
+    source_document: Mapped[SourceDocument] = relationship(back_populates="financial_facts")
 
 
 class DocumentPage(Base):
