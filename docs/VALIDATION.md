@@ -452,3 +452,10 @@ alembic check: No new upgrade operations detected
 - 这是隔离实验分支，不改变主线 F005 `not_started` 状态；
 - 测试使用合成输入，不代表真实中文年报字段标准化准确率；
 - 不实现 F006 指标计算，也不把未经独立复核的真实年报作为黄金真值。
+
+## 2026-09-06：主线 provisional 工程推进规则
+
+- 功能目录新增透明 `provisional` 状态：它允许 F004→F005 工程推进，但不等同于 `verified`。
+- F004 当前改为 `provisional`，F005 改为 `in_progress`；仅依据项目负责人批准的工程推进规则，不代表真实中文年报准确率已验证。
+- `verified` 仍只能由 Goal Gate 写入；F006 及后续功能仍被 F005 正式验证门禁阻塞。
+- 真实年报双人复核、裁决和准确率声明限制不变。

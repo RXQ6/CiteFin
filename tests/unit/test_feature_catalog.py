@@ -42,8 +42,13 @@ def test_feature_catalog_matches_authoritative_product_plan() -> None:
     in_progress = [feature for feature in features if feature["status"] == "in_progress"]
     assert len(in_progress) <= 1
     if in_progress:
-        assert in_progress[0]["id"] == "F004"
+        assert in_progress[0]["id"] == "F005"
         assert in_progress[0]["owner"] == "codex"
+    provisional = [feature for feature in features if feature["status"] == "provisional"]
+    assert len(provisional) <= 1
+    if provisional:
+        assert provisional[0]["id"] == "F004"
+        assert provisional[0]["owner"] == "codex"
     candidate_complete = [
         feature for feature in features if feature["status"] == "candidate_complete"
     ]
