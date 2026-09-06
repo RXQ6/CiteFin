@@ -426,3 +426,29 @@ alembic check: No new upgrade operations detected
 - 已制作 `docs/F004_REVIEW_PACKET.md`，明确 30 行目标队列、A/B 盲审字段、冲突裁决字段和交付标准。
 - 复核包不包含机器预标注结论；当前没有新增人工标签或准确率统计。
 - 下一步是由真实独立复核者填写 `data/real_reports/review_queue.csv`，不能由同一 Agent 生成 A/B 两套答案。
+
+## 2026-09-06：F005 实验分支第一工作单元
+
+### 实现范围
+
+- 分支：`codex/f005-experimental`。
+- 新增 `FinancialFact` 模型、`20260906_0005` 迁移、确定性标签映射、Decimal 单位换算、幂等和冲突保留接口。
+- 仅接受已有 F004 `located + consolidated` 结果；未知标签拒绝写入，冲突事实生成冲突组而不覆盖原始值。
+
+### 验证结果
+
+```text
+targeted F005 tests: 12 passed
+full pytest: 53 passed, coverage 90.66%
+Ruff: passed; format: 40 files already formatted
+mypy: Success, 21 source files
+golden: 3/3 cases passed
+alembic upgrade: base -> 20260904_0001 -> 20260904_0002 -> 20260906_0003 -> 20260906_0004 -> 20260906_0005
+alembic check: No new upgrade operations detected
+```
+
+### 限制
+
+- 这是隔离实验分支，不改变主线 F005 `not_started` 状态；
+- 测试使用合成输入，不代表真实中文年报字段标准化准确率；
+- 不实现 F006 指标计算，也不把未经独立复核的真实年报作为黄金真值。
