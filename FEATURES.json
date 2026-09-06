@@ -113,14 +113,26 @@
       "id": "F005",
       "title": "财务字段标准化",
       "description": "将原始报表字段映射为统一概念、期间、币种、单位和口径。",
-      "status": "in_progress",
+      "status": "candidate_complete",
       "owner": "codex",
       "blocked_by": ["F004"],
       "acceptance": ["核心字段映射到版本化标准概念", "原始值、标准值、单位、币种、期间和口径同时保留", "金额使用 Decimal，不使用二进制浮点", "冲突事实不被静默覆盖"],
       "start_mode": "provisional_engineering_progression",
       "start_reason": "F004 provisional engineering status approved by project owner",
       "limitations": ["不得使用未经独立复核的真实年报作为黄金真值", "不得声明真实中文年报准确率", "不得提前实现 F006 指标计算"],
-      "verification": {"command": "make verify-feature FEATURE=F005", "evidence": []}
+      "verification": {
+        "command": "make verify-feature FEATURE=F005",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-06f005-财务字段标准化",
+          "tests/unit/test_financial_facts.py",
+          "tests/integration/test_financial_facts_api.py",
+          "migrations/versions/20260906_0005_financial_facts.py",
+          "scripts/verify_f005.py"
+        ]
+      }
     },
     {
       "id": "F006",

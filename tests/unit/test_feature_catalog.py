@@ -54,7 +54,7 @@ def test_feature_catalog_matches_authoritative_product_plan() -> None:
     ]
     assert len(candidate_complete) <= 1
     if candidate_complete:
-        assert candidate_complete[0]["id"] == "F004"
+        assert candidate_complete[0]["id"] in {"F004", "F005"}
         assert candidate_complete[0]["owner"] == "codex"
 
 

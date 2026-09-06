@@ -31,6 +31,8 @@ check: lint typecheck golden test
 verify-feature:
 	@if [ "$(FEATURE)" = "F001" ] || [ "$(FEATURE)" = "F002" ] || [ "$(FEATURE)" = "F003" ]; then \
 		$(MAKE) check; \
+	elif [ "$(FEATURE)" = "F005" ]; then \
+		$(MAKE) check && uv run python scripts/verify_f005.py; \
 	else \
 		echo "No executable verifier is registered for $(FEATURE)"; \
 		exit 2; \

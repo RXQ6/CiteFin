@@ -431,7 +431,7 @@ alembic check: No new upgrade operations detected
 
 ### 实现范围
 
-- 分支：`codex/f005-experimental`。
+- 起点：先在隔离分支 `codex/f005-experimental` 完成第一工作单元，随后按主线 `provisional` 工程推进规则纳入当前分支。
 - 新增 `FinancialFact` 模型、`20260906_0005` 迁移、确定性标签映射、Decimal 单位换算、幂等和冲突保留接口。
 - 仅接受已有 F004 `located + consolidated` 结果；未知标签拒绝写入，冲突事实生成冲突组而不覆盖原始值。
 
@@ -449,13 +449,50 @@ alembic check: No new upgrade operations detected
 
 ### 限制
 
-- 这是隔离实验分支，不改变主线 F005 `not_started` 状态；
+- 当前主线只推进到本地 `candidate_complete`，不代表正式 `verified`；
 - 测试使用合成输入，不代表真实中文年报字段标准化准确率；
 - 不实现 F006 指标计算，也不把未经独立复核的真实年报作为黄金真值。
 
 ## 2026-09-06：主线 provisional 工程推进规则
 
 - 功能目录新增透明 `provisional` 状态：它允许 F004→F005 工程推进，但不等同于 `verified`。
-- F004 当前改为 `provisional`，F005 改为 `in_progress`；仅依据项目负责人批准的工程推进规则，不代表真实中文年报准确率已验证。
+- F004 当前为 `provisional`，F005 已达到本地 `candidate_complete`；仅依据项目负责人批准的工程推进规则，不代表真实中文年报准确率已验证。
 - `verified` 仍只能由 Goal Gate 写入；F006 及后续功能仍被 F005 正式验证门禁阻塞。
 - 真实年报双人复核、裁决和准确率声明限制不变。
+
+## 2026-09-06：F005 财务字段标准化
+
+### 验证范围
+
+- 核心报表标签映射到版本化标准概念，并保留原始标签和值、标准值、单位、币种、期间、合并口径和来源定位。
+- 金额使用 Decimal 和显式单位换算；未知标签、非法值、非合并口径和缺失 F004 定位被拒绝。
+- 相同身份和值的重复请求幂等；同一身份的不同值进入冲突组，原事实不被覆盖。
+- F005 迁移可从空 SQLite 库升级到 head，且 Alembic 检查无新升级操作。
+
+### 执行方式与结果
+
+Windows 标准入口：
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F005
+```
+
+本次结果：
+
+```text
+full pytest: 53 passed, coverage 90.66%
+Ruff: passed; format: 40 files already formatted
+mypy: Success, 21 source files
+golden: 3/3 cases passed
+F005 targeted tests: 12 passed
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005
+alembic check: No new upgrade operations detected
+```
+
+专项执行器为 `scripts/verify_f005.py`；测试输入为合成 F004 已定位事实，不包含未经独立复核的真实年报。
+
+### 结论与限制
+
+- F005 满足本地机器可执行验收，状态为 `candidate_complete`，并非 `verified`。
+- `verified` 仍需独立 Goal Gate 写入；F004 的双人复核、裁决和真实准确率限制不变，F006 不启动。
+- 不得据此声明真实中文年报字段标准化准确率。
