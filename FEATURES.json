@@ -93,7 +93,8 @@
           "tests/unit/test_statement_identification.py",
           "migrations/versions/20260906_0004_statement_identifications.py",
           "docs/F004_REAL_REPORT_REVIEW_PLAN.md",
-          "https://github.com/RXQ6/CiteFin/actions/runs/34015101188"
+          "https://github.com/RXQ6/CiteFin/actions/runs/34015101188",
+          "https://github.com/RXQ6/CiteFin/actions/runs/34018998550"
         ]
       }
     },
