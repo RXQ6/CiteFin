@@ -11,6 +11,10 @@ from citefin.api.analysis_runs import UserIdHeader
 from citefin.api.dependencies import DatabaseSession, SettingsDependency
 from citefin.services.document_parsing import DocumentParsingError, parse_annual_report
 from citefin.services.documents import DocumentIngestionError, ingest_annual_report
+from citefin.services.statement_identification import (
+    StatementIdentificationError,
+    identify_statements,
+)
 from citefin.storage import LocalObjectStore
 
 router = APIRouter(prefix="/analysis-runs", tags=["source-documents"])
@@ -65,6 +69,33 @@ class DocumentParsingResponse(BaseModel):
     status: str
     idempotent_replay: bool
     pages: list[DocumentPageResponse]
+
+
+class StatementIdentificationResponse(BaseModel):
+    """Durable F004 statement-location outcomes and preserved candidates."""
+
+    statement_id: str
+    statement_type: str
+    status: str
+    title: str | None
+    scope: str
+    period_end: date | None
+    page_number: int | None
+    table_id: str | None
+    locator: dict[str, Any] | None
+    candidate_count: int
+    candidates: list[dict[str, Any]]
+    reason: dict[str, Any] | None
+    algorithm_version: str
+
+
+class StatementIdentificationRunResponse(BaseModel):
+    """Overall F004 status for one source document."""
+
+    source_id: str
+    status: str
+    idempotent_replay: bool
+    statements: list[StatementIdentificationResponse]
 
 
 async def _read_bounded(upload: UploadFile, maximum_bytes: int) -> bytes:
@@ -193,5 +224,61 @@ async def parse_source_document(
                 error=page.error,
             )
             for page in parsing.pages
+        ],
+    )
+
+
+@router.post(
+    "/{run_id}/documents/{source_id}/statements",
+    response_model=StatementIdentificationRunResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def identify_source_statements(
+    run_id: str,
+    source_id: str,
+    response: Response,
+    session: DatabaseSession,
+    settings: SettingsDependency,
+    user_id: UserIdHeader,
+) -> StatementIdentificationRunResponse:
+    """Identify consolidated balance-sheet, income, and cash-flow statements."""
+
+    try:
+        records, idempotent_replay, overall_status = await run_in_threadpool(
+            identify_statements,
+            session,
+            LocalObjectStore(settings.object_storage_root),
+            run_id=run_id,
+            source_id=source_id,
+            user_id=user_id,
+        )
+    except StatementIdentificationError as error:
+        raise HTTPException(
+            status_code=error.status_code,
+            detail={"code": error.code, "message": error.message},
+        ) from error
+    if idempotent_replay:
+        response.status_code = status.HTTP_200_OK
+    return StatementIdentificationRunResponse(
+        source_id=source_id,
+        status=overall_status,
+        idempotent_replay=idempotent_replay,
+        statements=[
+            StatementIdentificationResponse(
+                statement_id=record.statement_id,
+                statement_type=record.statement_type,
+                status=record.status,
+                title=record.title,
+                scope=record.scope,
+                period_end=record.period_end,
+                page_number=record.page_number,
+                table_id=record.table_id,
+                locator=record.locator,
+                candidate_count=record.candidate_count,
+                candidates=record.candidates,
+                reason=record.reason,
+                algorithm_version=record.algorithm_version,
+            )
+            for record in records
         ],
     )

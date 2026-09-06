@@ -178,6 +178,9 @@ class SourceDocument(Base):
     pages: Mapped[list[DocumentPage]] = relationship(
         back_populates="source_document", cascade="all, delete-orphan"
     )
+    statement_identifications: Mapped[list[StatementIdentification]] = relationship(
+        back_populates="source_document", cascade="all, delete-orphan"
+    )
 
 
 class DocumentPage(Base):
@@ -203,3 +206,41 @@ class DocumentPage(Base):
 
     source_document: Mapped[SourceDocument] = relationship(back_populates="pages")
     bbox_index_object: Mapped[StoredObject | None] = relationship()
+
+
+class StatementIdentification(Base):
+    """One durable F004 outcome for a required financial statement type."""
+
+    __tablename__ = "statement_identifications"
+    __table_args__ = (
+        UniqueConstraint(
+            "source_id", "statement_type", name="uq_statement_identifications_source_type"
+        ),
+        CheckConstraint(
+            "statement_type IN ('balance_sheet', 'income_statement', 'cashflow_statement')",
+            name="statement_type_allowed",
+        ),
+    )
+
+    statement_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    source_id: Mapped[str] = mapped_column(
+        ForeignKey("source_documents.source_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    statement_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    title: Mapped[str | None] = mapped_column(Text)
+    scope: Mapped[str] = mapped_column(String(32), nullable=False)
+    period_end: Mapped[date | None] = mapped_column(Date)
+    page_number: Mapped[int | None] = mapped_column(Integer)
+    table_id: Mapped[str | None] = mapped_column(String(64))
+    locator: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    candidate_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    candidates: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    reason: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    algorithm_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    source_document: Mapped[SourceDocument] = relationship(
+        back_populates="statement_identifications"
+    )

@@ -80,3 +80,18 @@ class LocalObjectStore:
         if hashlib.sha256(content).hexdigest() != sha256:
             raise StorageIntegrityError("Stored PDF failed content-address verification")
         return content
+
+    def read_json(self, sha256: str, storage_uri: str) -> bytes:
+        """Read and verify a canonical JSON artifact from immutable storage."""
+
+        expected_uri = f"local://sha256/{sha256[:2]}/{sha256}.json"
+        if storage_uri != expected_uri:
+            raise StorageIntegrityError("Stored JSON URI does not match its content address")
+        path = self.root / sha256[:2] / f"{sha256}.json"
+        try:
+            content = path.read_bytes()
+        except OSError as error:
+            raise StorageIntegrityError("Stored JSON artifact is unavailable") from error
+        if hashlib.sha256(content).hexdigest() != sha256:
+            raise StorageIntegrityError("Stored JSON artifact failed content-address verification")
+        return content

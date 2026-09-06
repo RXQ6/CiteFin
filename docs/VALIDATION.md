@@ -310,3 +310,51 @@ docker compose config: passed
 - 验证内容：锁定依赖安装、PostgreSQL 全量迁移、Alembic 零漂移及完整 `make check`。
 - 状态迁移：F003 从 `candidate_complete` 转为 `verified`。
 - 状态记录提交 `3cc70c1` 的最终回归 [CI run 33978374798](https://github.com/RXQ6/CiteFin/actions/runs/33978374798) 同样成功。
+
+## 2026-09-06：F004 三张财务报表识别
+
+### 验证范围
+
+- 从 F003 已持久化的页文本和不可变坐标索引中确定性识别合并资产负债表、利润表和现金流量表。
+- 识别结果保存标题、报告期、页码、表格候选定位、页文本哈希和坐标索引哈希。
+- 仅有母公司表时返回明确缺失原因，不将其冒充为合并报表。
+- 合并口径未明确、多个合并候选或报告期冲突时保留全部候选并返回人工确认状态。
+- 同一来源重复识别幂等，其他用户不能读取结果；未完成 F003 解析时拒绝识别。
+- SQLite 从空库升级至 F004，ORM 元数据无漂移。
+- F001–F003 接口、功能清单、黄金数据和既有测试回归。
+
+### 执行方式
+
+Windows 使用锁定虚拟环境和项目外可写 pytest 临时目录执行：
+
+```powershell
+.\.venv\Scripts\python.exe -m ruff check src tests
+.\.venv\Scripts\python.exe -m ruff format --check src tests
+.\.venv\Scripts\python.exe -m mypy
+.\.venv\Scripts\python.exe tests/golden/validate.py
+.\.venv\Scripts\python.exe -m pytest --basetemp <writable-temp> -p no:cacheprovider
+$env:CITEFIN_DATABASE_URL = "sqlite+pysqlite:///.../f004-migration.db"
+.\.venv\Scripts\python.exe -m alembic upgrade head
+.\.venv\Scripts\python.exe -m alembic check
+```
+
+### 结果
+
+```text
+setup: Checked 73 packages
+Ruff: passed
+format: 36 files already formatted
+mypy: Success, 19 source files
+golden: 3/3 cases passed
+pytest: 41 passed, 1 warning
+coverage: 91.08% (required 90%)
+alembic upgrade: base -> 20260904_0001 -> 20260904_0002 -> 20260906_0003 -> 20260906_0004
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- F004 四项验收条件均有本地机器可执行证据，状态可转为 `candidate_complete`；`verified` 仍需独立验证。
+- 识别逻辑不调用 LLM、OCR、外部网络或 F005 字段标准化/指标计算。
+- 当前专项测试使用合成可检索 PDF 和中英文标题，尚不能声明真实中文年度报告识别准确率。
+- 真实报告进入准确率黄金集前仍需来源授权、哈希登记和双人复核。

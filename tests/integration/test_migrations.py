@@ -23,6 +23,7 @@ def test_upgrade_head_creates_analysis_run_bundle(tmp_path: Path) -> None:
         "audit_events",
         "document_pages",
         "source_documents",
+        "statement_identifications",
         "stored_objects",
         "tasks",
         "workflow_checkpoints",

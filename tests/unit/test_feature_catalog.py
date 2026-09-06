@@ -39,8 +39,18 @@ def test_feature_catalog_matches_authoritative_product_plan() -> None:
         "F002",
         "F003",
     ]
-    assert not [feature for feature in features if feature["status"] == "in_progress"]
-    assert not [feature for feature in features if feature["status"] == "candidate_complete"]
+    in_progress = [feature for feature in features if feature["status"] == "in_progress"]
+    assert len(in_progress) <= 1
+    if in_progress:
+        assert in_progress[0]["id"] == "F004"
+        assert in_progress[0]["owner"] == "codex"
+    candidate_complete = [
+        feature for feature in features if feature["status"] == "candidate_complete"
+    ]
+    assert len(candidate_complete) <= 1
+    if candidate_complete:
+        assert candidate_complete[0]["id"] == "F004"
+        assert candidate_complete[0]["owner"] == "codex"
 
 
 def test_feature_catalog_dependencies_and_evidence_are_well_formed() -> None:

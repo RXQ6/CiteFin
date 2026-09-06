@@ -81,11 +81,19 @@
       "id": "F004",
       "title": "三张财务报表识别",
       "description": "识别合并资产负债表、利润表和现金流量表及其报告期间。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F003"],
       "acceptance": ["三张合并报表均被定位或给出明确缺失原因", "不把母公司报表误作合并报表", "识别结果包含页码、标题和表格定位", "歧义无法消除时进入人工确认"],
-      "verification": {"command": "make verify-feature FEATURE=F004", "evidence": []}
+      "verification": {
+        "command": "make verify-feature FEATURE=F004",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-06f004-三张财务报表识别",
+          "tests/integration/test_statement_identification_api.py",
+          "tests/unit/test_statement_identification.py",
+          "migrations/versions/20260906_0004_statement_identifications.py"
+        ]
+      }
     },
     {
       "id": "F005",
