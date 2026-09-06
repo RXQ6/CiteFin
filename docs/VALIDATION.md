@@ -413,3 +413,10 @@ alembic check: No new upgrade operations detected
 
 - 本次修正消除了已发现的候选爆炸和 `2024-01-12` 报告期误判，具备进入人工复核的候选质量。
 - 这仍是机器回放，不是独立黄金真值；尚未完成 Reviewer A/B 双盲复核、冲突裁决和准确率统计，因此 F004 仍不能转为 `verified`。
+
+## 2026-09-06：F004 修正提交的独立 CI
+
+- 远端提交：`11a1857b75eca78df5712858a3ebad0e3260d1ae`。
+- GitHub Actions `CI`：`success`；PostgreSQL 17、全量迁移、Alembic 零漂移和完整检查通过。
+- 证据：[CI run 34018998550](https://github.com/RXQ6/CiteFin/actions/runs/34018998550)。
+- 该 CI 证明工程门禁通过，不替代真实中文年报的 Reviewer A/B 双盲复核、冲突裁决或 Goal Gate。

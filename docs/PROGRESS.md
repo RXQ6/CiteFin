@@ -7,9 +7,9 @@
 - 最后更新：2026-09-06
 - 更新人：Codex
 - 当前阶段：F001–F003 已验证；F004 规则修正后通过 10 份真实年报端到端机器回放，等待双人独立复核
-- 最新已独立验证实现 commit：`8a7f497`（feat: add F003 page parsing and locators — preserve auditable PDF evidence）
-- 最新 F004 candidate 实现已提交（feat: add F004 statement identification — preserve consolidated scope and evidence locators）；尚待独立验证
-- 测试状态：41/41 pytest 通过，覆盖率 91.08%；3/3 合成黄金用例通过
+- 最新已独立验证实现 commit：`11a1857`（fix: rank real statement candidates and reject period-range dates — stabilize F004）
+- 最新 F004 candidate 实现已推送并通过独立 CI；真实年报语义准确率和 Goal Gate 仍待完成
+- 测试状态：41/41 pytest 通过，覆盖率 91.33%；3/3 合成黄金用例通过
 - 质量状态：F004 本地 Ruff、格式检查、严格 mypy、SQLite 升级、Alembic 零漂移和 PostgreSQL 17 独立 CI 均通过；10 份真实 PDF 的 30 个三表目标已完成端到端机器回放并全部定位，但真实中文年报准确率尚未验证
 - 本次变更摘要：F003 已实现页级文本与哈希、不可变坐标索引、表格候选、结构化失败、幂等重放、用户隔离与页数上限；F004 已实现确定性三表识别、报告期/合并口径判定、结构化缺失与人工确认边界。
 - 本次恢复验证：重建指向失效系统 Python 的 `.venv` 后，项目内可写临时目录下 25/25 pytest 通过，覆盖率 92.20%；未启动 F003。
@@ -58,10 +58,11 @@
 - [x] 取得 10 份官方 2024 年年报 PDF，登记页数、字节数和 SHA-256。
 - [x] 对 10 份真实报告执行 F004 机器预标注并保留结果；未将其作为黄金真值。
 - [x] 修正报告期范围误判、重复候选排序和五年业绩摘要误选，并完成 10 份报告的完整 API 回放：30/30 目标定位为合并口径 2024-12-31。
+- [x] 将修正后的 F004 推送到 GitHub，并通过独立 CI run `34018998550`。
 
 ## 进行中
 
-- F004“三张财务报表识别”已完成 Codex 本地验收、独立 CI 和真实样本机器回放，状态仍为 `candidate_complete`；双人复核与 Goal Gate 尚未完成，WIP=0。
+- F004“三张财务报表识别”已完成本地验收、独立 CI 和真实样本机器回放，状态仍为 `candidate_complete`；双人复核与 Goal Gate 尚未完成，WIP=0。
 
 ## 已知问题
 
