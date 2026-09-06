@@ -496,3 +496,26 @@ alembic check: No new upgrade operations detected
 - F005 满足本地机器可执行验收，状态为 `candidate_complete`，并非 `verified`。
 - `verified` 仍需独立 Goal Gate 写入；F004 的双人复核、裁决和真实准确率限制不变，F006 不启动。
 - 不得据此声明真实中文年报字段标准化准确率。
+
+## 2026-09-06：F004 独立复核交接包准备
+
+### 执行方式与结果
+
+```powershell
+.\.venv\Scripts\python.exe scripts/prepare_f004_review.py
+```
+
+```text
+manifest reports: 10 validated
+review targets: 30 unique targets validated
+PDF byte count, SHA-256 and page count: 10/10 matched
+blank reviewer copies: reviewer_a.csv and reviewer_b.csv created
+machine preannotation fields in copies: none
+```
+
+输出目录为 `artifacts/f004_review/`。该目录的 CSV 只包含目标身份字段，所有答案和证据字段为空。
+
+### 结论与限制
+
+- 复核材料已具备交付条件，但 A/B 人工标签、冲突裁决和一致率统计仍为空。
+- 此工作单元不改变 F004 的 `provisional` 状态，不构成真实准确率证据，也不能由同一 Agent 代替 Reviewer A/B。

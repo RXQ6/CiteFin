@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $false, Position = 0)]
-    [ValidateSet("setup", "test", "lint", "format", "typecheck", "golden", "check", "migrate", "verify-feature", "run")]
+    [ValidateSet("setup", "test", "lint", "format", "typecheck", "golden", "check", "migrate", "prepare-f004-review", "verify-feature", "run")]
     [string]$Command = "check",
     [Parameter(Mandatory = $false)]
     [ValidateSet("F001", "F002", "F003", "F004", "F005")]
@@ -39,6 +39,7 @@ try {
         "typecheck" { Invoke-Uv @("run", "mypy") }
         "golden" { Invoke-Uv @("run", "python", "tests/golden/validate.py") }
         "migrate" { Invoke-Uv @("run", "alembic", "upgrade", "head") }
+        "prepare-f004-review" { Invoke-Uv @("run", "python", "scripts/prepare_f004_review.py") }
         "verify-feature" {
             if ($Feature -eq "F005") {
                 Invoke-Uv @("run", "ruff", "check", "src", "tests")

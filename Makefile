@@ -4,7 +4,7 @@ UV_PYTHON_INSTALL_DIR ?= $(CURDIR)/.uv-python
 export UV_CACHE_DIR
 export UV_PYTHON_INSTALL_DIR
 
-.PHONY: setup test lint format typecheck check run golden migrate verify-feature
+.PHONY: setup test lint format typecheck check run golden migrate prepare-f004-review verify-feature
 
 setup:
 	uv sync --frozen
@@ -43,3 +43,6 @@ run:
 
 migrate:
 	uv run alembic upgrade head
+
+prepare-f004-review:
+	uv run python scripts/prepare_f004_review.py

@@ -15,6 +15,14 @@
 
 ## 分发方式
 
+可用以下命令校验封存文件并生成两份空白盲审副本：
+
+```powershell
+.\scripts\dev.ps1 prepare-f004-review
+```
+
+输出位于 `artifacts/f004_review/`，包含 `reviewer_a.csv`、`reviewer_b.csv` 和交接说明。该命令不会读取或复制机器预标注结论。
+
 1. 将相同的 30 行目标队列分别复制为 Reviewer A 和 Reviewer B 的工作副本。
 2. A、B 不互相查看结果，也不查看机器预标注。
 3. 裁决人只在 A/B 提交后查看冲突行和原始 PDF。

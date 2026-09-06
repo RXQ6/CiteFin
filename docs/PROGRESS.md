@@ -64,6 +64,7 @@
 - [x] 增加 `provisional` 工程推进状态，保持 `verified` 仍由 Goal Gate 控制。
 - [x] 为 F005 增加可执行专项验证器，覆盖专项测试、全量迁移升级和 Alembic 零漂移。
 - [x] F005 通过全量质量门禁和专项验证，状态转为本地 `candidate_complete`；未声明真实中文年报准确率。
+- [x] 校验 F004 10 份封存 PDF 的哈希/页数，并生成不含机器预标注的 Reviewer A/B 空白盲审副本。
 
 ## 进行中
 
@@ -87,7 +88,7 @@
 
 ## 下一步
 
-将复核包交给两名独立复核者和一名裁决人，完成 30 个目标的双盲标注、冲突裁决和一致率/冲突率统计；由独立 Goal Gate 决定 F004 是否转为 `verified`，并为 F005 建立正式 Goal Gate 证据。在此之前不得启动 F006。
+将 `artifacts/f004_review/reviewer_a.csv` 和 `reviewer_b.csv` 分别交给两名独立复核者，完成 30 个目标的双盲标注、冲突裁决和一致率/冲突率统计；由独立 Goal Gate 决定 F004 是否转为 `verified`，并为 F005 建立正式 Goal Gate 证据。在此之前不得启动 F006。
 
 ## 恢复提示
 
