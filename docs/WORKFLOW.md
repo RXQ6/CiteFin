@@ -301,4 +301,9 @@ tool_name, model_profile, source_id, duration_ms,
 status, error_code, created_at
 ```
 
-前端通过 SSE 接收生命周期事件：`run_started`、`node_started`、`node_completed`、`task_blocked`、`awaiting_user`、`evaluation_failed`、`run_verified`、`run_failed`。
+前端通过 `GET /api/v1/analysis-runs/{run_id}/progress` 查询运行摘要，通过
+`GET /api/v1/analysis-runs/{run_id}/events` 接收有限 SSE 生命周期事件快照。事件以
+`created_at + event_id` 排序，响应 `id` 是可用于 `Last-Event-ID` 或 `after` 的游标；事件 payload
+只输出白名单元数据，不输出提示词、密钥、内部错误正文或完整审计载荷。当前事件接口不保持生产级长连接，
+前端应在重连时带回最后一个事件 ID。生命周期事件包括：`run_created`、节点/工具完成事件、
+`checkpoint_saved`、`checkpoint_restored`、`evaluation_completed`、`goal_gate_decision` 等实际已持久化事件。

@@ -813,3 +813,36 @@ alembic check: No new upgrade operations detected
 - F014 达到 provisional 工程 `candidate_complete`，不等于完整 LangGraph 生产执行器或正式 `verified`。
 - 当前只证明合成/契约状态下的版本化恢复、来源完整性和幂等副作用边界；不证明黄金流程恢复成功率或真实中文年报准确率。
 - F004 双人复核、F005–F014 正式 Goal Gate 外部证据和真实年报准确率声明限制保持不变；不启动 F015。
+
+## 2026-09-07：F015 provisional 运行进度接口
+
+### 验证范围
+
+- 查询用户拥有的 `AnalysisRun` 状态、当前节点、工作流版本、生命周期时间、任务摘要和最近结构化错误。
+- 验证其他用户不能读取运行状态或生命周期事件，错误响应不泄露内部错误正文、提示词或密钥字段。
+- 通过 `event_id + created_at` 的稳定顺序提供有限 SSE 生命周期事件快照，支持 `Last-Event-ID` 或 `after` 游标重连。
+- 事件 payload 仅输出白名单元数据；原始 `AuditEvent.payload` 不直接暴露。
+- 新增 F015 进度服务、API、专项验证器和集成测试；不新增迁移，因为事件查询复用既有 `AuditEvent`。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F015
+```
+
+```text
+Ruff: passed
+format: 75 files already formatted
+mypy: Success, 40 source files
+golden: 3/3 cases passed
+full pytest: 119 passed, coverage 90.96%
+F015 targeted tests: 4 passed, 1 warning
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005 -> 0006 -> 0007 -> 0008 -> 0009 -> 0010 -> 0011
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- F015 达到 provisional 工程 `candidate_complete`，不等于生产级实时事件总线、长连接推送或正式 `verified`。
+- 当前只证明合成/契约运行下的用户隔离、状态摘要、事件排序、游标重连和 payload 脱敏；不证明生产认证和多实例部署行为。
+- F004 双人复核、F005–F015 正式 Goal Gate 外部证据和真实年报准确率声明限制保持不变；不启动 F016。
