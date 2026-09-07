@@ -519,3 +519,36 @@ machine preannotation fields in copies: none
 
 - 复核材料已具备交付条件，但 A/B 人工标签、冲突裁决和一致率统计仍为空。
 - 此工作单元不改变 F004 的 `provisional` 状态，不构成真实准确率证据，也不能由同一 Agent 代替 Reviewer A/B。
+
+## 2026-09-07：F006 provisional 核心金融指标计算
+
+### 验证范围
+
+- 15 项核心指标使用 Decimal 确定性公式计算，并保存定义版本、计算器版本、输入事实 ID 和输入快照。
+- 缺失输入、零分母和冲突事实返回结构化状态，不生成无穷值或猜测结果。
+- 增加 `CalculatedMetric` 持久化模型、F006 SQLite 迁移和用户范围计算 API。
+- 重复计算请求返回原结果；不同用户不能读取其他用户的运行。
+- 仅使用现有合成黄金数据和契约事实；未将真实年报机器结果作为黄金真值。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F006
+```
+
+```text
+Ruff: passed
+format: 44 files already formatted
+mypy: Success, 23 source files
+golden: 3/3 cases passed
+full pytest: 59 passed, coverage 91.40%
+F006 targeted tests: 6 passed
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005 -> 0006
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- F006 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
+- 15 项指标的工程计算和持久化契约已具备可复算证据；真实中文年报字段准确率仍未验证。
+- F004 双人复核、F005/F006 正式 Goal Gate 和真实年报准确率声明限制保持不变。

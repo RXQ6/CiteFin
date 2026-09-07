@@ -13,7 +13,7 @@
       "enabled": true,
       "status": "provisional",
       "requires_owner_approval": true,
-      "allowed_features": ["F004", "F005"],
+      "allowed_features": ["F004", "F005", "F006"],
       "real_report_accuracy_claim": "prohibited",
       "formal_verified_still_requires_goal_gate": true
     }
@@ -119,7 +119,7 @@
       "acceptance": ["核心字段映射到版本化标准概念", "原始值、标准值、单位、币种、期间和口径同时保留", "金额使用 Decimal，不使用二进制浮点", "冲突事实不被静默覆盖"],
       "start_mode": "provisional_engineering_progression",
       "start_reason": "F004 provisional engineering status approved by project owner",
-      "limitations": ["不得使用未经独立复核的真实年报作为黄金真值", "不得声明真实中文年报准确率", "不得提前实现 F006 指标计算"],
+      "limitations": ["不得使用未经独立复核的真实年报作为黄金真值", "不得声明真实中文年报准确率", "F006 仅可在 provisional 工程模式下使用合成或契约事实"],
       "verification": {
         "command": "make verify-feature FEATURE=F005",
         "mode": "provisional_engineering_progression",
@@ -138,11 +138,26 @@
       "id": "F006",
       "title": "核心金融指标计算",
       "description": "使用确定性公式计算 MVP 的 15 项核心财务指标。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F005"],
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner requested a usable provisional system before real-report independent review",
+      "limitations": ["仅使用合成或契约事实进行工程验证", "不得声明真实中文年报指标准确率", "正式 verified 仍需要独立 Goal Gate"],
       "acceptance": ["15 项指标由版本化公式计算", "每个结果保存输入事实、公式版本和计算轨迹", "零分母与缺失输入返回结构化状态", "黄金用例计算通过率为 100%"],
-      "verification": {"command": "make verify-feature FEATURE=F006", "evidence": []}
+      "verification": {
+        "command": "make verify-feature FEATURE=F006",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f006-核心金融指标计算",
+          "tests/unit/test_metrics.py",
+          "tests/integration/test_metrics_api.py",
+          "migrations/versions/20260907_0006_calculated_metrics.py",
+          "scripts/verify_f006.py"
+        ]
+      }
     },
     {
       "id": "F007",

@@ -4,12 +4,12 @@
 
 ## 当前状态
 
-- 最后更新：2026-09-06
+- 最后更新：2026-09-07
 - 更新人：Codex
-- 当前阶段：F001–F003 已验证；F004 处于透明 `provisional` 工程状态，F005 已完成本地机器验收并处于 `candidate_complete`；真实复核仍待完成
+- 当前阶段：F001–F003 已验证；F004 处于透明 `provisional` 工程状态，F005 已完成本地机器验收并处于 `candidate_complete`，F006 已完成 provisional 指标工程单元；真实复核和正式 Goal Gate 仍待完成
 - 最新已独立验证实现 commit：`11a1857`（fix: rank real statement candidates and reject period-range dates — stabilize F004）
 - 最新 F004 candidate 实现已推送并通过独立 CI；真实年报语义准确率和 Goal Gate 仍待完成
-- 测试状态：53/53 pytest 通过，覆盖率 90.66%；3/3 合成黄金用例通过；F005 专项 12/12 通过
+- 测试状态：59/59 pytest 通过，覆盖率 91.40%；3/3 合成黄金用例通过；F006 专项 6/6 通过；迁移升级和 Alembic 零漂移通过
 - 质量状态：F004 本地 Ruff、格式检查、严格 mypy、SQLite 升级、Alembic 零漂移和 PostgreSQL 17 独立 CI 均通过；10 份真实 PDF 的 30 个三表目标已完成端到端机器回放并全部定位，但真实中文年报准确率尚未验证
 - 本次变更摘要：F003 已实现页级文本与哈希、不可变坐标索引、表格候选、结构化失败、幂等重放、用户隔离与页数上限；F004 已实现确定性三表识别、报告期/合并口径判定、结构化缺失与人工确认边界。
 - 本次恢复验证：重建指向失效系统 Python 的 `.venv` 后，项目内可写临时目录下 25/25 pytest 通过，覆盖率 92.20%；未启动 F003。
@@ -65,10 +65,11 @@
 - [x] 为 F005 增加可执行专项验证器，覆盖专项测试、全量迁移升级和 Alembic 零漂移。
 - [x] F005 通过全量质量门禁和专项验证，状态转为本地 `candidate_complete`；未声明真实中文年报准确率。
 - [x] 校验 F004 10 份封存 PDF 的哈希/页数，并生成不含机器预标注的 Reviewer A/B 空白盲审副本。
+- [x] 在明确 provisional 工程边界后实现 F006 15 项 Decimal 指标、结果持久化、输入快照、结构化缺失/零分母状态和计算 API。
 
 ## 进行中
 
-- F004 双人复核与 Goal Gate 尚未完成；F005 虽已达到本地 `candidate_complete`，仍受 `provisional` 限制，真实准确率不得声明，F006 不得启动。
+- F004 双人复核与 Goal Gate 尚未完成；F005 和 F006 仍是 provisional 工程证据，真实准确率不得声明；后续 F007/F008 可继续按相同透明边界推进。
 
 ## 已知问题
 
@@ -88,7 +89,7 @@
 
 ## 下一步
 
-将 `artifacts/f004_review/reviewer_a.csv` 和 `reviewer_b.csv` 分别交给两名独立复核者，完成 30 个目标的双盲标注、冲突裁决和一致率/冲突率统计；由独立 Goal Gate 决定 F004 是否转为 `verified`，并为 F005 建立正式 Goal Gate 证据。在此之前不得启动 F006。
+完成本工作单元的全量质量门禁、迁移零漂移和 Git 检查点；随后按依赖优先推进 F007/F008 的 provisional 工程实现，同时保留 F004/F005/F006 的正式 Goal Gate 阻塞和真实年报准确率禁令。
 
 ## 恢复提示
 

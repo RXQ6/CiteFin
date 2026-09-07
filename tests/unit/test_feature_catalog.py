@@ -52,10 +52,8 @@ def test_feature_catalog_matches_authoritative_product_plan() -> None:
     candidate_complete = [
         feature for feature in features if feature["status"] == "candidate_complete"
     ]
-    assert len(candidate_complete) <= 1
-    if candidate_complete:
-        assert candidate_complete[0]["id"] in {"F004", "F005"}
-        assert candidate_complete[0]["owner"] == "codex"
+    assert {feature["id"] for feature in candidate_complete} <= {"F004", "F005", "F006"}
+    assert all(feature["owner"] == "codex" for feature in candidate_complete)
 
 
 def test_feature_catalog_dependencies_and_evidence_are_well_formed() -> None:

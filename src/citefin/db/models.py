@@ -65,6 +65,9 @@ class AnalysisRun(Base):
     financial_facts: Mapped[list[FinancialFact]] = relationship(
         back_populates="run", cascade="all, delete-orphan"
     )
+    calculated_metrics: Mapped[list[CalculatedMetric]] = relationship(
+        back_populates="run", cascade="all, delete-orphan"
+    )
 
 
 class Task(Base):
@@ -257,6 +260,39 @@ class FinancialFact(Base):
 
     run: Mapped[AnalysisRun] = relationship(back_populates="financial_facts")
     source_document: Mapped[SourceDocument] = relationship(back_populates="financial_facts")
+
+
+class CalculatedMetric(Base):
+    """One versioned, source-fact-backed deterministic metric result."""
+
+    __tablename__ = "calculated_metrics"
+    __table_args__ = (
+        UniqueConstraint(
+            "run_id", "metric_code", "period_end", name="uq_calculated_metrics_run_code_period"
+        ),
+        CheckConstraint(
+            "status IN ('calculated', 'missing_input', 'zero_denominator', 'conflict')",
+            name="calculated_metric_status_allowed",
+        ),
+    )
+
+    metric_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_runs.run_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    metric_code: Mapped[str] = mapped_column(String(64), nullable=False)
+    definition_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    period_end: Mapped[date] = mapped_column(Date, nullable=False)
+    input_fact_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    input_snapshot: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    value: Mapped[Decimal | None] = mapped_column(Numeric(38, 16))
+    unit: Mapped[str] = mapped_column(String(16), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    reason: Mapped[str | None] = mapped_column(Text)
+    calculator_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    calculated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    run: Mapped[AnalysisRun] = relationship(back_populates="calculated_metrics")
 
 
 class DocumentPage(Base):
