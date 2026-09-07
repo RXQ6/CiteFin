@@ -190,6 +190,53 @@
         </section>
       </div>
 
+      <section
+        id="evidence-panel"
+        class="card evidence-card"
+        aria-labelledby="evidence-title"
+        hidden
+      >
+        <div class="card-heading evidence-heading">
+          <div>
+            <p class="eyebrow">Step 03</p>
+            <h2 id="evidence-title">报告证据</h2>
+            <p id="evidence-report-meta" class="muted">尚未读取报告。</p>
+          </div>
+          <button id="refresh-evidence" class="button button-secondary" type="button">
+            刷新证据
+          </button>
+        </div>
+
+        <div id="evidence-message" class="notice notice-info" role="status" aria-live="polite">
+          报告生成后，可在这里查看 Claim 与原 PDF 页面的对应关系。
+        </div>
+
+        <div class="evidence-layout">
+          <div class="claim-column" aria-labelledby="claim-list-title">
+            <div class="subsection-heading">
+              <h3 id="claim-list-title">报告结论</h3>
+              <span id="claim-count" class="muted">—</span>
+            </div>
+            <div id="claim-list" class="claim-list" aria-live="polite">
+              <p class="empty-state">尚无报告结论。</p>
+            </div>
+          </div>
+
+          <div class="source-column" aria-labelledby="source-view-title">
+            <div class="subsection-heading">
+              <h3 id="source-view-title">证据与来源页</h3>
+              <span id="source-page-label" class="muted">—</span>
+            </div>
+            <div id="evidence-detail" class="evidence-detail">
+              <p class="empty-state">选择一条结论查看证据关系。</p>
+            </div>
+            <div id="pdf-frame-wrap" class="pdf-frame-wrap" hidden>
+              <iframe id="pdf-frame" title="原始 PDF 页级证据"></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <p class="disclaimer">
         CiteFin 只提供可追溯的研究辅助、数据分析和风险提示。页面不执行交易、转账或账户操作，也不构成收益保证或无条件买卖建议。
       </p>

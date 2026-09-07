@@ -2,6 +2,7 @@
 
 from datetime import date, datetime
 from typing import Annotated, Any
+from urllib.parse import quote
 
 from fastapi import APIRouter, File, HTTPException, Response, UploadFile, status
 from pydantic import BaseModel
@@ -10,7 +11,11 @@ from starlette.concurrency import run_in_threadpool
 from citefin.api.analysis_runs import UserIdHeader
 from citefin.api.dependencies import DatabaseSession, SettingsDependency
 from citefin.services.document_parsing import DocumentParsingError, parse_annual_report
-from citefin.services.documents import DocumentIngestionError, ingest_annual_report
+from citefin.services.documents import (
+    DocumentIngestionError,
+    ingest_annual_report,
+    read_owned_annual_report,
+)
 from citefin.services.statement_identification import (
     StatementIdentificationError,
     identify_statements,
@@ -114,6 +119,43 @@ async def _read_bounded(upload: UploadFile, maximum_bytes: int) -> bytes:
     finally:
         await upload.close()
     return bytes(content)
+
+
+@router.get("/{run_id}/documents/{source_id}/content", response_class=Response)
+async def get_source_document_content(
+    run_id: str,
+    source_id: str,
+    session: DatabaseSession,
+    settings: SettingsDependency,
+    user_id: UserIdHeader,
+) -> Response:
+    """Return an owned immutable PDF for the authenticated browser boundary."""
+
+    try:
+        document, content = await run_in_threadpool(
+            read_owned_annual_report,
+            session,
+            LocalObjectStore(settings.object_storage_root),
+            run_id=run_id,
+            source_id=source_id,
+            user_id=user_id,
+        )
+    except DocumentIngestionError as error:
+        raise HTTPException(
+            status_code=error.status_code,
+            detail={"code": error.code, "message": error.message},
+        ) from error
+    encoded_name = quote(document.file_name, safe="")
+    return Response(
+        content=content,
+        media_type="application/pdf",
+        headers={
+            "Cache-Control": "private, no-store",
+            "Content-Disposition": f"inline; filename*=UTF-8''{encoded_name}",
+            "ETag": f'"{document.sha256}"',
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @router.post(

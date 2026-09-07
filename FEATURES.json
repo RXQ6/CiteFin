@@ -423,11 +423,30 @@
       "id": "F017",
       "title": "证据查看界面",
       "description": "在报告与原 PDF 之间提供页级证据查看和跳转。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F007", "F016"],
       "acceptance": ["点击重大结论可定位到来源页", "显示证据片段、页码和来源文件", "证据与 Claim 对应关系清晰", "无证据或定位失败时明确提示"],
-      "verification": {"command": "make verify-feature FEATURE=F017", "evidence": []}
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner authorized completion of all remaining features after F016",
+      "limitations": ["页面只查看已持久化报告、Claim、Evidence 和已解析来源页，不生成或修复证据", "PDF 内容通过当前 X-User-ID 隔离边界读取，生产认证仍待实现", "不得声明真实中文年报证据覆盖率或页级定位准确率", "正式 verified 仍需要独立 Goal Gate"],
+      "verification": {
+        "command": "make verify-feature FEATURE=F017",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f017-证据查看界面",
+          "tests/integration/test_evidence_viewer_api.py",
+          "tests/integration/test_frontend.py",
+          "src/citefin/services/evidence_viewer.py",
+          "src/citefin/api/evidence_viewer.py",
+          "src/citefin/api/documents.py",
+          "src/citefin/static/index.html",
+          "src/citefin/static/assets/app.js",
+          "scripts/verify_f017.py"
+        ]
+      }
     },
     {
       "id": "F018",

@@ -213,3 +213,35 @@ def ingest_annual_report(
         idempotent_replay=False,
         storage_reused=not stored.created,
     )
+
+
+def read_owned_annual_report(
+    session: Session,
+    store: LocalObjectStore,
+    *,
+    run_id: str,
+    source_id: str,
+    user_id: str,
+) -> tuple[SourceDocument, bytes]:
+    """Read one owned PDF after validating its immutable content address."""
+
+    _owned_run(session, run_id, user_id)
+    document = session.scalar(
+        select(SourceDocument).where(
+            SourceDocument.source_id == source_id,
+            SourceDocument.run_id == run_id,
+        )
+    )
+    if document is None:
+        raise DocumentIngestionError(
+            "source_document_not_found",
+            "Source document was not found for this analysis run.",
+            404,
+        )
+    try:
+        content = store.read_pdf(document.sha256, document.storage_uri)
+    except StorageIntegrityError as error:
+        raise DocumentIngestionError(
+            "storage_integrity_error", "Stored PDF failed integrity verification.", 500
+        ) from error
+    return document, content

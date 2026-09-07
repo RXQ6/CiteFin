@@ -12,6 +12,7 @@ from citefin.api.checkpoints import router as checkpoints_router
 from citefin.api.documents import router as documents_router
 from citefin.api.evaluations import router as evaluations_router
 from citefin.api.evidence import router as evidence_router
+from citefin.api.evidence_viewer import router as evidence_viewer_router
 from citefin.api.facts import router as facts_router
 from citefin.api.financial_analysis import router as financial_analysis_router
 from citefin.api.goal_gate import router as goal_gate_router
@@ -40,6 +41,7 @@ def create_app() -> FastAPI:
     application.include_router(checkpoints_router, prefix="/api/v1")
     application.include_router(documents_router, prefix="/api/v1")
     application.include_router(evidence_router, prefix="/api/v1")
+    application.include_router(evidence_viewer_router, prefix="/api/v1")
     application.include_router(evaluations_router, prefix="/api/v1")
     application.include_router(facts_router, prefix="/api/v1")
     application.include_router(financial_analysis_router, prefix="/api/v1")

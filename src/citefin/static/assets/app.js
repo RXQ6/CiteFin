@@ -15,6 +15,16 @@ const taskList = document.querySelector("#task-list");
 const errorList = document.querySelector("#error-list");
 const eventList = document.querySelector("#event-list");
 const reportPeriodEnd = document.querySelector("#report-period-end");
+const evidencePanel = document.querySelector("#evidence-panel");
+const evidenceMessage = document.querySelector("#evidence-message");
+const evidenceReportMeta = document.querySelector("#evidence-report-meta");
+const refreshEvidenceButton = document.querySelector("#refresh-evidence");
+const claimCount = document.querySelector("#claim-count");
+const claimList = document.querySelector("#claim-list");
+const evidenceDetail = document.querySelector("#evidence-detail");
+const sourcePageLabel = document.querySelector("#source-page-label");
+const pdfFrameWrap = document.querySelector("#pdf-frame-wrap");
+const pdfFrame = document.querySelector("#pdf-frame");
 
 const state = {
   runId: null,
@@ -22,6 +32,7 @@ const state = {
   lastEventId: null,
   events: [],
   refreshTimer: null,
+  pdfObjectUrl: null,
 };
 
 const errorLabels = {
@@ -31,7 +42,22 @@ const errorLabels = {
   invalid_pdf: "文件不是有效 PDF",
   pdf_encrypted: "PDF 已加密",
   pdf_not_searchable: "PDF 不可检索",
+  report_not_found: "尚未生成可查看的报告",
+  run_not_found: "找不到该分析运行",
   source_document_not_found: "找不到源文件",
+  storage_integrity_error: "源 PDF 完整性校验失败",
+};
+
+const locatorReasons = {
+  claim_evidence_missing: "报告引用的 Evidence 不可用。",
+  claim_has_no_evidence: "这条结论没有关联 Evidence。",
+  claim_has_no_page_evidence: "这条结论没有可定位的 PDF 页级证据。",
+  evidence_target_unresolved: "Evidence 目标无法解析。",
+  page_not_parsed: "来源页尚未成功解析。",
+  page_out_of_range: "证据页码超出源文件范围。",
+  rule_has_no_source_page: "该 Evidence 是规则依据，不对应 PDF 页面。",
+  source_document_not_found: "来源文件不存在。",
+  source_page_unavailable: "来源页当前不可用。",
 };
 
 const statusLabels = {
@@ -112,6 +138,16 @@ function makeIdempotencyKey() {
 function showRun(run) {
   state.runId = run.run_id;
   runPanel.hidden = false;
+  evidencePanel.hidden = false;
+  clearPdfFrame();
+  claimList.replaceChildren();
+  appendEmpty(claimList, "报告生成后，点击“刷新证据”读取结论。");
+  evidenceDetail.replaceChildren();
+  appendEmpty(evidenceDetail, "选择一条结论查看证据关系。");
+  evidenceReportMeta.textContent = "尚未读取报告。";
+  claimCount.textContent = "—";
+  evidenceMessage.textContent = "报告生成后，可在这里查看 Claim 与原 PDF 页面的对应关系。";
+  evidenceMessage.className = "notice notice-info";
   runCompany.textContent = `${run.company_name} · ${run.security_code}`;
   runId.textContent = run.run_id;
   runNode.textContent = run.current_node || "—";
@@ -185,6 +221,193 @@ function appendEmpty(list, message) {
   item.className = "empty-state";
   item.textContent = message;
   list.append(item);
+}
+
+function clearPdfFrame() {
+  if (state.pdfObjectUrl) URL.revokeObjectURL(state.pdfObjectUrl);
+  state.pdfObjectUrl = null;
+  pdfFrame.removeAttribute("src");
+  pdfFrameWrap.hidden = true;
+  sourcePageLabel.textContent = "—";
+}
+
+function locatorMessage(reason) {
+  return locatorReasons[reason] ?? "页级证据当前不可用。";
+}
+
+async function openSourcePage(page) {
+  if (page.status !== "available" || !page.content_url || !state.userId) return;
+  sourcePageLabel.textContent = `正在读取 ${page.file_name ?? page.source_id} · 第 ${page.page_number} 页`;
+  let response;
+  try {
+    response = await fetch(page.content_url, { headers: apiHeaders(state.userId) });
+  } catch {
+    evidenceMessage.textContent = "无法连接到服务端读取源 PDF。";
+    evidenceMessage.className = "notice notice-error";
+    return;
+  }
+  if (!response.ok) {
+    let body = null;
+    try {
+      body = await response.json();
+    } catch {
+      // Use the bounded fallback below for non-JSON responses.
+    }
+    evidenceMessage.textContent = explainApiError(body, "源 PDF 读取失败。");
+    evidenceMessage.className = "notice notice-error";
+    return;
+  }
+  const blob = await response.blob();
+  clearPdfFrame();
+  state.pdfObjectUrl = URL.createObjectURL(blob);
+  pdfFrame.src = `${state.pdfObjectUrl}#page=${page.page_number}&view=FitH`;
+  pdfFrameWrap.hidden = false;
+  sourcePageLabel.textContent = `${page.file_name ?? page.source_id} · 第 ${page.page_number} 页`;
+}
+
+function sourceButton(page) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "source-link";
+  button.textContent = `${page.file_name ?? page.source_id} · 第 ${page.page_number} 页`;
+  if (page.status !== "available") {
+    button.disabled = true;
+    button.title = locatorMessage(page.unavailable_reason);
+  } else {
+    button.addEventListener("click", () => openSourcePage(page));
+  }
+  return button;
+}
+
+function renderSelectedClaim(claim, selectedButton) {
+  claimList.querySelectorAll(".claim-button").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button === selectedButton));
+  });
+  clearPdfFrame();
+  evidenceDetail.replaceChildren();
+  if (claim.evidence.length === 0) {
+    appendEmpty(evidenceDetail, locatorMessage(claim.unavailable_reason));
+    return;
+  }
+
+  let firstAvailablePage = null;
+  claim.evidence.forEach((item) => {
+    const container = document.createElement("article");
+    container.className = "evidence-item";
+    const header = document.createElement("div");
+    header.className = "evidence-item-header";
+    const relation = document.createElement("strong");
+    relation.textContent = `${item.evidence_type} · ${item.supports}`;
+    const id = document.createElement("code");
+    id.textContent = item.evidence_id;
+    header.append(relation, id);
+    container.append(header);
+
+    const excerptText = item.excerpt ?? item.source_pages.find((page) => page.excerpt)?.excerpt;
+    if (excerptText) {
+      const excerpt = document.createElement("blockquote");
+      excerpt.className = "evidence-excerpt";
+      excerpt.textContent = excerptText;
+      container.append(excerpt);
+    }
+
+    if (item.source_pages.length > 0) {
+      const links = document.createElement("div");
+      links.className = "source-link-list";
+      item.source_pages.forEach((page) => {
+        links.append(sourceButton(page));
+        if (!firstAvailablePage && page.status === "available") firstAvailablePage = page;
+      });
+      container.append(links);
+      const unavailablePages = item.source_pages.filter((page) => page.status !== "available");
+      unavailablePages.forEach((page) => {
+        const warning = document.createElement("p");
+        warning.className = "locator-warning";
+        warning.textContent = `${page.file_name ?? page.source_id} 第 ${page.page_number} 页：${locatorMessage(page.unavailable_reason)}`;
+        container.append(warning);
+      });
+    } else {
+      const warning = document.createElement("p");
+      warning.className = "locator-warning";
+      warning.textContent = locatorMessage(item.unavailable_reason);
+      container.append(warning);
+    }
+    evidenceDetail.append(container);
+  });
+  if (claim.missing_evidence_ids.length > 0) {
+    const warning = document.createElement("p");
+    warning.className = "locator-warning";
+    warning.textContent = `缺失 Evidence：${claim.missing_evidence_ids.join("、")}`;
+    evidenceDetail.append(warning);
+  }
+  if (firstAvailablePage) void openSourcePage(firstAvailablePage);
+}
+
+function renderEvidenceView(view) {
+  evidenceReportMeta.textContent = `报告 ${view.report_id} · v${view.version} · ${view.report_status}`;
+  claimCount.textContent = `${view.claims.length} 条结论`;
+  claimList.replaceChildren();
+  clearPdfFrame();
+
+  if (view.claims.length === 0) {
+    appendEmpty(claimList, "报告中没有可显示的 Claim。");
+    evidenceMessage.textContent = "报告没有可显示的结论。";
+    evidenceMessage.className = "notice notice-error";
+    return;
+  }
+  view.claims.forEach((claim, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "claim-button";
+    button.setAttribute("aria-pressed", "false");
+    const text = document.createElement("strong");
+    text.textContent = claim.text;
+    const metadata = document.createElement("span");
+    metadata.className = `locator-${claim.locator_status}`;
+    metadata.textContent = `${claim.claim_type} · ${claim.materiality} · ${claim.evidence.length} 项 Evidence`;
+    button.append(text, metadata);
+    button.addEventListener("click", () => renderSelectedClaim(claim, button));
+    claimList.append(button);
+    if (index === 0) renderSelectedClaim(claim, button);
+  });
+
+  if (view.missing_claim_ids.length > 0) {
+    evidenceMessage.textContent = `报告引用了 ${view.missing_claim_ids.length} 条不可用 Claim。`;
+    evidenceMessage.className = "notice notice-error";
+  } else {
+    evidenceMessage.textContent = "结论、Evidence 和来源页关系来自服务端持久化数据。";
+    evidenceMessage.className = "notice notice-success";
+  }
+}
+
+async function refreshEvidenceView() {
+  if (!state.runId || !state.userId) return;
+  refreshEvidenceButton.disabled = true;
+  refreshEvidenceButton.textContent = "正在读取…";
+  try {
+    const response = await fetch(
+      `${API_BASE}/analysis-runs/${encodeURIComponent(state.runId)}/evidence-view`,
+      { headers: apiHeaders(state.userId) },
+    );
+    let body = null;
+    try {
+      body = await response.json();
+    } catch {
+      // Use the bounded fallback below for non-JSON responses.
+    }
+    if (!response.ok) {
+      evidenceMessage.textContent = explainApiError(body, "报告证据读取失败。");
+      evidenceMessage.className = response.status === 404 ? "notice notice-info" : "notice notice-error";
+      return;
+    }
+    renderEvidenceView(body);
+  } catch {
+    evidenceMessage.textContent = "无法连接到服务端读取报告证据。";
+    evidenceMessage.className = "notice notice-error";
+  } finally {
+    refreshEvidenceButton.disabled = false;
+    refreshEvidenceButton.textContent = "刷新证据";
+  }
 }
 
 async function refreshProgress() {
@@ -324,3 +547,4 @@ async function submitAnalysis(event) {
 
 reportPeriodEnd.max = new Date().toISOString().slice(0, 10);
 form.addEventListener("submit", submitAnalysis);
+refreshEvidenceButton.addEventListener("click", refreshEvidenceView);

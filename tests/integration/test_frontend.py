@@ -14,6 +14,8 @@ def test_frontend_shell_exposes_accessible_analysis_controls() -> None:
     assert 'id="analysis-form"' in response.text
     assert 'id="report-file"' in response.text
     assert 'id="run-panel"' in response.text
+    assert 'id="evidence-panel"' in response.text
+    assert 'id="pdf-frame"' in response.text
     assert 'aria-live="polite"' in response.text
     assert "不执行交易" in response.text
 
@@ -27,6 +29,8 @@ def test_frontend_assets_use_real_progress_and_cursor_replay() -> None:
     assert script.headers["content-type"].startswith("text/javascript")
     assert "/progress" in script.text
     assert "/events" in script.text
+    assert "/evidence-view" in script.text
+    assert "#page=" in script.text
     assert "Last-Event-ID" not in script.text
     assert "setInterval" in script.text
     assert "模拟" not in script.text
