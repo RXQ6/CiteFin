@@ -85,7 +85,8 @@ def test_create_run_persists_complete_initial_bundle(api_harness: ApiHarness) ->
         assert event is not None and event.event_type == "run_created"
         assert checkpoint is not None and checkpoint.state_version == 1
         assert checkpoint.state_data["run_id"] == body["run_id"]
-        assert checkpoint.state_data["tasks"] == [body["task_id"]]
+        assert checkpoint.state_data["task_id"] == body["task_id"]
+        assert checkpoint.state_data["workflow_version"] == body["workflow_version"]
 
 
 def test_same_user_and_idempotency_key_replays_original_bundle(

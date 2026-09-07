@@ -63,6 +63,7 @@ def test_feature_catalog_matches_authoritative_product_plan() -> None:
         "F011",
         "F012",
         "F013",
+        "F014",
     }
     assert all(feature["owner"] == "codex" for feature in candidate_complete)
 

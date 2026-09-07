@@ -13,7 +13,7 @@
       "enabled": true,
       "status": "provisional",
       "requires_owner_approval": true,
-      "allowed_features": ["F004", "F005", "F006", "F007", "F008", "F009", "F010", "F011", "F012", "F013"],
+      "allowed_features": ["F004", "F005", "F006", "F007", "F008", "F009", "F010", "F011", "F012", "F013", "F014"],
       "real_report_accuracy_claim": "prohibited",
       "formal_verified_still_requires_goal_gate": true
     }
@@ -346,11 +346,26 @@
       "id": "F014",
       "title": "Checkpoint恢复",
       "description": "保存、校验并恢复 LangGraph 运行检查点。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F008"],
       "acceptance": ["关键节点后保存版本化 Checkpoint", "恢复时校验工作流版本、来源哈希和状态版本", "中断后不会重复不可幂等副作用", "黄金流程恢复成功率为 100%"],
-      "verification": {"command": "make verify-feature FEATURE=F014", "evidence": []}
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner requested continued development of the next task feature after F013",
+      "limitations": ["当前验证覆盖版本化状态、来源哈希和幂等恢复契约，不等同于完整 LangGraph 生产执行器", "黄金流程恢复成功率和真实年报准确率尚未声明", "正式 verified 仍需要独立 Goal Gate"],
+      "verification": {
+        "command": "make verify-feature FEATURE=F014",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f014-checkpoint恢复",
+          "tests/integration/test_checkpoints_api.py",
+          "src/citefin/services/checkpoints.py",
+          "src/citefin/api/checkpoints.py",
+          "scripts/verify_f014.py"
+        ]
+      }
     },
     {
       "id": "F015",

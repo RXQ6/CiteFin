@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from citefin.db.models import AnalysisRun, AuditEvent, Task, WorkflowCheckpoint
 from citefin.ids import new_prefixed_id
+from citefin.workflow import WORKFLOW_VERSION, FinanceAgentState, WorkflowNode
 
 
 @dataclass(frozen=True)
@@ -92,7 +93,7 @@ def create_analysis_run(session: Session, command: CreateAnalysisRunCommand) -> 
         status="created",
         current_node="create_run",
         model_profile="default-v1",
-        workflow_version="1.0.0",
+        workflow_version=WORKFLOW_VERSION,
         created_at=now,
         updated_at=now,
     )
@@ -115,8 +116,18 @@ def create_analysis_run(session: Session, command: CreateAnalysisRunCommand) -> 
         node="create_run",
         event_type="run_created",
         status="success",
-        payload={"task_id": task_id, "workflow_version": "1.0.0"},
+        payload={"task_id": task_id, "workflow_version": WORKFLOW_VERSION},
         created_at=now,
+    )
+    initial_state = FinanceAgentState(
+        run_id=run_id,
+        thread_id=thread_id,
+        task_id=task_id,
+        current_node=WorkflowNode.CREATE_RUN,
+        status="created",
+        workflow_version=WORKFLOW_VERSION,
+        state_version=1,
+        as_of=command.as_of,
     )
     checkpoint = WorkflowCheckpoint(
         checkpoint_id=checkpoint_id,
@@ -125,20 +136,7 @@ def create_analysis_run(session: Session, command: CreateAnalysisRunCommand) -> 
         node="create_run",
         state_version=1,
         state_uri=f"db://workflow_checkpoints/{checkpoint_id}",
-        state_data={
-            "run_id": run_id,
-            "thread_id": thread_id,
-            "as_of": command.as_of.isoformat(),
-            "company": {
-                "name": command.company_name,
-                "security_code": command.security_code,
-                "confirmed": False,
-            },
-            "report_period": command.report_period_end.isoformat(),
-            "tasks": [task_id],
-            "current_node": "create_run",
-            "status": "created",
-        },
+        state_data=initial_state.model_dump(mode="json"),
         created_at=now,
     )
     session.add_all([run, task, event, checkpoint])

@@ -55,8 +55,10 @@ class FinanceAgentState(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     run_id: str
+    thread_id: str | None = None
     task_id: str | None = None
     source_ids: list[str] = Field(default_factory=list)
+    source_hashes: dict[str, str] = Field(default_factory=dict)
     fact_ids: list[str] = Field(default_factory=list)
     metric_ids: list[str] = Field(default_factory=list)
     claim_ids: list[str] = Field(default_factory=list)
