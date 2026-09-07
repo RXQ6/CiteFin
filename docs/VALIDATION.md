@@ -846,3 +846,38 @@ alembic check: No new upgrade operations detected
 - F015 达到 provisional 工程 `candidate_complete`，不等于生产级实时事件总线、长连接推送或正式 `verified`。
 - 当前只证明合成/契约运行下的用户隔离、状态摘要、事件排序、游标重连和 payload 脱敏；不证明生产认证和多实例部署行为。
 - F004 双人复核、F005–F015 正式 Goal Gate 外部证据和真实年报准确率声明限制保持不变；不启动 F016。
+
+## 2026-09-07：F016 provisional 最小前端
+
+### 验证范围
+
+- FastAPI 根路径提供最小 UI，页面包含用户标识、公司名称、证券代码、报告期、分析关注点和 PDF 上传控件。
+- 页面调用已有 `POST /api/v1/analysis-runs` 和 `POST /api/v1/analysis-runs/{run_id}/documents`，错误只显示可操作的稳定错误信息。
+- 页面通过已有进度接口和有限 SSE 事件快照显示服务端状态，并以事件游标重连；没有本地生成的运行状态。
+- 页面提供键盘焦点样式和响应式布局；新增前端契约测试、F016 验证器和开发脚本入口；不新增数据库迁移。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F016
+node --check src/citefin/static/assets/app.js
+```
+
+```text
+Ruff: passed
+format: 76 files already formatted
+mypy: Success, 42 source files
+golden: 3/3 cases passed
+full pytest: 121 passed, 1 warning, coverage 90.98%
+F016 frontend contract tests: 2 passed (included in full pytest)
+F016 verification script: passed
+JavaScript syntax check: passed
+```
+
+首次执行 F016 门禁曾因 `src/citefin/main.py` 未经过 Ruff 格式化而停止；运行项目格式化入口后重新执行，以上结果为最终成功结果。
+
+### 结论与限制
+
+- F016 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
+- 当前只证明静态 UI、既有上传/进度 HTTP 契约、事件游标消费、键盘焦点和响应式资源的工程行为；不证明生产级认证、长连接事件推送、完整工作流执行、真实年报准确率或端到端完成率。
+- F004 双人复核、F005–F016 正式 Goal Gate 外部证据和真实年报准确率声明限制保持不变；F017 证据查看界面和 F018 端到端验收尚未启动。

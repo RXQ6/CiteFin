@@ -38,6 +38,10 @@ Windows PowerShell without GNU Make:
 
 The local API is available at `http://127.0.0.1:8000`, with interactive documentation at `/docs` and health endpoints at `/api/v1/health/live` and `/api/v1/health/ready`.
 
+The F016 minimal UI is available at `http://127.0.0.1:8000/`. It creates an analysis run,
+uploads a searchable annual-report PDF, and reads the server-backed progress and finite SSE
+lifecycle-event snapshots. It does not simulate progress or provide the F017 evidence viewer.
+
 Apply database migrations before using analysis endpoints:
 
 ```powershell
@@ -74,4 +78,6 @@ immutable object instead of creating another physical copy.
 
 ## Current status
 
-F001 (project initialization and health checks) and F002 (annual-report upload and file storage) are independently verified. Work is intentionally stopped before F003.
+F001–F003 are independently verified. F004 is provisional and F005–F016 are provisional
+engineering `candidate_complete` units; formal Goal Gate evidence and real annual-report
+accuracy remain pending. F017 evidence viewing and F018 end-to-end acceptance are not started.
