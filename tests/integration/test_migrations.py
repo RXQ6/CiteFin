@@ -28,6 +28,7 @@ def test_upgrade_head_creates_analysis_run_bundle(tmp_path: Path) -> None:
         "tasks",
         "risk_findings",
         "reports",
+        "evaluations",
         "workflow_checkpoints",
     }.issubset(inspect(engine).get_table_names())
     engine.dispose()

@@ -316,9 +316,14 @@ RiskFinding 组装；报告生成器不得修改这些来源实体。`content` �
 | `status` | enum | `passed/failed/error` |
 | `checks` | object[] | 每项含 code、result、evidence、severity |
 | `blocking_reasons` | object[] | 失败时不可为空 |
+| `input_snapshot` | object | 报告内容哈希、实体 ID 和数量快照 |
+| `node_hint` | string/null | 失败时指向最小修复节点 |
+| `repair_instruction` | string/null | 失败时的结构化修复说明 |
 | `created_at` | datetime | 必填 |
 
-Evaluator 不得调用业务工具；它只读取已经持久化的事实、指标、证据、报告和运行信号。
+同一 `report_id + evaluator_version` 只保存一个可重放结果。Evaluator 不得调用业务工具，
+也不得写入事实、指标、Claim、Evidence、Report 或 `verified` 状态；它只读取已经持久化的事实、
+指标、证据、报告和运行信号，并将输入快照、检查结果和失败修复指令持久化。
 
 ### 4.13 Approval
 

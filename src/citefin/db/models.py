@@ -73,6 +73,9 @@ class AnalysisRun(Base):
         back_populates="run", cascade="all, delete-orphan"
     )
     reports: Mapped[list[Report]] = relationship(back_populates="run", cascade="all, delete-orphan")
+    evaluations: Mapped[list[Evaluation]] = relationship(
+        back_populates="run", cascade="all, delete-orphan"
+    )
 
 
 class Task(Base):
@@ -449,6 +452,41 @@ class Report(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     run: Mapped[AnalysisRun] = relationship(back_populates="reports")
+    evaluations: Mapped[list[Evaluation]] = relationship(
+        back_populates="report", cascade="all, delete-orphan"
+    )
+
+
+class Evaluation(Base):
+    """One independent, auditable evaluation of a persisted report candidate."""
+
+    __tablename__ = "evaluations"
+    __table_args__ = (
+        UniqueConstraint("report_id", "evaluator_version", name="uq_evaluations_report_evaluator"),
+        CheckConstraint(
+            "status IN ('passed', 'failed', 'error')",
+            name="evaluation_status_allowed",
+        ),
+    )
+
+    evaluation_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_runs.run_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    report_id: Mapped[str] = mapped_column(
+        ForeignKey("reports.report_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    evaluator_version: Mapped[str] = mapped_column(String(128), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    checks: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    blocking_reasons: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    input_snapshot: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    node_hint: Mapped[str | None] = mapped_column(String(64))
+    repair_instruction: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    run: Mapped[AnalysisRun] = relationship(back_populates="evaluations")
+    report: Mapped[Report] = relationship(back_populates="evaluations")
 
 
 class DocumentPage(Base):

@@ -13,7 +13,7 @@
       "enabled": true,
       "status": "provisional",
       "requires_owner_approval": true,
-      "allowed_features": ["F004", "F005", "F006", "F007", "F008", "F009", "F010", "F011"],
+      "allowed_features": ["F004", "F005", "F006", "F007", "F008", "F009", "F010", "F011", "F012"],
       "real_report_accuracy_claim": "prohibited",
       "formal_verified_still_requires_goal_gate": true
     }
@@ -292,11 +292,28 @@
       "id": "F012",
       "title": "独立Evaluator",
       "description": "由独立评测器检查数据、计算、证据、报告和合规质量。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F011"],
       "acceptance": ["Evaluator 与生成节点分离", "评测结果包含结构化错误和修复指令", "必需检查失败时不能声明完成", "评测输入和结果可审计"],
-      "verification": {"command": "make verify-feature FEATURE=F012", "evidence": []}
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner authorized continued development of the next task feature",
+      "limitations": ["当前使用确定性评测规则读取合成或契约输入", "评测失败只生成修复指令，不写入 verified", "正式 verified 仍需要 Goal Gate", "不得声明真实中文年报报告质量或准确率"],
+      "verification": {
+        "command": "make verify-feature FEATURE=F012",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f012-独立evaluator",
+          "tests/unit/test_evaluation.py",
+          "tests/integration/test_evaluations_api.py",
+          "migrations/versions/20260907_0010_evaluations.py",
+          "src/citefin/services/evaluation.py",
+          "src/citefin/api/evaluations.py",
+          "scripts/verify_f012.py"
+        ]
+      }
     },
     {
       "id": "F013",

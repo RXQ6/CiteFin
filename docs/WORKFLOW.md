@@ -157,7 +157,9 @@ flowchart TD
 
 ### 5.12 goal_evaluator
 
-Evaluator 与生成器使用独立提示和独立调用，不得调用业务工具。
+Evaluator 与生成器使用独立版本和独立实现，不得调用业务工具或报告生成器；F012 当前使用确定性
+规则直接读取已经持久化的事实、指标、Claim、Evidence、RiskFinding、Report 和 AuditEvent。
+评测器持久化输入实体 ID/数量、报告内容哈希、逐项检查、阻断原因、最小修复节点和修复指令。
 
 必需检查：
 
@@ -171,6 +173,8 @@ Evaluator 与生成器使用独立提示和独立调用，不得调用业务工�
 - Checkpoint、Journal 和审计事件是否完整。
 
 通过时由 Goal Gate 设置 `verified`；失败时返回 `node_hint`、`error_code`、`evidence` 和 `repair_instruction`。
+F012 只允许生成 `passed/failed/error` 的 Evaluation；即使评测通过，也不能直接改变运行或报告的
+`verified` 状态。
 
 ### 5.13 revision_router
 
@@ -288,4 +292,3 @@ status, error_code, created_at
 ```
 
 前端通过 SSE 接收生命周期事件：`run_started`、`node_started`、`node_completed`、`task_blocked`、`awaiting_user`、`evaluation_failed`、`run_verified`、`run_failed`。
-

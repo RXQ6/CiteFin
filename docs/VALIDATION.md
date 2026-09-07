@@ -716,3 +716,35 @@ alembic check: No new upgrade operations detected
 - F011 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
 - 当前只证明合成/契约输入下的报告 Schema、证据引用和只读组装链路；不证明真实中文年报报告质量或准确率。
 - F004 双人复核、F005–F011 正式 Goal Gate 和真实年报准确率声明限制保持不变；不启动 F012。
+
+## 2026-09-07：F012 provisional 独立 Evaluator
+
+### 验证范围
+
+- 从已持久化的事实、指标、Claim、Evidence、RiskFinding、Report 和 AuditEvent 只读评测候选报告，不调用报告生成器或业务工具。
+- 检查报告 Schema、Claim/Evidence 覆盖与引用完整性、指标计算谱系、风险追溯、禁止投资措辞和报告审计事件。
+- 保存 `Evaluation` 的版本、状态、逐项检查、阻断原因、输入实体 ID/数量、报告内容哈希、最小修复节点和修复指令；重复评测返回同一结果，不修改报告或运行的 `verified` 状态。
+- 新增 `Evaluation` 模型、F012 SQLite 迁移、用户隔离评测 API、专项验证器和迁移契约测试。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F012
+```
+
+```text
+Ruff: passed
+format: 66 files already formatted
+mypy: Success, 34 source files
+golden: 3/3 cases passed
+full pytest: 106 passed, coverage 91.10%
+F012 targeted tests: 4 passed, 1 warning
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005 -> 0006 -> 0007 -> 0008 -> 0009 -> 0010
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- F012 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
+- 当前只证明合成/契约输入下的独立评测结果、失败修复路由和可审计快照；不证明真实中文年报报告质量或准确率。
+- F004 双人复核、F005–F012 正式 Goal Gate 和真实年报准确率声明限制保持不变；不启动 F013。
