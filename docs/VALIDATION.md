@@ -918,3 +918,37 @@ JavaScript syntax check: passed
 - F017 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
 - 当前只证明合成/契约数据下的只读证据投影、片段边界、页级跳转、对象完整性和用户隔离；不证明真实中文年报证据覆盖率、页码准确率或人工复核结果。
 - F004 双人复核及 F005–F017 正式 Goal Gate 外部证据仍待完成；F018 只允许执行可复现的合成黄金流程验收，不得冒充真实生产验收。
+
+## 2026-09-07：F018 端到端验收
+
+### 验证范围
+
+- 使用 G001 的 23 项合成事实和 15 项预期指标，通过公开 HTTP API 串联运行创建、三页 PDF 上传、解析、三表识别、事实标准化、指标、财务分析、风险、报告、证据查看、Evaluator 与 Goal Gate。
+- 验证运行创建、上传、解析、三表识别、事实、指标、分析、风险、报告、评测和 Gate 的重放不产生重复业务实体；Checkpoint 保存与恢复各只产生一个副作用事件。
+- 逐条统计合成报告的重大 Claim，要求每条至少有一个状态为 `available` 的来源页；读取受保护 PDF 并与上传字节完全一致。
+- 另建缺少 Evidence 的重大 Claim，验证独立评测失败后 Gate 返回 `revision_required`，进度无 `completed_at` 且报告保持 `candidate`。
+- F018 未新增迁移；同时补齐 F005 公开标准化接口与 F006 指标引擎之间的规范概念映射。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F018
+```
+
+```text
+Ruff: passed
+format: 80 files already formatted
+mypy: Success, 44 source files
+golden: 3/3 cases passed
+full pytest: 134 passed, 1 warning, coverage 90.91%
+F018 targeted success/failure flows: 2 passed, 1 warning
+F018 verification script: passed
+```
+
+开发期间的首轮定向运行先因未指定项目内 `UV_CACHE_DIR` 和 pytest 临时目录而遇到工作区外写权限错误；改用项目脚本同等环境后继续。随后验收依次发现 F005 缺少指标所需标签映射、`流动负债合计` 与 `负债合计` 正则重叠、Decimal 黄金值精度口径和评测检查字段名断言问题；逐项修正后，以上完整门禁为最终结果。
+
+### 结论与限制
+
+- F018 达到 provisional 工程 `candidate_complete`；产品清单 F001–F018 已无 `not_started` 功能，但 F004 及 F005–F018 的正式外部验证状态没有被改写。
+- G001 合成流程中的重大 Claim 页级证据覆盖率为 100%；该分母只包含本次合成报告的重大 Claim，不是生产指标，也不代表真实中文年报证据覆盖率或准确率。
+- 事实由测试以 `manual` 方式经公开 API 提交，未验证自动表格抽取、真实用户认证、多实例部署、真实年报人工真值或 Reviewer A/B；正式 `verified` 仍需独立证据与 Goal Gate。
