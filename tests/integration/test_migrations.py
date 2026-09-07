@@ -26,6 +26,7 @@ def test_upgrade_head_creates_analysis_run_bundle(tmp_path: Path) -> None:
         "statement_identifications",
         "stored_objects",
         "tasks",
+        "risk_findings",
         "workflow_checkpoints",
     }.issubset(inspect(engine).get_table_names())
     engine.dispose()

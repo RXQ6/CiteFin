@@ -13,7 +13,7 @@
       "enabled": true,
       "status": "provisional",
       "requires_owner_approval": true,
-      "allowed_features": ["F004", "F005", "F006", "F007", "F008", "F009"],
+      "allowed_features": ["F004", "F005", "F006", "F007", "F008", "F009", "F010"],
       "real_report_accuracy_claim": "prohibited",
       "formal_verified_still_requires_goal_gate": true
     }
@@ -238,11 +238,28 @@
       "id": "F010",
       "title": "风险识别节点",
       "description": "使用确定性规则和受控推断识别财务风险。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F006", "F008"],
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner authorized development of the next task feature after F009",
+      "limitations": ["当前仅使用已持久化 CalculatedMetric 和 FinancialFact", "规则为确定性工程实现，不证明真实中文年报风险识别准确率", "正式 verified 仍需要独立 Goal Gate", "不得声明真实中文年报准确率"],
       "acceptance": ["风险包含严重程度、规则依据、证据和限制", "高风险至少关联一个事实和一个规则或指标", "数据不足时降低置信度或停止判断", "输出不包含收益保证和无条件买卖建议"],
-      "verification": {"command": "make verify-feature FEATURE=F010", "evidence": []}
+      "verification": {
+        "command": "make verify-feature FEATURE=F010",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f010-风险识别节点",
+          "tests/unit/test_risk_detection.py",
+          "tests/integration/test_risk_detection_api.py",
+          "migrations/versions/20260907_0008_risk_findings.py",
+          "src/citefin/services/risk_detection.py",
+          "src/citefin/api/risk_detection.py",
+          "scripts/verify_f010.py"
+        ]
+      }
     },
     {
       "id": "F011",

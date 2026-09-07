@@ -276,6 +276,7 @@ created → validating → running → candidate_complete → evaluating → ver
 | `risk_id` | string | 主键 |
 | `run_id` | string | 外键 |
 | `risk_code` | string | 版本化规则代码 |
+| `period_end` | date | 风险判断所属报告期 |
 | `category` | enum | `profitability/cashflow/solvency/working_capital/data_quality` |
 | `severity` | enum | `critical/high/medium/low` |
 | `title` | string | 必填 |
@@ -283,6 +284,7 @@ created → validating → running → candidate_complete → evaluating → ver
 | `claim_ids` | string[] | 不可为空 |
 | `status` | enum | `open/qualified/dismissed` |
 | `limitations` | string[] | 可为空 |
+| `confidence` | decimal | `0..1`；数据不足时降低或为 0 |
 
 ### 4.11 Report
 

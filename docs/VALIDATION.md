@@ -650,3 +650,36 @@ alembic check: No new upgrade operations detected
 - F009 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
 - F009 的数值来源是已有 `CalculatedMetric`，推断只由版本化规则生成；这证明工程链路可复算，不证明真实中文年报准确率。
 - F004 双人复核、F005–F009 正式 Goal Gate 和真实年报准确率声明限制保持不变。
+
+## 2026-09-07：F010 provisional 风险识别节点
+
+### 验证范围
+
+- 从同一分析运行、同一报告期的 15 项 `CalculatedMetric` 读取可用指标，使用版本化确定性规则生成风险发现。
+- 每个风险发现保存严重程度、类别、限制、置信度、规则代码和 Claim 引用；高严重度发现同时关联至少一个 `FinancialFact` 和一个规则或指标 Evidence。
+- 缺失、冲突或零分母指标生成 `data_quality` 限制，置信度为 0，并停止对应风险规则判断；缺少高风险事实引用时严重程度降级。
+- API 强制用户范围与报告期校验，结果按运行和报告期幂等重放；输出不包含收益保证或无条件买卖建议。
+- 新增 `RiskFinding` 模型、F010 SQLite 迁移、风险 API、专项验证器和迁移契约测试。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F010
+```
+
+```text
+Ruff: passed
+format: 58 files already formatted
+mypy: Success, 30 source files
+golden: 3/3 cases passed
+full pytest: 98 passed, coverage 92.27%
+F010 targeted tests: 5 passed, 1 warning
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005 -> 0006 -> 0007 -> 0008
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- F010 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
+- 当前规则只证明确定性工程链路、证据挂接、数据不足降级和幂等 API；不证明真实中文年报风险识别准确率。
+- F004 双人复核、F005–F010 正式 Goal Gate 和真实年报准确率声明限制保持不变；不启动 F011。

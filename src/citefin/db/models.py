@@ -69,6 +69,9 @@ class AnalysisRun(Base):
         back_populates="run", cascade="all, delete-orphan"
     )
     claims: Mapped[list[Claim]] = relationship(back_populates="run", cascade="all, delete-orphan")
+    risk_findings: Mapped[list[RiskFinding]] = relationship(
+        back_populates="run", cascade="all, delete-orphan"
+    )
 
 
 class Task(Base):
@@ -371,6 +374,53 @@ class Evidence(Base):
     source_document: Mapped[SourceDocument | None] = relationship()
     fact: Mapped[FinancialFact | None] = relationship()
     metric: Mapped[CalculatedMetric | None] = relationship(back_populates="evidence")
+
+
+class RiskFinding(Base):
+    """One deterministic, evidence-backed financial risk finding."""
+
+    __tablename__ = "risk_findings"
+    __table_args__ = (
+        UniqueConstraint(
+            "run_id", "risk_code", "period_end", name="uq_risk_findings_run_code_period"
+        ),
+        CheckConstraint(
+            "category IN ("
+            "'profitability', 'cashflow', 'solvency', 'working_capital', 'data_quality'"
+            ")",
+            name="risk_finding_category_allowed",
+        ),
+        CheckConstraint(
+            "severity IN ('critical', 'high', 'medium', 'low')",
+            name="risk_finding_severity_allowed",
+        ),
+        CheckConstraint(
+            "status IN ('open', 'qualified', 'dismissed')",
+            name="risk_finding_status_allowed",
+        ),
+        CheckConstraint(
+            "confidence >= 0 AND confidence <= 1",
+            name="risk_finding_confidence_range",
+        ),
+    )
+
+    risk_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_runs.run_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    risk_code: Mapped[str] = mapped_column(String(128), nullable=False)
+    period_end: Mapped[date] = mapped_column(Date, nullable=False)
+    category: Mapped[str] = mapped_column(String(32), nullable=False)
+    severity: Mapped[str] = mapped_column(String(16), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    claim_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    limitations: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    confidence: Mapped[Decimal] = mapped_column(Numeric(5, 4), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    run: Mapped[AnalysisRun] = relationship(back_populates="risk_findings")
 
 
 class DocumentPage(Base):
