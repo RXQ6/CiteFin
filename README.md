@@ -78,6 +78,6 @@ immutable object instead of creating another physical copy.
 
 ## Current status
 
-F001–F003 are independently verified. F004 is provisional and F005–F016 are provisional
+F001–F003 are independently verified. F004 is provisional and F005–F017 are provisional
 engineering `candidate_complete` units; formal Goal Gate evidence and real annual-report
-accuracy remain pending. F017 evidence viewing and F018 end-to-end acceptance are not started.
+accuracy remain pending. F018 end-to-end acceptance is not started.

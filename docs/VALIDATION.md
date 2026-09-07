@@ -881,3 +881,40 @@ JavaScript syntax check: passed
 - F016 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
 - 当前只证明静态 UI、既有上传/进度 HTTP 契约、事件游标消费、键盘焦点和响应式资源的工程行为；不证明生产级认证、长连接事件推送、完整工作流执行、真实年报准确率或端到端完成率。
 - F004 双人复核、F005–F016 正式 Goal Gate 外部证据和真实年报准确率声明限制保持不变；F017 证据查看界面和 F018 端到端验收尚未启动。
+
+## 2026-09-07：F017 provisional 证据查看界面
+
+### 验证范围
+
+- 验证用户范围 evidence-view API 能将报告 Claim、Evidence、Fact/Metric 来源链解析为文件、页码、locator 和最多 500 字符的页文本片段。
+- 验证点击结论时前端使用受保护 PDF 内容接口读取不可变对象，并以浏览器 blob `#page=N` 定位来源页；用户标识不写入 URL。
+- 验证其他用户无法读取证据视图或 PDF，读取对象前校验 SHA-256 内容地址。
+- 验证缺失 Evidence、规则型 Evidence、未解析页、来源缺失和越界页返回明确状态与原因。
+- F017 不新增迁移；全量测试包含既有迁移契约检查。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F017
+uv run pytest tests/integration/test_evidence_viewer_api.py tests/integration/test_frontend.py --no-cov
+node --check src/citefin/static/assets/app.js
+```
+
+```text
+Ruff: passed
+format: 79 files already formatted
+mypy: Success, 44 source files
+golden: 3/3 cases passed
+full pytest: 124 passed, 1 warning, coverage 90.89%
+F017 targeted tests: 5 passed, 1 warning
+F017 verification script: passed
+JavaScript syntax check: passed
+```
+
+首次定向测试的 5 个断言全部通过，但因只运行局部测试导致项目全局覆盖率为 46.90%，命令被 90% 门槛拒绝；改用 `--no-cov` 复跑定向集，并由完整门禁验证全量覆盖率。首次完整门禁另发现 metric 来源引用列表缺少显式可空 locator 类型注解；修正后以上最终门禁通过。
+
+### 结论与限制
+
+- F017 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
+- 当前只证明合成/契约数据下的只读证据投影、片段边界、页级跳转、对象完整性和用户隔离；不证明真实中文年报证据覆盖率、页码准确率或人工复核结果。
+- F004 双人复核及 F005–F017 正式 Goal Gate 外部证据仍待完成；F018 只允许执行可复现的合成黄金流程验收，不得冒充真实生产验收。
