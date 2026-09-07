@@ -396,11 +396,28 @@
       "id": "F016",
       "title": "最小前端",
       "description": "提供财报上传、任务创建和运行进度的最小用户界面。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F002", "F015"],
       "acceptance": ["用户可以创建分析并上传 PDF", "上传与运行错误具有可操作提示", "页面展示真实运行进度而非模拟状态", "基本键盘操作和响应式布局可用"],
-      "verification": {"command": "make verify-feature FEATURE=F016", "evidence": []}
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner authorized continued development after F015",
+      "limitations": ["页面只接入已有分析运行、上传、进度和有限 SSE 接口，不实现报告证据跳转", "当前 X-User-ID 仅是内部用户隔离边界，不等同于生产认证", "不得声明真实中文年报准确率或端到端完成率", "正式 verified 仍需要独立 Goal Gate"],
+      "verification": {
+        "command": "make verify-feature FEATURE=F016",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f016-最小前端",
+          "tests/integration/test_frontend.py",
+          "src/citefin/main.py",
+          "src/citefin/static/index.html",
+          "src/citefin/static/assets/app.js",
+          "src/citefin/static/assets/app.css",
+          "scripts/verify_f016.py"
+        ]
+      }
     },
     {
       "id": "F017",

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="CiteFin 证据驱动的年度报告分析任务界面"
+    />
+    <title>CiteFin | 年度报告分析</title>
+    <link rel="stylesheet" href="/assets/app.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="shell header-content">
+        <a class="brand" href="/" aria-label="CiteFin 首页">
+          <span class="brand-mark" aria-hidden="true">CF</span>
+          <span>
+            <strong>CiteFin</strong>
+            <small>Evidence-first research</small>
+          </span>
+        </a>
+        <span class="status-chip">辅助决策 · 不执行交易</span>
+      </div>
+    </header>
+
+    <main class="shell page-content">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">年度报告分析</p>
+        <h1 id="page-title">把一份年报，变成可追溯的分析任务。</h1>
+        <p class="intro-copy">
+          填写任务信息并上传可检索的中文年报 PDF。页面展示的运行状态和生命周期事件均直接来自 CiteFin API。
+        </p>
+      </section>
+
+      <div class="workspace-grid">
+        <section class="card form-card" aria-labelledby="create-title">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Step 01</p>
+              <h2 id="create-title">创建分析任务</h2>
+            </div>
+            <span class="section-number" aria-hidden="true">01</span>
+          </div>
+
+          <div class="notice notice-info" role="note">
+            <strong>本地身份边界</strong>
+            <span>用户标识仅用于当前 API 的数据隔离，不等同于生产认证。</span>
+          </div>
+
+          <form id="analysis-form" novalidate>
+            <div class="field-grid">
+              <label class="field field-full" for="user-id">
+                <span>用户标识 <span class="required" aria-hidden="true">*</span></span>
+                <input
+                  id="user-id"
+                  name="user_id"
+                  type="text"
+                  minlength="1"
+                  maxlength="128"
+                  autocomplete="off"
+                  placeholder="例如 local-researcher"
+                  required
+                />
+                <small>用于 X-User-ID 数据隔离。</small>
+              </label>
+
+              <label class="field" for="company-name">
+                <span>公司名称 <span class="required" aria-hidden="true">*</span></span>
+                <input
+                  id="company-name"
+                  name="company_name"
+                  type="text"
+                  maxlength="200"
+                  autocomplete="organization"
+                  placeholder="例如 示例股份有限公司"
+                  required
+                />
+              </label>
+
+              <label class="field" for="security-code">
+                <span>证券代码 <span class="required" aria-hidden="true">*</span></span>
+                <input
+                  id="security-code"
+                  name="security_code"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="(?:00[0-3]|30[01]|60[0135]|688)\d{3}"
+                  maxlength="6"
+                  placeholder="例如 600001"
+                  required
+                />
+                <small>支持项目约束内的 A 股代码格式。</small>
+              </label>
+
+              <label class="field" for="report-period-end">
+                <span>报告期截止日 <span class="required" aria-hidden="true">*</span></span>
+                <input id="report-period-end" name="report_period_end" type="date" required />
+              </label>
+
+              <label class="field" for="analysis-focus">
+                <span>分析关注点</span>
+                <select id="analysis-focus" name="analysis_focus">
+                  <option value="comprehensive">综合分析</option>
+                  <option value="profitability">盈利质量</option>
+                  <option value="cashflow">现金流</option>
+                  <option value="solvency">偿债能力</option>
+                </select>
+              </label>
+
+              <label class="field field-full" for="report-file">
+                <span>年度报告 PDF <span class="required" aria-hidden="true">*</span></span>
+                <input
+                  id="report-file"
+                  name="file"
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  required
+                />
+                <small>需要可检索、未加密的中文年度报告 PDF，默认上限 50 MiB。</small>
+              </label>
+            </div>
+
+            <button id="submit-button" class="button button-primary" type="submit">
+              创建并上传报告
+            </button>
+            <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
+          </form>
+        </section>
+
+        <section id="run-panel" class="card run-card" aria-labelledby="progress-title" hidden>
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Step 02</p>
+              <h2 id="progress-title">运行进度</h2>
+            </div>
+            <span id="run-status-badge" class="status-badge status-created">created</span>
+          </div>
+
+          <div class="run-summary">
+            <div>
+              <span class="summary-label">公司</span>
+              <strong id="run-company">—</strong>
+            </div>
+            <div>
+              <span class="summary-label">运行 ID</span>
+              <code id="run-id">—</code>
+            </div>
+            <div>
+              <span class="summary-label">当前节点</span>
+              <strong id="run-node">—</strong>
+            </div>
+            <div>
+              <span class="summary-label">数据更新时间</span>
+              <time id="run-updated">—</time>
+            </div>
+          </div>
+
+          <div id="run-message" class="notice notice-info" role="status" aria-live="polite">
+            等待服务端返回运行状态。
+          </div>
+
+          <div class="subsection">
+            <div class="subsection-heading">
+              <h3>任务</h3>
+              <span id="task-count" class="muted">—</span>
+            </div>
+            <ul id="task-list" class="task-list" aria-live="polite">
+              <li class="empty-state">创建任务后，这里会显示服务端任务状态。</li>
+            </ul>
+          </div>
+
+          <div class="subsection">
+            <div class="subsection-heading">
+              <h3>最近错误</h3>
+              <span class="muted">已脱敏</span>
+            </div>
+            <ul id="error-list" class="error-list" aria-live="polite">
+              <li class="empty-state">暂无服务端错误。</li>
+            </ul>
+          </div>
+
+          <details class="events-details">
+            <summary>生命周期事件</summary>
+            <p class="muted event-help">事件来自有限 SSE 快照，重连时使用服务端游标。</p>
+            <ol id="event-list" class="event-list">
+              <li class="empty-state">尚未收到事件。</li>
+            </ol>
+          </details>
+        </section>
+      </div>
+
+      <p class="disclaimer">
+        CiteFin 只提供可追溯的研究辅助、数据分析和风险提示。页面不执行交易、转账或账户操作，也不构成收益保证或无条件买卖建议。
+      </p>
+    </main>
+
+    <script type="module" src="/assets/app.js"></script>
+  </body>
+</html>

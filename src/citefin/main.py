@@ -1,6 +1,10 @@
 """FastAPI application entry point."""
 
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from citefin import __version__
 from citefin.api.analysis_runs import router as analysis_runs_router
@@ -16,6 +20,8 @@ from citefin.api.metrics import router as metrics_router
 from citefin.api.progress import router as progress_router
 from citefin.api.reports import router as reports_router
 from citefin.api.risk_detection import router as risk_detection_router
+
+STATIC_DIR = Path(__file__).with_name("static")
 
 
 def create_app() -> FastAPI:
@@ -42,6 +48,18 @@ def create_app() -> FastAPI:
     application.include_router(progress_router, prefix="/api/v1")
     application.include_router(risk_detection_router, prefix="/api/v1")
     application.include_router(reports_router, prefix="/api/v1")
+    application.mount(
+        "/assets",
+        StaticFiles(directory=STATIC_DIR / "assets"),
+        name="frontend-assets",
+    )
+
+    @application.get("/", include_in_schema=False)
+    def frontend_index() -> FileResponse:
+        """Serve the F016 minimal UI without exposing a second API surface."""
+
+        return FileResponse(STATIC_DIR / "index.html", media_type="text/html")
+
     return application
 
 
