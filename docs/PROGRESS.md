@@ -7,11 +7,11 @@
 - 最后更新：2026-09-07
 - 更新人：Codex
 - 当前阶段：F001–F003 已验证；F004 处于透明 `provisional` 工程状态，F005 已完成本地机器验收并处于 `candidate_complete`，F006 已完成 provisional 指标工程单元；真实复核和正式 Goal Gate 仍待完成
-- 最新已独立验证实现 commit：`11a1857`（fix: rank real statement candidates and reject period-range dates — stabilize F004）
-- 最新 F004 candidate 实现已推送并通过独立 CI；真实年报语义准确率和 Goal Gate 仍待完成
+- 最新本地工程检查点：`f311796`（feat: add provisional F006 metric engine — enable usable deterministic analysis）；最新已独立验证实现仍为 `11a1857`
+- 最新 F004 candidate 实现已推送并通过独立 CI；F006 为本地 provisional 工程实现，真实年报语义准确率和 Goal Gate 仍待完成
 - 测试状态：59/59 pytest 通过，覆盖率 91.40%；3/3 合成黄金用例通过；F006 专项 6/6 通过；迁移升级和 Alembic 零漂移通过
 - 质量状态：F004 本地 Ruff、格式检查、严格 mypy、SQLite 升级、Alembic 零漂移和 PostgreSQL 17 独立 CI 均通过；10 份真实 PDF 的 30 个三表目标已完成端到端机器回放并全部定位，但真实中文年报准确率尚未验证
-- 本次变更摘要：F003 已实现页级文本与哈希、不可变坐标索引、表格候选、结构化失败、幂等重放、用户隔离与页数上限；F004 已实现确定性三表识别、报告期/合并口径判定、结构化缺失与人工确认边界。
+- 本次变更摘要：F003 已实现页级文本与哈希、不可变坐标索引、表格候选、结构化失败、幂等重放、用户隔离与页数上限；F004 已实现确定性三表识别、报告期/合并口径判定、结构化缺失与人工确认边界；F006 已实现 15 项 Decimal 指标、结果快照和计算 API。
 - 本次恢复验证：重建指向失效系统 Python 的 `.venv` 后，项目内可写临时目录下 25/25 pytest 通过，覆盖率 92.20%；未启动 F003。
 
 ## 已完成
