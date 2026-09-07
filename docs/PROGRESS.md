@@ -7,7 +7,7 @@
 - 最后更新：2026-09-07
 - 更新人：Codex
 - 当前阶段：F001–F003 已验证；F004 处于透明 `provisional` 工程状态，F005–F010 已完成 provisional 工程单元并处于 `candidate_complete`；真实复核和正式 Goal Gate 仍待完成
-- 最新本地工程检查点：待提交 F010 原子检查点（F009 检查点为 `82b4031`）
+- 最新本地工程检查点：`67af349`（feat: add provisional F010 risk detection — persist evidence-backed findings）
 - F004 candidate 实现已推送并通过独立 CI；F005–F010 为本地 provisional 工程实现，真实年报语义/风险准确率和 Goal Gate 仍待完成
 - 测试状态：98/98 pytest 通过，覆盖率 92.27%；3/3 合成黄金用例通过；F006 专项 6/6、F007 专项 2/2、F008 专项 26/26、F009 专项 6/6、F010 专项 5/5 通过；迁移升级和 Alembic 零漂移通过
 - 质量状态：F004 本地 Ruff、格式检查、严格 mypy、SQLite 升级、Alembic 零漂移和 PostgreSQL 17 独立 CI 均通过；F010 确定性风险规则、证据挂接、数据不足降级和幂等 API 已通过本地门禁；真实中文年报准确率尚未验证
