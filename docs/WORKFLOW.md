@@ -176,7 +176,15 @@ Evaluator 与生成器使用独立版本和独立实现，不得调用业务工�
 F012 只允许生成 `passed/failed/error` 的 Evaluation；即使评测通过，也不能直接改变运行或报告的
 `verified` 状态。
 
-### 5.13 revision_router
+### 5.13 goal_gate
+
+- 只接受当前运行、当前候选报告的独立 `Evaluation`。
+- 必须确认评测状态为 `passed`，且所有必需检查项均存在并通过；否则拒绝终止并保留阻断原因。
+- 通过时由 Goal Gate 原子写入 `GoalGateDecision`、报告 `verified`、运行 `verified`、`finalize` 节点和完成时间。
+- 失败时只写 `revision_required` 或 `blocked`、`node_hint`、`repair_instruction` 和审计事件；报告保留 `candidate`。
+- 同一报告与 Goal Gate 版本只能产生一个决策，重复请求返回原决策。
+
+### 5.14 revision_router
 
 根据评测错误回到最小必要节点：
 
@@ -191,7 +199,7 @@ F012 只允许生成 `passed/failed/error` 的 Evaluation；即使评测通过�
 
 禁止无原因从头重跑整个工作流。
 
-### 5.14 finalize
+### 5.15 finalize
 
 - 冻结已验证报告版本。
 - 写入报告、证据包、Evaluation、最终 Checkpoint 和完成事件。

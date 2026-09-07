@@ -161,6 +161,15 @@ def advance_state(
             "invalid_node_transition",
             f"Cannot transition from {state.current_node} to {next_node}.",
         )
+    if status == "verified" and (
+        state.current_node != WorkflowNode.GOAL_EVALUATOR
+        or next_node != WorkflowNode.FINALIZE
+        or event_type != "goal_gate_verified"
+    ):
+        raise WorkflowError(
+            "verified_requires_goal_gate",
+            "Only Goal Gate may transition an evaluated run to verified.",
+        )
     now = datetime.now(run.as_of.tzinfo)
     event = AuditEvent(
         event_id=new_prefixed_id("event"),

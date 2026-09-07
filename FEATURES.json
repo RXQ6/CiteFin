@@ -13,7 +13,7 @@
       "enabled": true,
       "status": "provisional",
       "requires_owner_approval": true,
-      "allowed_features": ["F004", "F005", "F006", "F007", "F008", "F009", "F010", "F011", "F012"],
+      "allowed_features": ["F004", "F005", "F006", "F007", "F008", "F009", "F010", "F011", "F012", "F013"],
       "real_report_accuracy_claim": "prohibited",
       "formal_verified_still_requires_goal_gate": true
     }
@@ -319,11 +319,28 @@
       "id": "F013",
       "title": "Goal Gate",
       "description": "根据独立评测和完成证据执行唯一终止判定。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F012"],
       "acceptance": ["只有 Goal Gate 可以写入 verified", "未满足证据、计算或合规门禁时拒绝完成", "失败反馈路由到最小必要节点", "终止原因和证据可审计"],
-      "verification": {"command": "make verify-feature FEATURE=F013", "evidence": []}
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner authorized continued development of the next task feature",
+      "limitations": ["当前只验证确定性 Goal Gate 与合成/契约评测结果", "正式 Goal Gate 运行仍需真实年报独立证据和人工复核", "不得声明真实中文年报准确率"],
+      "verification": {
+        "command": "make verify-feature FEATURE=F013",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f013-goal-gate",
+          "tests/integration/test_goal_gate_api.py",
+          "tests/integration/test_workflow.py",
+          "migrations/versions/20260907_0011_goal_gate_decisions.py",
+          "src/citefin/services/goal_gate.py",
+          "src/citefin/api/goal_gate.py",
+          "scripts/verify_f013.py"
+        ]
+      }
     },
     {
       "id": "F014",

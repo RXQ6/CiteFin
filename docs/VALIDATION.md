@@ -748,3 +748,35 @@ alembic check: No new upgrade operations detected
 - F012 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
 - 当前只证明合成/契约输入下的独立评测结果、失败修复路由和可审计快照；不证明真实中文年报报告质量或准确率。
 - F004 双人复核、F005–F012 正式 Goal Gate 和真实年报准确率声明限制保持不变；不启动 F013。
+
+## 2026-09-07：F013 provisional Goal Gate
+
+### 验证范围
+
+- 新增唯一 Goal Gate 服务和 `GoalGateDecision` 持久化实体，要求当前候选报告存在独立 Evaluation 且所有必需检查通过后才允许写入 `verified`。
+- 验证通过、评测失败修订、缺少评测阻断、幂等重放、用户隔离和普通工作流迁移禁止伪造 `verified`。
+- 通过时冻结报告并完成运行；失败时保留候选报告，写入最小修复节点、阻断原因、修复指令、证据引用和 `goal_gate_decision` 审计事件。
+- 新增 F013 SQLite 迁移、Goal Gate API、专项验证器、迁移契约测试和工作流边界测试。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F013
+```
+
+```text
+Ruff: passed
+format: 69 files already formatted
+mypy: Success, 36 source files
+golden: 3/3 cases passed
+full pytest: 110 passed, coverage 91.21%
+F013 targeted tests: 6 passed, 1 warning
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005 -> 0006 -> 0007 -> 0008 -> 0009 -> 0010 -> 0011
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- F013 达到 provisional 工程 `candidate_complete`，不等于真实生产 Goal Gate 或正式 `verified`。
+- 当前只证明合成/契约 Evaluation 下的终止状态边界、失败路由、审计和幂等行为；不证明真实中文年报准确率。
+- F004 双人复核、F005–F013 正式 Goal Gate 外部证据和真实年报准确率声明限制保持不变；不启动 F014。

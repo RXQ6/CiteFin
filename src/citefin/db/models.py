@@ -76,6 +76,9 @@ class AnalysisRun(Base):
     evaluations: Mapped[list[Evaluation]] = relationship(
         back_populates="run", cascade="all, delete-orphan"
     )
+    goal_gate_decisions: Mapped[list[GoalGateDecision]] = relationship(
+        back_populates="run", cascade="all, delete-orphan"
+    )
 
 
 class Task(Base):
@@ -487,6 +490,41 @@ class Evaluation(Base):
 
     run: Mapped[AnalysisRun] = relationship(back_populates="evaluations")
     report: Mapped[Report] = relationship(back_populates="evaluations")
+
+
+class GoalGateDecision(Base):
+    """One auditable terminal decision made from an independent evaluation."""
+
+    __tablename__ = "goal_gate_decisions"
+    __table_args__ = (
+        UniqueConstraint("report_id", "gate_version", name="uq_goal_gate_report_version"),
+        CheckConstraint(
+            "decision IN ('verified', 'revision_required', 'blocked', 'error')",
+            name="goal_gate_decision_allowed",
+        ),
+    )
+
+    gate_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_runs.run_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    report_id: Mapped[str] = mapped_column(
+        ForeignKey("reports.report_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    evaluation_id: Mapped[str | None] = mapped_column(
+        ForeignKey("evaluations.evaluation_id", ondelete="SET NULL"), index=True
+    )
+    gate_version: Mapped[str] = mapped_column(String(128), nullable=False)
+    decision: Mapped[str] = mapped_column(String(32), nullable=False)
+    evidence_refs: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    blocking_reasons: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    node_hint: Mapped[str | None] = mapped_column(String(64))
+    repair_instruction: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    run: Mapped[AnalysisRun] = relationship(back_populates="goal_gate_decisions")
+    report: Mapped[Report] = relationship()
+    evaluation: Mapped[Evaluation | None] = relationship()
 
 
 class DocumentPage(Base):

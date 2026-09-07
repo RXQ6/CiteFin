@@ -208,3 +208,11 @@
 - 否决方案：复用报告生成器内部校验、让 Evaluator 调用业务工具、直接修改事实/指标/报告，或由 Evaluator 写入 `verified`。
 - 影响范围：`Evaluation` 模型、F012 迁移、独立评测服务、评测 API、专项验证器和文档；不实现 F013，不改变 Goal Gate 的 `verified` 权限。
 - 约束：当前只用合成或契约输入验证确定性检查、证据覆盖、指标谱系、风险追溯、审计事件和合规措辞；正式 Goal Gate 与真实中文年报准确率继续禁止声明。
+
+## 2026-09-07：F013 由唯一 Goal Gate 写入终止状态
+
+- 决策：F013 新增 `GoalGateDecision`，仅 Goal Gate 服务能在独立 Evaluation 全部必需检查通过且报告仍为 `candidate` 时，将报告和运行写入 `verified`；其他结果写入 `revision_required` 或 `blocked`，并保存修复节点、原因和证据引用。
+- 原因：`verified` 是不可逆的高影响生命周期状态，必须与报告生成、独立评测和普通工作流迁移隔离；持久化决策可审计终止理由并支持幂等重放。
+- 否决方案：让任意节点通过状态迁移直接写入 `verified`、只依据 HTTP 成功返回完成、或在缺少 Evaluation 时默认通过。
+- 影响范围：`GoalGateDecision` 模型、F013 迁移、Goal Gate 服务/API、工作流 verified 防护、验证器和文档；不启动 F014。
+- 约束：当前只用合成或契约 Evaluation 验证状态边界，不伪造人工复核、真实年报准确率或正式外部验收；交易、资金和投资指令仍不在范围内。

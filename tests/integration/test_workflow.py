@@ -96,3 +96,22 @@ def test_invalid_or_foreign_transition_is_rejected(tmp_path: Path) -> None:
         advance_state(session, state, "workflow_user", WorkflowNode.FINALIZE)
     with sessions() as session, pytest.raises(WorkflowError, match="not found"):
         advance_state(session, state, "other_user", WorkflowNode.REQUEST_GUARD)
+
+
+def test_verified_transition_requires_goal_gate_event(tmp_path: Path) -> None:
+    client, sessions = _harness(tmp_path)
+    run_id = _run(client)
+    state = FinanceAgentState(
+        run_id=run_id,
+        current_node=WorkflowNode.GOAL_EVALUATOR,
+        status="evaluating",
+        as_of=datetime(2026, 4, 11, tzinfo=UTC),
+    )
+    with sessions() as session, pytest.raises(WorkflowError, match="Only Goal Gate"):
+        advance_state(
+            session,
+            state,
+            "workflow_user",
+            WorkflowNode.FINALIZE,
+            status="verified",
+        )

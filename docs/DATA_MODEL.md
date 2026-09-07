@@ -23,6 +23,7 @@ AnalysisRun
 ├── RiskFinding ── Claim
 ├── Report ── Claim
 ├── Evaluation
+├── GoalGateDecision
 ├── Approval
 ├── AuditEvent
 └── WorkflowCheckpoint
@@ -41,6 +42,7 @@ AnalysisRun
 - `evidence_id`: `ev_<uuid7>`
 - `report_id`: `report_<uuid7>`
 - `evaluation_id`: `eval_<uuid7>`
+- `gate_id`: `gate_<uuid7>`
 
 ### 3.2 时间
 
@@ -325,7 +327,30 @@ RiskFinding 组装；报告生成器不得修改这些来源实体。`content` �
 也不得写入事实、指标、Claim、Evidence、Report 或 `verified` 状态；它只读取已经持久化的事实、
 指标、证据、报告和运行信号，并将输入快照、检查结果和失败修复指令持久化。
 
-### 4.13 Approval
+### 4.13 GoalGateDecision
+
+Goal Gate 依据同一运行的独立 `Evaluation` 做唯一终止判定。只有该服务可以将候选报告和运行写入
+`verified`；拒绝时保存最小修复节点、阻断原因和证据引用，不修改事实或指标。
+
+| 字段 | 类型 | 约束 |
+| --- | --- | --- |
+| `gate_id` | string | 主键 |
+| `run_id` | string | 外键 |
+| `report_id` | string | 外键 |
+| `evaluation_id` | string/null | 外键；缺少评测时为空 |
+| `gate_version` | string | 必填 |
+| `decision` | enum | `verified/revision_required/blocked/error` |
+| `evidence_refs` | string[] | 终止判定依据 |
+| `blocking_reasons` | object[] | 拒绝或阻断原因 |
+| `node_hint` | string/null | 失败时指向最小修复节点 |
+| `repair_instruction` | string/null | 失败时的修复说明 |
+| `created_at` | datetime | 必填 |
+
+同一 `report_id + gate_version` 只保存一个幂等决策。Goal Gate 通过时报告状态冻结为 `verified`，
+运行状态进入 `verified` 并写入完成时间；失败时运行进入 `revision_required` 或 `blocked`，报告保留
+`candidate` 状态。
+
+### 4.14 Approval
 
 记录用户对冲突口径、身份修正或敏感导出的决定。
 
@@ -339,7 +364,7 @@ RiskFinding 组装；报告生成器不得修改这些来源实体。`content` �
 | `decided_by` | string/null | 决定后必填 |
 | `decided_at` | datetime/null | 决定后必填 |
 
-### 4.14 AuditEvent 与 WorkflowCheckpoint
+### 4.15 AuditEvent 与 WorkflowCheckpoint
 
 `AuditEvent` 保存不可变事件：节点进入/退出、工具请求、权限结果、状态迁移、人工决定和评测结果。
 最小字段为 `event_id`、`run_id`、`trace_id`、`node`、`event_type`、`status`、`payload` 和
