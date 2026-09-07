@@ -371,8 +371,9 @@ Goal Gate 依据同一运行的独立 `Evaluation` 做唯一终止判定。只�
 `created_at`。
 
 `WorkflowCheckpoint` 保存 LangGraph 恢复数据：`run_id`、`thread_id`、`checkpoint_id`、`node`、
-`state_version`、`state_uri`、`state_data`、`created_at`。`state_data` 只保存控制状态和业务实体引用；
-Checkpoint 不代替业务表，业务真值仍写入对应实体。
+`state_version`、`state_uri`、`state_data`、`created_at`。`state_data` 由类型化 `FinanceAgentState`
+序列化而来，只保存控制状态、业务实体 ID 和 `source_id -> sha256` 来源完整性快照；Checkpoint 不代替业务表，
+业务真值仍写入对应实体。同一运行的 `state_version` 唯一，重复保存相同状态返回原 Checkpoint，冲突状态被拒绝。
 
 ## 5. 数据质量规则
 

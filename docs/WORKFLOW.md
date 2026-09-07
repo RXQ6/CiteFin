@@ -26,22 +26,19 @@ LLM 不直接访问文件、数据库或计算模块。所有能力必须注册�
 | --- | --- | --- |
 | `run_id` | 分析运行 ID | API，仅初始化 |
 | `thread_id` | LangGraph 持久化线程 | API，仅初始化 |
+| `task_id` | 当前任务 ID | 运行初始化/任务节点 |
 | `as_of` | 分析信息截止时间 | API，仅初始化 |
-| `company` | 公司名称、代码和确认状态 | 请求校验节点 |
-| `report_period` | 报告期间 | 请求校验节点 |
-| `source_documents` | 来源 ID 与解析状态 | 文档节点 |
-| `tasks` | 当前任务图摘要 | Harness Task System |
-| `financial_facts` | 事实 ID，不在 State 内复制全文 | 标准化节点 |
-| `metrics` | 指标 ID | 计算节点 |
-| `risk_findings` | 风险 ID | 风险节点 |
-| `claims` | 原子结论 ID | 分析与报告节点 |
-| `evidence_map` | Claim 到 Evidence 的映射 | 证据节点 |
+| `source_ids` | 来源 ID，不在 State 内复制文件或正文 | 文档节点 |
+| `source_hashes` | 来源 ID 到 SHA-256 的恢复完整性快照 | Checkpoint 服务 |
+| `fact_ids` | 事实 ID，不在 State 内复制全文 | 标准化节点 |
+| `metric_ids` | 指标 ID | 计算节点 |
+| `claim_ids` | 原子结论 ID | 分析与报告节点 |
 | `report_id` | 当前报告版本 | 报告节点 |
-| `evaluation_id` | 最近评测 | Evaluator |
-| `errors` | 结构化错误列表 | 所有节点 |
-| `retry_budget` | 节点重试预算 | Harness |
+| `last_error` | 最近结构化错误 | 所有节点 |
 | `current_node` | 当前节点 | LangGraph |
 | `status` | 运行状态 | Harness/Goal Gate |
+| `workflow_version` | 工作流契约版本 | API/Checkpoint 服务 |
+| `state_version` | 单调递增状态版本 | Checkpoint 服务 |
 
 State 只保存引用和控制状态；原始 PDF、页面文本、事实表和报告正文写入专用存储。
 
@@ -287,7 +284,12 @@ T01 请求与身份校验
 - 每次 Evaluation 后。
 - 最终完成前。
 
-恢复时先校验工作流版本、来源哈希和状态版本。确定性节点可从已持久化结果复用；模型节点只有在输入语义键相同且缓存仍有效时复用。
+F014 通过 `POST /api/v1/analysis-runs/{run_id}/checkpoints` 保存状态，
+通过 `POST /api/v1/analysis-runs/{run_id}/checkpoints/{checkpoint_id}/restore` 恢复状态。
+保存时以 `(run_id, state_version)` 幂等；恢复时先校验用户归属、工作流版本、状态契约、节点/线程、状态版本和
+`source_id -> sha256` 来源完整性快照。恢复成功只更新运行控制状态并写入一次 `checkpoint_restored` 审计事件，
+不会重新创建来源、事实、指标、报告或其他业务实体；重复恢复不重复该审计副作用。确定性节点可从已持久化结果复用；
+模型节点只有在输入语义键相同且缓存仍有效时复用。当前尚未实现完整 LangGraph 执行器在每个业务节点后的自动保存。
 
 ## 10. 可观测性
 

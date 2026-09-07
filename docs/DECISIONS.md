@@ -216,3 +216,11 @@
 - 否决方案：让任意节点通过状态迁移直接写入 `verified`、只依据 HTTP 成功返回完成、或在缺少 Evaluation 时默认通过。
 - 影响范围：`GoalGateDecision` 模型、F013 迁移、Goal Gate 服务/API、工作流 verified 防护、验证器和文档；不启动 F014。
 - 约束：当前只用合成或契约 Evaluation 验证状态边界，不伪造人工复核、真实年报准确率或正式外部验收；交易、资金和投资指令仍不在范围内。
+
+## 2026-09-07：F014 使用现有 Checkpoint 表实现版本化恢复
+
+- 决策：复用既有 `WorkflowCheckpoint` 表，将 `FinanceAgentState` 的控制字段和来源 SHA-256 快照保存为版本化 JSON；新增用户范围的保存/恢复服务和 API，并以 `(run_id, state_version)` 的唯一约束保证同版本幂等。
+- 原因：已有表已经覆盖 `thread_id`、节点、状态版本和状态载荷；复用它可以避免无必要的迁移，同时让恢复前能够校验活动工作流版本、状态契约、节点/线程一致性和来源哈希未漂移。
+- 备选方案：增加独立恢复表、只保存内存状态、或恢复时重新执行所有业务节点；未采用，因为会重复不可幂等副作用或扩大持久化范围。
+- 影响范围：`FinanceAgentState` 增加 `thread_id` 与 `source_hashes`，初始运行快照改为类型化状态；新增 `checkpoints` API、服务、专项验证器和集成测试；完整 LangGraph 执行器仍不在本工作单元内。
+- 约束：来源哈希不匹配、工作流版本不一致、状态版本冲突和跨用户访问必须拒绝；`verified` Checkpoint 仍须有 Goal Gate 通过决策；当前只做 provisional 工程验证，不声明黄金流程恢复成功率或真实年报准确率。

@@ -780,3 +780,36 @@ alembic check: No new upgrade operations detected
 - F013 达到 provisional 工程 `candidate_complete`，不等于真实生产 Goal Gate 或正式 `verified`。
 - 当前只证明合成/契约 Evaluation 下的终止状态边界、失败路由、审计和幂等行为；不证明真实中文年报准确率。
 - F004 双人复核、F005–F013 正式 Goal Gate 外部证据和真实年报准确率声明限制保持不变；不启动 F014。
+
+## 2026-09-07：F014 provisional Checkpoint 恢复
+
+### 验证范围
+
+- 将初始运行快照统一为可验证的 `FinanceAgentState`，并保存版本化 `thread_id`、工作流节点、状态版本和来源哈希引用。
+- 验证 Checkpoint 保存的工作流版本、来源归属/哈希、状态版本递增、同版本冲突和跨用户隔离。
+- 验证恢复时的状态契约、工作流版本、节点、线程和来源哈希校验；恢复会更新运行控制状态并写入一次 `checkpoint_restored` 审计事件。
+- 验证重复保存和重复恢复只返回原结果，不重复创建 Checkpoint 或恢复审计副作用。
+- 新增 F014 Checkpoint 服务、API、专项验证器和集成测试；不新增迁移，因为既有 `workflow_checkpoints` 表已满足持久化契约。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F014
+```
+
+```text
+Ruff: passed
+format: 72 files already formatted
+mypy: Success, 38 source files
+golden: 3/3 cases passed
+full pytest: 115 passed, coverage 90.70%
+F014 targeted tests: 5 passed, 1 warning
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005 -> 0006 -> 0007 -> 0008 -> 0009 -> 0010 -> 0011
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- F014 达到 provisional 工程 `candidate_complete`，不等于完整 LangGraph 生产执行器或正式 `verified`。
+- 当前只证明合成/契约状态下的版本化恢复、来源完整性和幂等副作用边界；不证明黄金流程恢复成功率或真实中文年报准确率。
+- F004 双人复核、F005–F014 正式 Goal Gate 外部证据和真实年报准确率声明限制保持不变；不启动 F015。
