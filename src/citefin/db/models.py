@@ -68,6 +68,7 @@ class AnalysisRun(Base):
     calculated_metrics: Mapped[list[CalculatedMetric]] = relationship(
         back_populates="run", cascade="all, delete-orphan"
     )
+    claims: Mapped[list[Claim]] = relationship(back_populates="run", cascade="all, delete-orphan")
 
 
 class Task(Base):
@@ -293,6 +294,83 @@ class CalculatedMetric(Base):
     calculated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     run: Mapped[AnalysisRun] = relationship(back_populates="calculated_metrics")
+    evidence: Mapped[list[Evidence]] = relationship(back_populates="metric")
+
+
+class Claim(Base):
+    """One atomic statement that may be supported by one or more evidence items."""
+
+    __tablename__ = "claims"
+    __table_args__ = (
+        CheckConstraint(
+            "claim_type IN ('fact', 'calculation', 'inference', 'limitation')",
+            name="claim_type_allowed",
+        ),
+        CheckConstraint("materiality IN ('major', 'minor')", name="claim_materiality_allowed"),
+        CheckConstraint(
+            "status IN ('draft', 'supported', 'unsupported', 'rejected')",
+            name="claim_status_allowed",
+        ),
+    )
+
+    claim_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_runs.run_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    claim_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    materiality: Mapped[str] = mapped_column(String(16), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    evidence_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    created_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    run: Mapped[AnalysisRun] = relationship(back_populates="claims")
+    evidence: Mapped[list[Evidence]] = relationship(
+        back_populates="claim", cascade="all, delete-orphan"
+    )
+
+
+class Evidence(Base):
+    """A single auditable link from a claim to one source, fact, metric, or rule."""
+
+    __tablename__ = "evidence"
+    __table_args__ = (
+        CheckConstraint(
+            "evidence_type IN ('source_locator', 'fact', 'metric', 'rule')",
+            name="evidence_type_allowed",
+        ),
+        CheckConstraint(
+            "supports IN ('supports', 'contradicts', 'qualifies')",
+            name="evidence_supports_allowed",
+        ),
+    )
+
+    evidence_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    claim_id: Mapped[str] = mapped_column(
+        ForeignKey("claims.claim_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    evidence_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    source_id: Mapped[str | None] = mapped_column(
+        ForeignKey("source_documents.source_id", ondelete="CASCADE"), index=True
+    )
+    page_number: Mapped[int | None] = mapped_column(Integer)
+    locator: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    fact_id: Mapped[str | None] = mapped_column(
+        ForeignKey("financial_facts.fact_id", ondelete="CASCADE"), index=True
+    )
+    metric_id: Mapped[str | None] = mapped_column(
+        ForeignKey("calculated_metrics.metric_id", ondelete="CASCADE"), index=True
+    )
+    rule_id: Mapped[str | None] = mapped_column(String(128))
+    excerpt: Mapped[str | None] = mapped_column(Text)
+    supports: Mapped[str] = mapped_column(String(16), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    claim: Mapped[Claim] = relationship(back_populates="evidence")
+    source_document: Mapped[SourceDocument | None] = relationship()
+    fact: Mapped[FinancialFact | None] = relationship()
+    metric: Mapped[CalculatedMetric | None] = relationship(back_populates="evidence")
 
 
 class DocumentPage(Base):

@@ -52,7 +52,7 @@ def test_feature_catalog_matches_authoritative_product_plan() -> None:
     candidate_complete = [
         feature for feature in features if feature["status"] == "candidate_complete"
     ]
-    assert {feature["id"] for feature in candidate_complete} <= {"F004", "F005", "F006"}
+    assert {feature["id"] for feature in candidate_complete} <= {"F004", "F005", "F006", "F007"}
     assert all(feature["owner"] == "codex" for feature in candidate_complete)
 
 

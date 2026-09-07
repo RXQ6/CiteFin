@@ -13,7 +13,7 @@
       "enabled": true,
       "status": "provisional",
       "requires_owner_approval": true,
-      "allowed_features": ["F004", "F005", "F006"],
+      "allowed_features": ["F004", "F005", "F006", "F007"],
       "real_report_accuracy_claim": "prohibited",
       "formal_verified_still_requires_goal_gate": true
     }
@@ -163,11 +163,25 @@
       "id": "F007",
       "title": "Evidence数据模型",
       "description": "建立 Claim、Evidence、事实、指标和来源定位之间的可追溯关系。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F003"],
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner requested a usable provisional system before real-report independent review",
+      "limitations": ["只验证合成或契约事实与来源定位", "不得声明真实中文年报证据覆盖率", "正式 verified 仍需要独立 Goal Gate"],
       "acceptance": ["Evidence 能定位来源文件、页码、章节或表格行", "Claim 与事实、指标或来源定位建立显式关联", "证据不支持对应结论时验证失败", "重大数字和重大结论证据覆盖率可计算"],
-      "verification": {"command": "make verify-feature FEATURE=F007", "evidence": []}
+      "verification": {
+        "command": "make verify-feature FEATURE=F007",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f007-evidence数据模型",
+          "tests/integration/test_evidence_api.py",
+          "migrations/versions/20260907_0007_claims_evidence.py",
+          "scripts/verify_f007.py"
+        ]
+      }
     },
     {
       "id": "F008",

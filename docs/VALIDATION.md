@@ -552,3 +552,36 @@ alembic check: No new upgrade operations detected
 - F006 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
 - 15 项指标的工程计算和持久化契约已具备可复算证据；真实中文年报字段准确率仍未验证。
 - F004 双人复核、F005/F006 正式 Goal Gate 和真实年报准确率声明限制保持不变。
+
+## 2026-09-07：F007 provisional Evidence 数据模型
+
+### 验证范围
+
+- 增加 Claim 与 Evidence 持久化模型，支持来源页定位、FinancialFact、CalculatedMetric 和规则四类主证据。
+- Claim 与 Evidence API 强制用户范围校验；Evidence 必须指向且只能指向一个主证据目标。
+- 来源页定位必须存在于已解析的 `DocumentPage`；事实和指标必须属于同一分析运行。
+- 证据支持 Claim 时更新支持状态，并写入不可变审计事件。
+- F007 迁移可从空 SQLite 库升级到 head，且 Alembic 无漂移。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F007
+```
+
+```text
+Ruff: passed
+format: 47 files already formatted
+mypy: Success, 25 source files
+golden: 3/3 cases passed
+full pytest: 61 passed, coverage 90.59%
+F007 targeted tests: 2 passed
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005 -> 0006 -> 0007
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- F007 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
+- 当前只提供证据实体和最小写入接口；报告生成、独立 Evaluator、Goal Gate 和真实年报证据覆盖率尚未完成。
+- 真实年报双人复核和准确率声明限制保持不变。
