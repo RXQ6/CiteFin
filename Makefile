@@ -39,6 +39,8 @@ verify-feature:
 		$(MAKE) check && uv run python scripts/verify_f007.py; \
 	elif [ "$(FEATURE)" = "F008" ]; then \
 		$(MAKE) check && uv run python scripts/verify_f008.py; \
+	elif [ "$(FEATURE)" = "F009" ]; then \
+		$(MAKE) check && uv run python scripts/verify_f009.py; \
 	else \
 		echo "No executable verifier is registered for $(FEATURE)"; \
 		exit 2; \

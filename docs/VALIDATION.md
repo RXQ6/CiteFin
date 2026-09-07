@@ -617,3 +617,36 @@ alembic check: No new upgrade operations detected
 - F008 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
 - F008 完成后按项目负责人指令暂停，不启动 F009 或其他后续功能。
 - F004 双人复核、F005–F008 正式 Goal Gate 和真实年报准确率声明限制保持不变。
+
+## 2026-09-07：F009 财务分析节点
+
+### 验证范围
+
+- 从已持久化的 15 项 `CalculatedMetric` 生成版本化计算 Claim；每条 Claim 保留 metric Evidence。
+- 对缺失、冲突和零分母指标生成明确的 limitation Claim，不以零或无穷值替代。
+- 使用带版本 `rule_id` 的确定性规则生成受控 inference Claim，并同时保存指标 Evidence 和规则 Evidence。
+- API 强制用户范围和目标期间校验，结果按分析版本幂等重放；不生成交易指令，不允许无 Evidence 的数字结论。
+- 保留 provisional 工程边界：未实现独立 Evaluator、风险实体、报告生成和真实年报准确率验证。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F009
+```
+
+```text
+Ruff: passed
+format: 54 files already formatted
+mypy: Success, 28 source files
+golden: 3/3 cases passed
+full pytest: 93 passed, coverage 91.98%
+F009 targeted tests: 6 passed
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005 -> 0006 -> 0007
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- F009 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
+- F009 的数值来源是已有 `CalculatedMetric`，推断只由版本化规则生成；这证明工程链路可复算，不证明真实中文年报准确率。
+- F004 双人复核、F005–F009 正式 Goal Gate 和真实年报准确率声明限制保持不变。

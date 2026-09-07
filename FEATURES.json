@@ -13,7 +13,7 @@
       "enabled": true,
       "status": "provisional",
       "requires_owner_approval": true,
-      "allowed_features": ["F004", "F005", "F006", "F007", "F008"],
+      "allowed_features": ["F004", "F005", "F006", "F007", "F008", "F009"],
       "real_report_accuracy_claim": "prohibited",
       "formal_verified_still_requires_goal_gate": true
     }
@@ -212,11 +212,27 @@
       "id": "F009",
       "title": "财务分析节点",
       "description": "基于已验证事实和指标生成区分事实与推断的原子财务结论。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F006", "F008"],
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner requested continued usable-system development before formal Goal Gate review",
+      "limitations": ["当前使用确定性规则生成 Claim，不调用自由生成式财务结论", "只读取已持久化的 CalculatedMetric 结果", "正式 verified 仍需要独立 Goal Gate", "不得声明真实中文年报准确率"],
       "acceptance": ["只读取已验证事实和指标", "每个重大结论均为原子 Claim", "事实、计算和推断明确区分", "禁止生成无证据数字或投资指令"],
-      "verification": {"command": "make verify-feature FEATURE=F009", "evidence": []}
+      "verification": {
+        "command": "make verify-feature FEATURE=F009",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f009-财务分析节点",
+          "tests/unit/test_financial_analysis.py",
+          "tests/integration/test_financial_analysis_api.py",
+          "src/citefin/services/financial_analysis.py",
+          "src/citefin/api/financial_analysis.py",
+          "scripts/verify_f009.py"
+        ]
+      }
     },
     {
       "id": "F010",
