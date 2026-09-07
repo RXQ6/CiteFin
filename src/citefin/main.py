@@ -13,6 +13,7 @@ from citefin.api.financial_analysis import router as financial_analysis_router
 from citefin.api.goal_gate import router as goal_gate_router
 from citefin.api.health import router as health_router
 from citefin.api.metrics import router as metrics_router
+from citefin.api.progress import router as progress_router
 from citefin.api.reports import router as reports_router
 from citefin.api.risk_detection import router as risk_detection_router
 
@@ -38,6 +39,7 @@ def create_app() -> FastAPI:
     application.include_router(financial_analysis_router, prefix="/api/v1")
     application.include_router(goal_gate_router, prefix="/api/v1")
     application.include_router(metrics_router, prefix="/api/v1")
+    application.include_router(progress_router, prefix="/api/v1")
     application.include_router(risk_detection_router, prefix="/api/v1")
     application.include_router(reports_router, prefix="/api/v1")
     return application

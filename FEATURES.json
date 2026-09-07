@@ -371,11 +371,26 @@
       "id": "F015",
       "title": "运行进度接口",
       "description": "提供运行状态、任务、错误和生命周期事件查询。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F008"],
       "acceptance": ["可查询运行状态、当前节点、任务和最近错误", "SSE 事件具有顺序和重连语义", "其他用户不能读取运行状态", "接口不泄露提示词、密钥或内部敏感数据"],
-      "verification": {"command": "make verify-feature FEATURE=F015", "evidence": []}
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner requested continued development after F014",
+      "limitations": ["当前 SSE 默认返回有序有限快照并通过 Last-Event-ID 重连，完整长连接推送和生产级认证仍待实现", "错误响应只证明结构化摘要和白名单脱敏，不证明生产日志零泄露", "正式 verified 仍需要独立 Goal Gate"],
+      "verification": {
+        "command": "make verify-feature FEATURE=F015",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f015-运行进度接口",
+          "tests/integration/test_progress_api.py",
+          "src/citefin/services/progress.py",
+          "src/citefin/api/progress.py",
+          "scripts/verify_f015.py"
+        ]
+      }
     },
     {
       "id": "F016",
