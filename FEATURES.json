@@ -452,11 +452,26 @@
       "id": "F018",
       "title": "端到端验收",
       "description": "使用黄金流程验证上传、分析、恢复、证据查看和独立完成判定。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F013", "F014", "F017"],
       "acceptance": ["真实用户流程从上传到验证报告完整通过", "中断恢复与重复请求不会产生重复副作用", "重大数字和重大结论证据覆盖率为 100%", "未通过 Goal Gate 的运行不能显示为完成"],
-      "verification": {"command": "make verify-feature FEATURE=F018", "evidence": []}
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner authorized completion of all remaining features after F017",
+      "limitations": ["验收使用隔离数据库和三页可检索合成 PDF，不代表真实中文年报准确率或生产环境验收", "事实输入通过公开标准化 API 以人工提取方式提交，不评估自动表格抽取准确率", "重大 Claim 页级证据覆盖率 100% 仅适用于 G001 合成验收样本", "正式 verified 仍需要独立 Goal Gate 和真实数据复核"],
+      "verification": {
+        "command": "make verify-feature FEATURE=F018",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f018-端到端验收",
+          "tests/e2e/test_golden_user_flow.py",
+          "tests/golden/cases/G001_standard_profitable/expected.json",
+          "src/citefin/services/financial_facts.py",
+          "scripts/verify_f018.py"
+        ]
+      }
     }
   ]
 }

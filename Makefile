@@ -41,10 +41,24 @@ verify-feature:
 		$(MAKE) check && uv run python scripts/verify_f008.py; \
 	elif [ "$(FEATURE)" = "F009" ]; then \
 		$(MAKE) check && uv run python scripts/verify_f009.py; \
+	elif [ "$(FEATURE)" = "F010" ]; then \
+		$(MAKE) check && uv run python scripts/verify_f010.py; \
+	elif [ "$(FEATURE)" = "F011" ]; then \
+		$(MAKE) check && uv run python scripts/verify_f011.py; \
+	elif [ "$(FEATURE)" = "F012" ]; then \
+		$(MAKE) check && uv run python scripts/verify_f012.py; \
+	elif [ "$(FEATURE)" = "F013" ]; then \
+		$(MAKE) check && uv run python scripts/verify_f013.py; \
+	elif [ "$(FEATURE)" = "F014" ]; then \
+		$(MAKE) check && uv run python scripts/verify_f014.py; \
+	elif [ "$(FEATURE)" = "F015" ]; then \
+		$(MAKE) check && uv run python scripts/verify_f015.py; \
 	elif [ "$(FEATURE)" = "F016" ]; then \
 		$(MAKE) check && uv run python scripts/verify_f016.py; \
 	elif [ "$(FEATURE)" = "F017" ]; then \
 		$(MAKE) check && uv run python scripts/verify_f017.py; \
+	elif [ "$(FEATURE)" = "F018" ]; then \
+		$(MAKE) check && uv run python scripts/verify_f018.py; \
 	else \
 		echo "No executable verifier is registered for $(FEATURE)"; \
 		exit 2; \

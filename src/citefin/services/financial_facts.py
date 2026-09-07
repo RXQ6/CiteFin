@@ -37,8 +37,14 @@ _LABEL_RULES: tuple[tuple[str, tuple[re.Pattern[str], ...]], ...] = (
         (re.compile(r"应收账款|accounts?\s+receivable", re.I),),
     ),
     ("inventory", (re.compile(r"存货|inventor(?:y|ies)", re.I),)),
+    ("current_assets", (re.compile(r"流动资产合计|total\s+current\s+assets", re.I),)),
     ("total_assets", (re.compile(r"资产总计|total\s+assets", re.I),)),
-    ("total_liabilities", (re.compile(r"负债合计|total\s+liabilities", re.I),)),
+    ("short_term_debt", (re.compile(r"短期借款|short.term\s+(?:debt|borrowings)", re.I),)),
+    (
+        "current_liabilities",
+        (re.compile(r"流动负债合计|total\s+current\s+liabilities", re.I),),
+    ),
+    ("total_liabilities", (re.compile(r"^负债合计$|total\s+liabilities", re.I),)),
     (
         "total_equity",
         (re.compile(r"所有者权益合计|股东权益合计|total\s+equity", re.I),),
@@ -48,17 +54,29 @@ _LABEL_RULES: tuple[tuple[str, tuple[re.Pattern[str], ...]], ...] = (
         (re.compile(r"营业收入|主营业务收入|operating\s+revenue|revenue", re.I),),
     ),
     (
-        "operating_cost",
+        "cost_of_revenue",
         (re.compile(r"营业成本|主营业务成本|operating\s+cost|cost\s+of\s+revenue", re.I),),
     ),
+    ("gross_profit", (re.compile(r"毛利润|毛利|gross\s+profit", re.I),)),
+    ("ebit", (re.compile(r"息税前利润|EBIT", re.I),)),
+    ("interest_expense", (re.compile(r"利息费用|interest\s+expense", re.I),)),
     ("operating_profit", (re.compile(r"营业利润|operating\s+profit", re.I),)),
     ("total_profit", (re.compile(r"利润总额|total\s+profit", re.I),)),
     ("net_profit", (re.compile(r"净利润|net\s+(?:profit|income)", re.I),)),
     (
-        "net_cash_from_operating_activities",
+        "operating_cash_flow",
         (
             re.compile(
                 r"经营活动产生的现金流量净额|net\s+cash(?:\s+flows?)?\s+from\s+operating",
+                re.I,
+            ),
+        ),
+    ),
+    (
+        "capital_expenditure",
+        (
+            re.compile(
+                r"购建固定资产、无形资产和其他长期资产支付的现金|capital\s+expenditure",
                 re.I,
             ),
         ),
