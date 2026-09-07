@@ -13,7 +13,7 @@
       "enabled": true,
       "status": "provisional",
       "requires_owner_approval": true,
-      "allowed_features": ["F004", "F005", "F006", "F007"],
+      "allowed_features": ["F004", "F005", "F006", "F007", "F008"],
       "real_report_accuracy_claim": "prohibited",
       "formal_verified_still_requires_goal_gate": true
     }
@@ -187,11 +187,26 @@
       "id": "F008",
       "title": "LangGraph运行状态",
       "description": "定义金融 Agent 的类型化状态、节点路由和运行边界。",
-      "status": "not_started",
-      "owner": null,
+      "status": "candidate_complete",
+      "owner": "codex",
       "blocked_by": ["F001"],
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner requested a usable provisional system before real-report independent review",
+      "limitations": ["当前仅验证状态契约、确定性路由和审计边界", "未实现完整 LangGraph 执行器", "正式 verified 仍需要独立 Goal Gate"],
       "acceptance": ["State 只保存控制状态和业务实体引用", "节点进入、退出和错误产生审计事件", "路由条件可测试且无隐藏状态", "禁止在 State 内复制 PDF 或报告正文"],
-      "verification": {"command": "make verify-feature FEATURE=F008", "evidence": []}
+      "verification": {
+        "command": "make verify-feature FEATURE=F008",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-07f008-langgraph运行状态",
+          "tests/unit/test_workflow_state.py",
+          "tests/integration/test_workflow.py",
+          "src/citefin/workflow.py",
+          "scripts/verify_f008.py"
+        ]
+      }
     },
     {
       "id": "F009",

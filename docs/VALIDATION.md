@@ -585,3 +585,35 @@ alembic check: No new upgrade operations detected
 - F007 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
 - 当前只提供证据实体和最小写入接口；报告生成、独立 Evaluator、Goal Gate 和真实年报证据覆盖率尚未完成。
 - 真实年报双人复核和准确率声明限制保持不变。
+
+## 2026-09-07：F008 LangGraph 运行状态
+
+### 验证范围
+
+- 增加 `FinanceAgentState` 类型化控制状态，仅保存运行标识、实体引用、节点、状态版本和时间边界，不复制 PDF 或报告正文。
+- 增加版本化 `WorkflowNode` 枚举、数据质量/Goal Gate 路由函数和合法节点转移校验。
+- `advance_state` 强制分析运行用户归属，持久化节点转移、状态更新、状态版本递增和 `AuditEvent`。
+- 保留 provisional 工程边界：当前验证状态契约、确定性路由和审计边界，不宣称完整 LangGraph 执行器或真实年报准确率。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F008
+```
+
+```text
+Ruff: passed
+format: 50 files already formatted
+mypy: Success, 26 source files
+golden: 3/3 cases passed
+full pytest: 87 passed, coverage 91.28%
+F008 targeted tests: 26 passed
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005 -> 0006 -> 0007
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- F008 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
+- F008 完成后按项目负责人指令暂停，不启动 F009 或其他后续功能。
+- F004 双人复核、F005–F008 正式 Goal Gate 和真实年报准确率声明限制保持不变。
