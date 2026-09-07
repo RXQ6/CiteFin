@@ -72,6 +72,7 @@ class AnalysisRun(Base):
     risk_findings: Mapped[list[RiskFinding]] = relationship(
         back_populates="run", cascade="all, delete-orphan"
     )
+    reports: Mapped[list[Report]] = relationship(back_populates="run", cascade="all, delete-orphan")
 
 
 class Task(Base):
@@ -421,6 +422,33 @@ class RiskFinding(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     run: Mapped[AnalysisRun] = relationship(back_populates="risk_findings")
+
+
+class Report(Base):
+    """One versioned, structured report assembled from persisted evidence."""
+
+    __tablename__ = "reports"
+    __table_args__ = (
+        UniqueConstraint("run_id", "version", name="uq_reports_run_version"),
+        CheckConstraint(
+            "status IN ('draft', 'candidate', 'verified', 'superseded')",
+            name="report_status_allowed",
+        ),
+    )
+
+    report_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_runs.run_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    schema_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    content: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    claim_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    generated_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    run: Mapped[AnalysisRun] = relationship(back_populates="reports")
 
 
 class DocumentPage(Base):

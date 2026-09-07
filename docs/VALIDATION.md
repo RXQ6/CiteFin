@@ -683,3 +683,36 @@ alembic check: No new upgrade operations detected
 - F010 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
 - 当前规则只证明确定性工程链路、证据挂接、数据不足降级和幂等 API；不证明真实中文年报风险识别准确率。
 - F004 双人复核、F005–F010 正式 Goal Gate 和真实年报准确率声明限制保持不变；不启动 F011。
+
+## 2026-09-07：F011 provisional 报告生成
+
+### 验证范围
+
+- 从已持久化的 `FinancialFact`、`CalculatedMetric`、`Claim`、`Evidence` 和 `RiskFinding` 只读组装 `financial-report-v1` 版本化报告。
+- 报告分区呈现事实、计算、推断、风险、限制和 Evidence 映射；重大 Claim 必须有可定位证据，缺失或不支持的重大 Claim 阻止候选报告生成。
+- 报告保存 `candidate` 状态、版本、Claim 引用和生成器版本；重复请求返回同一报告，不修改事实或指标。
+- API 强制用户范围和报告期校验；不生成交易指令、收益保证或无条件买卖建议。
+- 新增 `Report` 模型、F011 SQLite 迁移、报告 API、专项验证器和迁移契约测试。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F011
+```
+
+```text
+Ruff: passed
+format: 62 files already formatted
+mypy: Success, 32 source files
+golden: 3/3 cases passed
+full pytest: 102 passed, coverage 92.16%
+F011 targeted tests: 4 passed, 1 warning
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005 -> 0006 -> 0007 -> 0008 -> 0009
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- F011 达到 provisional 工程 `candidate_complete`，不等于正式 `verified`。
+- 当前只证明合成/契约输入下的报告 Schema、证据引用和只读组装链路；不证明真实中文年报报告质量或准确率。
+- F004 双人复核、F005–F011 正式 Goal Gate 和真实年报准确率声明限制保持不变；不启动 F012。

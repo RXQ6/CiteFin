@@ -288,6 +288,11 @@ created → validating → running → candidate_complete → evaluating → ver
 
 ### 4.11 Report
 
+报告内容使用版本化 `financial-report-v1` Schema，只能由已持久化事实、指标、Claim、Evidence 和
+RiskFinding 组装；报告生成器不得修改这些来源实体。`content` 至少包含 `facts`、`calculations`、
+`inferences`、`risks`、`limitations` 和 `evidence` 分区，重大 Claim 的 `evidence_ids` 必须能在
+`evidence` 中定位到事实、指标、规则或来源页。
+
 | 字段 | 类型 | 约束 |
 | --- | --- | --- |
 | `report_id` | string | 主键 |
