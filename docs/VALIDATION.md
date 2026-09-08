@@ -1086,3 +1086,34 @@ git diff --check: passed
 
 - 双语页面是当前项目状态的 GitHub 展示摘要，不替代 `FEATURES.json` 中的正式状态或专项验证证据。
 - 本次只增加和链接文档，不改变 F001–F018 状态，也不构成真实年报准确率或生产验收证据。
+
+## 2026-09-08：GitHub 三语言详细 README
+
+### 验证范围
+
+- `README.md`、`README.zh-CN.md`、`README.ja.md` 分别提供英文、简体中文和日文项目说明。
+- 三个页面顶部均提供 EN、ZH、JA 语言徽章，并链接到仓库内对应文件。
+- 三版均说明产品定位、证据链、工作台、分析工作流、15 项指标、F001–F018 状态、架构、安装、API、验证、安全限制和下一阶段。
+- 逐份检查 `FEATURES.json`、`docs/VALIDATION.md` 和三语言 README 等关键本地链接，所有目标均存在。
+- 功能状态保持为 3 个 `verified`、1 个 `provisional`、14 个 `candidate_complete`，没有伪造正式完成状态。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 setup
+.\scripts\dev.ps1 test
+git diff --check
+```
+
+```text
+setup: 73 packages checked
+pytest: 137 passed, 1 warning
+coverage: 91.40% (required 90%)
+local Markdown links: all checked targets exist
+git diff --check: passed
+```
+
+### 结论与限制
+
+- 三语言 README 通过链接与完整回归检查，可作为 GitHub 首页及语言切换页面。
+- README 中的通过数和覆盖率来自本次项目测试；F018 仍只证明合成流程，不证明真实年报准确率或生产验收。
