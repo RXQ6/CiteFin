@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://citefin.local/schemas/f004-review-result-v1.schema.json",
+  "title": "F004 review validation result",
+  "type": "object",
+  "required": ["schema_version", "status", "agreement", "machine_score", "input_sha256"],
+  "properties": {
+    "schema_version": {"const": "f004-review-result-v1"},
+    "status": {"enum": ["awaiting_independent_review", "invalid", "passed", "failed"]},
+    "validator_version": {"type": "string"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "input_sha256": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    },
+    "agreement": {"type": ["object", "null"]},
+    "machine_score": {"type": ["object", "null"]},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "error": {"type": "object"},
+    "corpus": {"type": "object"},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

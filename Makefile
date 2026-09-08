@@ -4,7 +4,7 @@ UV_PYTHON_INSTALL_DIR ?= $(CURDIR)/.uv-python
 export UV_CACHE_DIR
 export UV_PYTHON_INSTALL_DIR
 
-.PHONY: setup test lint format typecheck check run golden migrate prepare-f004-review verify-feature
+.PHONY: setup test lint format typecheck check run golden migrate prepare-f004-review validate-f004-review verify-feature
 
 setup:
 	uv sync --frozen
@@ -31,6 +31,8 @@ check: lint typecheck golden test
 verify-feature:
 	@if [ "$(FEATURE)" = "F001" ] || [ "$(FEATURE)" = "F002" ] || [ "$(FEATURE)" = "F003" ]; then \
 		$(MAKE) check; \
+	elif [ "$(FEATURE)" = "F004" ]; then \
+		$(MAKE) check && $(MAKE) validate-f004-review; \
 	elif [ "$(FEATURE)" = "F005" ]; then \
 		$(MAKE) check && uv run python scripts/verify_f005.py; \
 	elif [ "$(FEATURE)" = "F006" ]; then \
@@ -72,3 +74,6 @@ migrate:
 
 prepare-f004-review:
 	uv run python scripts/prepare_f004_review.py
+
+validate-f004-review:
+	uv run python scripts/validate_f004_review.py

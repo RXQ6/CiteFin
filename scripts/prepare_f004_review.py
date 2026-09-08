@@ -11,29 +11,16 @@ from typing import Any
 
 from pypdf import PdfReader
 
+from citefin.review_validation import (
+    ADJUDICATION_COLUMNS,
+    REVIEW_COLUMNS,
+    SUBMISSION_SCHEMA_VERSION,
+)
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_ROOT = PROJECT_ROOT / "data" / "real_reports"
 MANIFEST_PATH = DATA_ROOT / "manifest.json"
 QUEUE_PATH = DATA_ROOT / "review_queue.csv"
-REVIEW_COLUMNS = [
-    "sample_id",
-    "security_code",
-    "company_name",
-    "report_year",
-    "statement_type",
-    "reviewer_id",
-    "status",
-    "title_raw",
-    "page_start",
-    "page_end",
-    "scope",
-    "period_end",
-    "locator",
-    "page_text_sha256",
-    "evidence_excerpt",
-    "reason_code",
-    "reviewed_at",
-]
 STATEMENT_TYPES = {"balance_sheet", "income_statement", "cashflow_statement"}
 
 
@@ -77,7 +64,7 @@ def validate_corpus(manifest: dict[str, Any], queue: list[dict[str, str]]) -> No
             raise ValueError(f"page count mismatch: {path.name}")
 
 
-def write_blind_copy(rows: list[dict[str, str]], output_path: Path, reviewer_id: str) -> None:
+def write_blind_copy(rows: list[dict[str, str]], output_path: Path) -> None:
     """Write one blank reviewer copy without machine labels."""
 
     with output_path.open("w", encoding="utf-8", newline="") as file:
@@ -86,12 +73,13 @@ def write_blind_copy(rows: list[dict[str, str]], output_path: Path, reviewer_id:
         for row in rows:
             writer.writerow(
                 {
+                    "schema_version": SUBMISSION_SCHEMA_VERSION,
                     "sample_id": row["sample_id"],
                     "security_code": row["security_code"],
                     "company_name": row["company_name"],
                     "report_year": row["report_year"],
                     "statement_type": row["statement_type"],
-                    "reviewer_id": reviewer_id,
+                    "reviewer_id": "",
                     "status": "",
                     "title_raw": "",
                     "page_start": "",
@@ -103,6 +91,22 @@ def write_blind_copy(rows: list[dict[str, str]], output_path: Path, reviewer_id:
                     "evidence_excerpt": "",
                     "reason_code": "",
                     "reviewed_at": "",
+                }
+            )
+
+
+def write_adjudication_template(rows: list[dict[str, str]], output_path: Path) -> None:
+    """Write an empty conflict-only template without reviewer or machine answers."""
+
+    with output_path.open("w", encoding="utf-8", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=ADJUDICATION_COLUMNS)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(
+                {
+                    "schema_version": SUBMISSION_SCHEMA_VERSION,
+                    "sample_id": row["sample_id"],
+                    "statement_type": row["statement_type"],
                 }
             )
 
@@ -119,10 +123,13 @@ The copies contain only target identity fields; all answer and evidence fields a
 
 - `reviewer_a.csv`: Reviewer A only
 - `reviewer_b.csv`: Reviewer B only
+- `adjudication.csv`: fill conflict rows only after both reviews are returned
 
 Do not share either completed copy with the other reviewer. Do not provide machine
 preannotations to either reviewer. Use the rules in `docs/F004_REVIEW_PACKET.md` and
-return the completed CSV with the original PDF evidence preserved.
+return the completed CSV with the original PDF evidence preserved. Completed reviewers
+and the adjudicator must use distinct opaque IDs matching `human-*`; do not store names
+or other personal information in the package.
 """
     (output_dir / "README.md").write_text(text, encoding="utf-8")
 
@@ -144,8 +151,9 @@ def main() -> int:
     validate_corpus(manifest, queue)
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    write_blind_copy(queue, args.output_dir / "reviewer_a.csv", "reviewer_a")
-    write_blind_copy(queue, args.output_dir / "reviewer_b.csv", "reviewer_b")
+    write_blind_copy(queue, args.output_dir / "reviewer_a.csv")
+    write_blind_copy(queue, args.output_dir / "reviewer_b.csv")
+    write_adjudication_template(queue, args.output_dir / "adjudication.csv")
     write_readme(args.output_dir, manifest)
     print(f"validated {len(manifest['reports'])} reports and {len(queue)} targets")
     print(f"created blank blind-review copies in {args.output_dir}")

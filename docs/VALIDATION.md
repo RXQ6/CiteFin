@@ -1223,3 +1223,53 @@ git diff --check: passed
 - 三语言试用说明未改变任何业务代码、功能状态或验收状态。
 - 本地 `.env` 在隔离复验后已原样恢复且继续被 Git 忽略。
 - 示例 PDF 仍须在实际上传时通过文件类型、加密状态、页数和文本可检索性闸门；此文档更新不证明真实年报准确率。
+
+## 2026-09-08：F004 独立复核验证器恢复基线
+
+### 首次恢复检查
+
+```powershell
+.\scripts\dev.ps1 setup
+.\scripts\dev.ps1 test
+.\scripts\dev.ps1 lint
+```
+
+```text
+setup: 73 packages checked
+pytest: 149 passed, 2 warnings
+coverage: 89.85% (required 90%; failed)
+Ruff: 11 E501 line-length errors in src/citefin/review_validation.py (failed)
+```
+
+### 结论
+
+- 已有未提交实现的测试断言通过，但质量门禁尚未通过，不能形成 F004 验证器检查点。
+- 下一步补齐独立复核、冲突裁决、来源哈希和失败输出的关键边界测试，并修正格式后重新执行完整 F004 门禁。
+- 本次仍无 Reviewer A/B 人工结果，不改变 F004 的 `provisional` 状态，也不构成真实年报准确率证据。
+
+### 完成验证
+
+```powershell
+.\scripts\dev.ps1 check
+.\.venv\Scripts\python.exe scripts\validate_f004_review.py
+```
+
+```text
+Ruff: passed; format: 86 files
+mypy: Success, 47 source files
+golden: 3/3 cases passed
+pytest: 159 passed, 1 warning
+coverage: 90.29% (required 90%)
+actual corpus: 10 reports / 30 targets; PDF bytes, page counts and SHA-256 matched
+review result: awaiting_independent_review
+blockers: reviewer_a_missing, reviewer_b_missing
+validator exit code: 2 (expected for a non-scorable package)
+```
+
+首次补强语料身份校验后的完整回归曾有 19 个新单元测试失败，因为合成测试夹具没有填写新增要求的 `company_name` 和 `report_year`；补齐夹具后定向 21/21 与上述完整门禁均通过。
+
+### 结论与限制
+
+- 验证器已能拒绝占位/模型身份、混用角色、部分提交、证据字段差异、无时区时间、非法页码/哈希、未裁决冲突、非法裁决字段、重复机器目标和 pending 来源使用依据。
+- 真实空白包只生成带输入 SHA-256 的等待状态，没有计算一致率或机器准确率；`validate-f004-review` 的非零退出会继续阻止 F004 正式门禁误通过。
+- Reviewer A/B、裁决人和来源使用依据仍是外部阻塞项；本工作单元只完成可复算验证基础设施，不改变 F004 的 `provisional` 状态。

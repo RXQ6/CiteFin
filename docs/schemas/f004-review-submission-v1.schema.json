@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://citefin.local/schemas/f004-review-submission-v1.schema.json",
+  "title": "F004 independent review CSV rows",
+  "type": "array",
+  "minItems": 30,
+  "maxItems": 30,
+  "items": {
+        "type": "object",
+        "required": [
+          "schema_version", "sample_id", "security_code", "company_name", "report_year", "statement_type", "reviewer_id",
+          "status", "title_raw", "page_start", "page_end", "scope", "period_end", "locator",
+          "page_text_sha256", "evidence_excerpt", "reason_code", "reviewed_at"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {"const": "f004-review-submission-v1"},
+          "sample_id": {"type": "string"},
+          "security_code": {"type": "string", "pattern": "^[036][0-9]{5}$"},
+          "company_name": {"type": "string", "minLength": 1},
+          "report_year": {"const": "2024"},
+          "statement_type": {"enum": ["balance_sheet", "income_statement", "cashflow_statement"]},
+          "reviewer_id": {"type": "string", "pattern": "^human-[a-z0-9][a-z0-9_-]{2,31}$"},
+          "status": {"enum": ["located", "missing", "ambiguous"]},
+          "title_raw": {"type": "string"},
+          "page_start": {"type": "string", "pattern": "^$|^[1-9][0-9]*$"},
+          "page_end": {"type": "string", "pattern": "^$|^[1-9][0-9]*$"},
+          "scope": {"type": "string"},
+          "period_end": {"type": "string", "format": "date"},
+          "locator": {"type": "string"},
+          "page_text_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$"},
+          "evidence_excerpt": {"type": "string", "minLength": 1},
+          "reason_code": {"type": "string"},
+          "reviewed_at": {"type": "string", "format": "date-time"}
+        }
+  }
+}
