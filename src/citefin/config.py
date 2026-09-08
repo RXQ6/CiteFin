@@ -1,5 +1,6 @@
 """Application configuration loaded from environment variables."""
 
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -33,4 +34,8 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Return one immutable-by-convention settings instance per process."""
 
-    return Settings()
+    # Test runs must be hermetic even when a developer has a configured local
+    # .env file in the repository root. Explicit process environment values
+    # remain available so individual tests can opt into a dependency.
+    env_file = None if os.getenv("CITEFIN_ENVIRONMENT") == "test" else ".env"
+    return Settings(_env_file=env_file)

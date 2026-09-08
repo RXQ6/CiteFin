@@ -16,7 +16,7 @@ def test_liveness_exposes_version_and_dependency_state() -> None:
         "status": "live",
         "service": "citefin-api",
         "version": "0.1.0",
-        "environment": "development",
+        "environment": "test",
         "dependencies": {
             "postgres": "not_configured",
             "redis": "not_configured",

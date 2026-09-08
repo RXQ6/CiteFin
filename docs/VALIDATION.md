@@ -1,5 +1,28 @@
 # 验证记录
 
+## 2026-09-08：测试配置与迁移隔离
+
+### 验证范围
+
+- pytest 在仓库存在已配置 `.env` 时不读取其中数据库或 Redis 地址。
+- Alembic 编程调用的显式临时 SQLite URL 不被运行时 `CITEFIN_DATABASE_URL` 覆盖。
+- Ruff、格式、严格 mypy、3 个合成黄金用例和完整 pytest 回归。
+
+### 结果
+
+```text
+targeted configuration/migration tests: 5 passed
+Ruff: passed; format: 84 files already formatted
+mypy: Success, 46 source files
+golden: 3/3 cases passed
+full pytest: 138 passed, coverage 91.40%
+```
+
+### 结论与限制
+
+- 先前本机 `135 passed / 2 failed` 已复现并修复；测试未创建环境变量指向的非目标数据库文件。
+- 该结果只恢复工程测试可信度，不构成真实年报准确率或正式 Goal Gate 证据。
+
 ## 2026-09-04：MVP 规格与黄金数据基线
 
 ### 验证范围

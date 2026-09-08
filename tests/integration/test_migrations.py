@@ -4,12 +4,15 @@ from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
+from pytest import MonkeyPatch
 from sqlalchemy import create_engine, inspect
 
 
-def test_upgrade_head_creates_analysis_run_bundle(tmp_path: Path) -> None:
+def test_upgrade_head_creates_analysis_run_bundle(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
     database_path = tmp_path / "migration.db"
+    unintended_path = tmp_path / "env-configured.db"
     database_url = f"sqlite+pysqlite:///{database_path.as_posix()}"
+    monkeypatch.setenv("CITEFIN_DATABASE_URL", f"sqlite+pysqlite:///{unintended_path.as_posix()}")
     config = Config("alembic.ini")
     config.set_main_option("sqlalchemy.url", database_url)
 
@@ -33,3 +36,4 @@ def test_upgrade_head_creates_analysis_run_bundle(tmp_path: Path) -> None:
         "workflow_checkpoints",
     }.issubset(inspect(engine).get_table_names())
     engine.dispose()
+    assert not unintended_path.exists()
