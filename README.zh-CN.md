@@ -1,10 +1,24 @@
 <div align="center">
 
+<p>
+  <a href="README.md"><img src="https://img.shields.io/badge/EN-English-1677ff" alt="English"></a>
+  <a href="README.zh-CN.md"><img src="https://img.shields.io/badge/ZH-简体中文-e53935" alt="简体中文"></a>
+  <a href="README.ja.md"><img src="https://img.shields.io/badge/JA-日本語-43a047" alt="日本語"></a>
+</p>
+
 # CiteFin
 
 ### 证据驱动的年度报告财务研究 Agent
 
 把可检索的中文年报转化为可复算的财务事实、确定性指标、风险发现和可回到原始 PDF 页面的结构化报告。
+
+<p>
+  <a href="https://github.com/RXQ6/CiteFin/actions/workflows/ci.yml"><img src="https://github.com/RXQ6/CiteFin/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/Python-3.12-3776ab" alt="Python 3.12">
+  <img src="https://img.shields.io/badge/tests-137%20passed-2e7d32" alt="137 tests passed">
+  <img src="https://img.shields.io/badge/coverage-91.40%25-2e7d32" alt="91.40% coverage">
+  <img src="https://img.shields.io/badge/license-Proprietary-555555" alt="Proprietary license">
+</p>
 
 </div>
 
