@@ -1167,3 +1167,36 @@ visual spot-check: overview, report/evidence, and evaluation/Goal Gate frames pa
 
 - `database_not_configured` 阻断已在 8765 的已配置实例消除，浏览器已切换至该地址。
 - readiness 当前只验证依赖配置存在，不探测 Redis 实际连接；本次交互流程使用 SQLite 开发数据库，不代表 PostgreSQL 生产部署验收。
+
+## 2026-09-08：三语言真实年报试用示例
+
+### 验证范围
+
+- `README.md`、`README.zh-CN.md`、`README.ja.md` 在工作台操作说明后提供同一组表单输入：美的集团、`000333`、`2024-12-31`、综合分析及发行人官网 PDF 链接。
+- 三种语言均明确 `2024-12-31` 是报告期截止日，不把年报发布日期写入该字段。
+- 三种语言均保留上传文件验证、独立人工复核、真实年报准确率和非投资建议边界。
+- 本次只验证文档内容和既有工程回归；没有把该外部 PDF 的机器处理结果登记为真值，也没有声明它已通过 Reviewer A/B 或 Goal Gate。
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 setup
+.\scripts\dev.ps1 test
+# 临时移开被 Git 忽略的本地 .env 后复验
+git diff --check
+```
+
+```text
+setup: 73 packages checked
+first test: 135 passed, 2 failed because the local runtime .env changed the tests' expected unconfigured dependency state and overrode the migration test URL
+isolated re-test: 137 passed, 1 warning
+coverage: 91.40% (required 90%)
+README local links: passed
+git diff --check: passed
+```
+
+### 结论与限制
+
+- 三语言试用说明未改变任何业务代码、功能状态或验收状态。
+- 本地 `.env` 在隔离复验后已原样恢复且继续被 Git 忽略。
+- 示例 PDF 仍须在实际上传时通过文件类型、加密状态、页数和文本可检索性闸门；此文档更新不证明真实年报准确率。
