@@ -215,6 +215,20 @@ Compose starts the API, migration job, PostgreSQL 17, and Redis 7.4, with persis
 
 The default upload limit is 50 MiB. Non-PDF, malformed, encrypted, image-only, or text-insufficient files are rejected with stable error codes.
 
+### Real annual-report trial input
+
+The following form values can be used to start a real-document trial. Download the PDF from the issuer's official website first, then select the downloaded file in the workbench.
+
+| Field | Value |
+| --- | --- |
+| Company name | Midea Group Co., Ltd. (美的集团股份有限公司) |
+| Six-digit A-share code | `000333` |
+| Reporting-period end date | `2024-12-31` |
+| Analysis focus | Comprehensive analysis |
+| Annual-report PDF | [Midea Group 2024 Annual Report — issuer website](https://www.midea.com.cn/content/dam/mideacn-aem/%E6%8A%95%E8%B5%84%E8%80%85%E5%85%B3%E7%B3%BB/%E6%8A%95%E8%B5%84%E8%80%85%E5%85%B3%E7%B3%BB%E6%96%87%E4%BB%B6%E6%80%BB%E8%A7%88/2024%E6%96%87%E4%BB%B6/%E7%BE%8E%E7%9A%84%E9%9B%86%E5%9B%A2-2024%E5%B9%B4%E5%B9%B4%E5%BA%A6%E6%8A%A5%E5%91%8A.PDF.coredownload.inline.pdf) |
+
+Enter `2024-12-31`, the reporting-period end date, rather than the later publication date. CiteFin will still validate the uploaded file's type, encryption status, page count, and text-searchability. This input is a reproducible usage example, not evidence that the report has passed independent review or that CiteFin has achieved a validated real-report accuracy rate. Any output remains research assistance rather than investment advice.
+
 ## API overview
 
 All analysis APIs use `/api/v1`.
