@@ -2,6 +2,13 @@
 
 CiteFin is an evidence-driven financial analysis agent that turns annual reports into traceable financial facts, deterministic metrics, risk findings, and independently verified reports.
 
+## Project status / 项目状态
+
+- [English project status](docs/PROJECT_STATUS.en.md)
+- [中文项目状态](docs/PROJECT_STATUS.zh-CN.md)
+
+The F001–F018 MVP engineering implementation and financial-research workbench are complete, while formal real-report review and production acceptance remain pending. See the status pages for the exact verification boundary.
+
 ## MVP
 
 The first release accepts a searchable Chinese annual-report PDF for a non-financial A-share listed company. It extracts core facts from the three primary financial statements, calculates 15 versioned metrics, maps material claims to page-level evidence, and requires an independent Goal Gate before a report can be marked complete.

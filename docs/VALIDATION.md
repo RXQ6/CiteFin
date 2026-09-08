@@ -1057,3 +1057,32 @@ alembic check: No new upgrade operations detected
 - 完整工作台及其读取 API 通过现有 F016–F018 工程门禁，迁移从空 SQLite 库升级成功且 ORM 无漂移。
 - 唯一警告仍是 Starlette TestClient 使用 AnyIO 已弃用别名，不影响断言与覆盖率门禁。
 - F018 结果来自可复现合成流程；未执行真实交易，未生成无证据投资建议，也不构成真实年报准确率、生产浏览器矩阵或正式外部 Goal Gate 证据。
+
+## 2026-09-08：GitHub 双语项目状态页
+
+### 验证范围
+
+- 中文与英文状态页均引用 `FEATURES.json` 和 `docs/VALIDATION.md` 作为详细事实来源。
+- 两个页面互相链接，README 同时提供中英文入口。
+- 状态数字与 `FEATURES.json` 一致：3 个 `verified`、1 个 `provisional`、14 个 `candidate_complete`。
+- 文档明确披露合成验证边界、待完成的生产化工作和禁止真实交易/无证据投资建议的约束。
+
+### 执行方式
+
+```powershell
+git diff --check
+.\scripts\dev.ps1 setup
+.\scripts\dev.ps1 test
+```
+
+```text
+setup: 73 packages checked
+pytest: 137 passed, 1 warning
+coverage: 91.40% (required 90%)
+git diff --check: passed
+```
+
+### 结论与限制
+
+- 双语页面是当前项目状态的 GitHub 展示摘要，不替代 `FEATURES.json` 中的正式状态或专项验证证据。
+- 本次只增加和链接文档，不改变 F001–F018 状态，也不构成真实年报准确率或生产验收证据。
