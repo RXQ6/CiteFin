@@ -1023,3 +1023,37 @@ local root route: HTTP 200, text/html
 - 完整工作台能从真实持久化实体恢复视图，并调用既有后端能力；没有模拟数据或浏览器生成的完成状态。
 - 当前没有完整自动工作流执行器和自动表格字段抽取，用户必须按阶段操作并人工确认 F005 事实；这在界面中明确披露。
 - 本次验证是静态契约、本地 HTTP 和合成/契约后端验证，不是生产浏览器矩阵、生产认证、真实年报准确率或正式外部 Goal Gate。
+
+## 2026-09-08：完整工作台最终交付门禁
+
+### 执行方式
+
+```powershell
+.\scripts\dev.ps1 verify-feature -Feature F016
+.\scripts\dev.ps1 verify-feature -Feature F017
+.\scripts\dev.ps1 verify-feature -Feature F018
+node --check src/citefin/static/assets/app.js
+python -m alembic upgrade head
+python -m alembic check
+```
+
+### 结果
+
+```text
+F016: full check passed; F016 verifier passed
+F017: full check passed; F017 verifier passed
+F018: full check passed; synthetic success/failure flows 2 passed; F018 verifier passed
+each full check: 137 pytest passed, 1 warning, coverage 91.40%
+Ruff: passed; format: 83 files
+mypy: Success, 46 source files
+golden: 3/3 cases passed
+JavaScript syntax: passed
+alembic upgrade: base -> 0001 -> 0002 -> 0003 -> 0004 -> 0005 -> 0006 -> 0007 -> 0008 -> 0009 -> 0010 -> 0011
+alembic check: No new upgrade operations detected
+```
+
+### 结论与限制
+
+- 完整工作台及其读取 API 通过现有 F016–F018 工程门禁，迁移从空 SQLite 库升级成功且 ORM 无漂移。
+- 唯一警告仍是 Starlette TestClient 使用 AnyIO 已弃用别名，不影响断言与覆盖率门禁。
+- F018 结果来自可复现合成流程；未执行真实交易，未生成无证据投资建议，也不构成真实年报准确率、生产浏览器矩阵或正式外部 Goal Gate 证据。
