@@ -952,3 +952,34 @@ F018 verification script: passed
 - F018 达到 provisional 工程 `candidate_complete`；产品清单 F001–F018 已无 `not_started` 功能，但 F004 及 F005–F018 的正式外部验证状态没有被改写。
 - G001 合成流程中的重大 Claim 页级证据覆盖率为 100%；该分母只包含本次合成报告的重大 Claim，不是生产指标，也不代表真实中文年报证据覆盖率或准确率。
 - 事实由测试以 `manual` 方式经公开 API 提交，未验证自动表格抽取、真实用户认证、多实例部署、真实年报人工真值或 Reviewer A/B；正式 `verified` 仍需独立证据与 Goal Gate。
+
+## 2026-09-08：完整工作台只读聚合 API
+
+### 验证范围
+
+- 用户只能列出自己的分析运行，并按最近更新时间获得稳定排序。
+- 工作台投影从持久化实体读取来源、三表、事实、指标、Claim、风险、报告、Evaluator、Goal Gate 和 Checkpoint 摘要。
+- 空运行返回真实空集合；其他用户读取同一运行返回 404。
+- 响应不暴露 `storage_uri`、完整 `state_data` 或原始审计 payload。
+
+### 执行方式与结果
+
+```powershell
+uv run pytest tests/integration/test_workbench_api.py --no-cov
+.\scripts\dev.ps1 check
+```
+
+```text
+targeted workbench tests: 2 passed, 1 warning
+Ruff: passed; format: 83 files
+mypy: Success, 46 source files
+golden: 3/3 cases passed
+full pytest: 136 passed, 1 warning
+coverage: 91.40% (required 90%)
+```
+
+### 结论与限制
+
+- 只读工作台投影通过完整质量门禁且未新增迁移。
+- 该接口只呈现真实持久化状态，不执行或模拟完整工作流；前端分阶段操作和最终交互验证仍在进行中。
+- 验证使用合成/契约数据，不证明真实中文年报准确率、生产认证或正式 Goal Gate。
