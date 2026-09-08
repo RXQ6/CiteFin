@@ -22,6 +22,18 @@
 
 </div>
 
+## 示例视频
+
+<p align="center">
+  <a href="docs/assets/citefin-workbench-demo.zh-CN.webm">
+    <img src="docs/assets/citefin-workbench-demo-preview.gif" alt="CiteFin 工作台示例视频预览" width="960">
+  </a>
+</p>
+
+<p align="center"><a href="docs/assets/citefin-workbench-demo.zh-CN.webm">▶ 查看完整 25 秒 720p 操作演示</a></p>
+
+视频使用可复现的 F018 合成流程，展示真实持久化后端状态，但不代表已经验证真实年报准确率。
+
 > [!IMPORTANT]
 > CiteFin 是研究辅助系统，不执行交易、下单、转账或账户操作，不承诺收益，也不提供缺乏证据的个性化买卖指令。
 

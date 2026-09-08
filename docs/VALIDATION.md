@@ -1117,3 +1117,33 @@ git diff --check: passed
 
 - 三语言 README 通过链接与完整回归检查，可作为 GitHub 首页及语言切换页面。
 - README 中的通过数和覆盖率来自本次项目测试；F018 仍只证明合成流程，不证明真实年报准确率或生产验收。
+
+## 2026-09-08：工作台示例视频
+
+### 验证范围
+
+- 使用现有 F018 合成黄金流程通过公开 API 创建完整持久化运行，再由本地 FastAPI 服务向工作台提供真实读取结果。
+- 视频覆盖欢迎页、运行总览、15 项指标、风险、报告与页级证据、Evaluator、Goal Gate 和 Checkpoint。
+- 三语言 README 开头均显示同一动画预览，并链接到完整 WebM 视频。
+- 视频和预览均显著标记为 F018 合成示例，不把 `verified` 合成运行解释为真实年报验收。
+
+### 媒体验证结果
+
+```text
+video: docs/assets/citefin-workbench-demo.zh-CN.webm
+codec: VP9 in WebM
+duration: 25.585 seconds
+resolution: 1280 x 720
+decoded readyState: 4
+size: 9,075,300 bytes
+preview: docs/assets/citefin-workbench-demo-preview.gif
+preview frames: 7
+preview size: 500,675 bytes
+visual spot-check: overview, report/evidence, and evaluation/Goal Gate frames passed
+```
+
+### 结论与限制
+
+- 视频文件可由 Microsoft Edge 完整读取元数据并解码，GIF 可在 Markdown 中直接显示。
+- 演示使用合成公司、合成 PDF 和人工经 API 提交的合成事实；不证明真实年报准确率，不构成投资建议或交易操作。
+- 仓库当前没有经验证的公开部署 URL；在真实部署完成前不添加“在线体验”占位链接。
