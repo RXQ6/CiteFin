@@ -24,7 +24,7 @@ def main() -> None:
         encoding="utf-8"
     )
 
-    for required_control in ("analysis-form", "report-file", "run-panel", "aria-live"):
+    for required_control in ("analysis-form", "report-file", "workspace-view", "aria-live"):
         assert required_control in index
     for service_contract in ("/analysis-runs", "/documents", "/progress", "/events"):
         assert service_contract in script

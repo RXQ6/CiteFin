@@ -983,3 +983,43 @@ coverage: 91.40% (required 90%)
 - 只读工作台投影通过完整质量门禁且未新增迁移。
 - 该接口只呈现真实持久化状态，不执行或模拟完整工作流；前端分阶段操作和最终交互验证仍在进行中。
 - 验证使用合成/契约数据，不证明真实中文年报准确率、生产认证或正式 Goal Gate。
+
+## 2026-09-08：完整财报研究工作台
+
+### 验证范围
+
+- 工作台可按本地用户标识列出和恢复已有运行，并显示真实进度、任务、脱敏错误和有限 SSE 事件。
+- 页面接入上传、解析、三表识别、F005 人工事实确认、15 项指标、财务分析、风险、候选报告、Evaluator、Goal Gate 和 Checkpoint 恢复接口。
+- 指标显示状态、版本和输入快照；风险显示严重度、置信度与限制；报告区分事实、计算、推断、风险和限制。
+- 证据浏览器继续通过受保护 PDF 内容接口和 blob `#page=N` 跳转，不在 URL 中写入用户标识。
+- 服务端文本使用 DOM `textContent` 渲染，前端源码不使用 `innerHTML`；页面保留键盘焦点、跳转链接、响应式布局和减少动画偏好。
+
+### 执行方式与结果
+
+```powershell
+node --check src/citefin/static/assets/app.js
+uv run pytest tests/integration/test_frontend.py --no-cov
+uv run python scripts/verify_f016.py
+uv run python scripts/verify_f017.py
+.\scripts\dev.ps1 check
+Invoke-WebRequest http://127.0.0.1:8000/
+```
+
+```text
+JavaScript syntax: passed
+frontend contract tests: 3 passed, 1 warning
+F016 verifier: passed
+F017 verifier: passed
+Ruff: passed; format: 83 files
+mypy: Success, 46 source files
+golden: 3/3 cases passed
+full pytest: 137 passed, 1 warning
+coverage: 91.40% (required 90%)
+local root route: HTTP 200, text/html
+```
+
+### 结论与限制
+
+- 完整工作台能从真实持久化实体恢复视图，并调用既有后端能力；没有模拟数据或浏览器生成的完成状态。
+- 当前没有完整自动工作流执行器和自动表格字段抽取，用户必须按阶段操作并人工确认 F005 事实；这在界面中明确披露。
+- 本次验证是静态契约、本地 HTTP 和合成/契约后端验证，不是生产浏览器矩阵、生产认证、真实年报准确率或正式外部 Goal Gate。

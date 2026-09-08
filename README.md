@@ -38,10 +38,17 @@ Windows PowerShell without GNU Make:
 
 The local API is available at `http://127.0.0.1:8000`, with interactive documentation at `/docs` and health endpoints at `/api/v1/health/live` and `/api/v1/health/ready`.
 
-The F016/F017 minimal UI is available at `http://127.0.0.1:8000/`. It creates an analysis run,
-uploads a searchable annual-report PDF, reads server-backed progress and finite SSE snapshots,
-and shows persisted claim evidence with protected PDF page navigation. It does not simulate
-progress or automatically execute the complete workflow.
+The financial-research workbench is available at `http://127.0.0.1:8000/`. It lists owned
+analysis runs, restores each workspace from persisted entities, and exposes the real staged
+APIs for upload, parsing, statement identification, manual fact confirmation, metrics,
+financial analysis, risks, reports, independent evaluation, Goal Gate, evidence navigation,
+and Checkpoint restore. It does not simulate progress or imply that a complete automatic
+LangGraph executor exists.
+
+Enter the same local `X-User-ID` value used to create a run. This is an internal isolation
+boundary for development, not production authentication. Because automatic table-field
+extraction is not implemented, financial facts must be confirmed through the workbench's
+manual F005 form before downstream calculations can use them.
 
 Apply database migrations before using analysis endpoints:
 

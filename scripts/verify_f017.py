@@ -23,7 +23,7 @@ def main() -> None:
     service = (ROOT / "src" / "citefin" / "services" / "evidence_viewer.py").read_text(
         encoding="utf-8"
     )
-    assert "evidence-panel" in index
+    assert "evidence-browser" in index
     assert "claim-list" in index
     assert "pdf-frame" in index
     assert "/evidence-view" in script

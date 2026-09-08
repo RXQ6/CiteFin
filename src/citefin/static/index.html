@@ -3,245 +3,159 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="CiteFin 证据驱动的年度报告分析任务界面"
-    />
-    <title>CiteFin | 年度报告分析</title>
+    <meta name="description" content="CiteFin 证据驱动的年度报告分析工作台" />
+    <title>CiteFin | 财报研究工作台</title>
     <link rel="stylesheet" href="/assets/app.css" />
   </head>
   <body>
-    <header class="site-header">
-      <div class="shell header-content">
-        <a class="brand" href="/" aria-label="CiteFin 首页">
+    <a class="skip-link" href="#workspace-main">跳到工作区</a>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="分析任务导航">
+        <div class="brand-row">
           <span class="brand-mark" aria-hidden="true">CF</span>
-          <span>
-            <strong>CiteFin</strong>
-            <small>Evidence-first research</small>
-          </span>
-        </a>
-        <span class="status-chip">辅助决策 · 不执行交易</span>
-      </div>
-    </header>
-
-    <main class="shell page-content">
-      <section class="intro" aria-labelledby="page-title">
-        <p class="eyebrow">年度报告分析</p>
-        <h1 id="page-title">把一份年报，变成可追溯的分析任务。</h1>
-        <p class="intro-copy">
-          填写任务信息并上传可检索的中文年报 PDF。页面展示的运行状态和生命周期事件均直接来自 CiteFin API。
-        </p>
-      </section>
-
-      <div class="workspace-grid">
-        <section class="card form-card" aria-labelledby="create-title">
-          <div class="card-heading">
-            <div>
-              <p class="eyebrow">Step 01</p>
-              <h2 id="create-title">创建分析任务</h2>
-            </div>
-            <span class="section-number" aria-hidden="true">01</span>
+          <div><strong>CiteFin</strong><small>证据优先的财报研究</small></div>
+        </div>
+        <form id="identity-form" class="identity-card">
+          <label for="user-id">本地用户标识</label>
+          <div class="inline-control">
+            <input id="user-id" name="user_id" autocomplete="off" maxlength="128" placeholder="local-researcher" required />
+            <button class="icon-button" type="submit" aria-label="载入该用户的任务">↵</button>
           </div>
+          <small>仅用于当前 API 数据隔离，不是生产认证。</small>
+        </form>
+        <div class="sidebar-heading"><span>分析任务</span><button id="refresh-runs" class="text-button" type="button">刷新</button></div>
+        <div id="run-list" class="run-list" aria-live="polite"><p class="empty-copy">输入用户标识后载入任务。</p></div>
+        <button id="open-create" class="button button-primary sidebar-create" type="button">＋ 新建分析</button>
+        <div class="sidebar-foot"><span class="boundary-dot" aria-hidden="true"></span><p><strong>辅助决策边界</strong><br />不执行交易、转账或账户操作</p></div>
+      </aside>
 
-          <div class="notice notice-info" role="note">
-            <strong>本地身份边界</strong>
-            <span>用户标识仅用于当前 API 的数据隔离，不等同于生产认证。</span>
-          </div>
-
-          <form id="analysis-form" novalidate>
-            <div class="field-grid">
-              <label class="field field-full" for="user-id">
-                <span>用户标识 <span class="required" aria-hidden="true">*</span></span>
-                <input
-                  id="user-id"
-                  name="user_id"
-                  type="text"
-                  minlength="1"
-                  maxlength="128"
-                  autocomplete="off"
-                  placeholder="例如 local-researcher"
-                  required
-                />
-                <small>用于 X-User-ID 数据隔离。</small>
-              </label>
-
-              <label class="field" for="company-name">
-                <span>公司名称 <span class="required" aria-hidden="true">*</span></span>
-                <input
-                  id="company-name"
-                  name="company_name"
-                  type="text"
-                  maxlength="200"
-                  autocomplete="organization"
-                  placeholder="例如 示例股份有限公司"
-                  required
-                />
-              </label>
-
-              <label class="field" for="security-code">
-                <span>证券代码 <span class="required" aria-hidden="true">*</span></span>
-                <input
-                  id="security-code"
-                  name="security_code"
-                  type="text"
-                  inputmode="numeric"
-                  pattern="(?:00[0-3]|30[01]|60[0135]|688)\d{3}"
-                  maxlength="6"
-                  placeholder="例如 600001"
-                  required
-                />
-                <small>支持项目约束内的 A 股代码格式。</small>
-              </label>
-
-              <label class="field" for="report-period-end">
-                <span>报告期截止日 <span class="required" aria-hidden="true">*</span></span>
-                <input id="report-period-end" name="report_period_end" type="date" required />
-              </label>
-
-              <label class="field" for="analysis-focus">
-                <span>分析关注点</span>
-                <select id="analysis-focus" name="analysis_focus">
-                  <option value="comprehensive">综合分析</option>
-                  <option value="profitability">盈利质量</option>
-                  <option value="cashflow">现金流</option>
-                  <option value="solvency">偿债能力</option>
-                </select>
-              </label>
-
-              <label class="field field-full" for="report-file">
-                <span>年度报告 PDF <span class="required" aria-hidden="true">*</span></span>
-                <input
-                  id="report-file"
-                  name="file"
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  required
-                />
-                <small>需要可检索、未加密的中文年度报告 PDF，默认上限 50 MiB。</small>
-              </label>
-            </div>
-
-            <button id="submit-button" class="button button-primary" type="submit">
-              创建并上传报告
-            </button>
-            <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
-          </form>
+      <main id="workspace-main" class="workspace-main" tabindex="-1">
+        <section id="welcome-view" class="welcome-view" aria-labelledby="welcome-title">
+          <div class="welcome-kicker">CITE / CALCULATE / VERIFY</div>
+          <h1 id="welcome-title">从原始年报到可定位证据。</h1>
+          <p>载入已有任务，或创建一项分析。所有进度、指标、风险与验收结果均读取自服务端持久化状态。</p>
+          <button class="button button-primary" type="button" data-open-create>创建第一项分析</button>
         </section>
 
-        <section id="run-panel" class="card run-card" aria-labelledby="progress-title" hidden>
-          <div class="card-heading">
-            <div>
-              <p class="eyebrow">Step 02</p>
-              <h2 id="progress-title">运行进度</h2>
+        <div id="workspace-view" hidden>
+          <header class="workspace-header">
+            <div class="company-lockup">
+              <p id="run-code" class="overline">—</p><h1 id="run-company">—</h1>
+              <div class="header-meta"><span id="run-period">—</span><span id="run-as-of">—</span><span id="run-id">—</span></div>
             </div>
-            <span id="run-status-badge" class="status-badge status-created">created</span>
-          </div>
+            <div class="header-actions"><span id="run-status" class="status-badge">—</span><button id="refresh-workspace" class="button button-secondary" type="button">刷新数据</button></div>
+          </header>
+          <nav class="tabs" aria-label="工作台视图">
+            <button class="tab is-active" type="button" data-tab="overview">总览</button>
+            <button class="tab" type="button" data-tab="facts">财务事实</button>
+            <button class="tab" type="button" data-tab="metrics">指标</button>
+            <button class="tab" type="button" data-tab="risks">风险</button>
+            <button class="tab" type="button" data-tab="report">报告与证据</button>
+            <button class="tab" type="button" data-tab="evaluation">验收</button>
+            <button class="tab" type="button" data-tab="checkpoints">恢复点</button>
+          </nav>
+          <div id="workspace-message" class="notice notice-info" role="status" aria-live="polite" hidden></div>
 
-          <div class="run-summary">
-            <div>
-              <span class="summary-label">公司</span>
-              <strong id="run-company">—</strong>
+          <section class="tab-panel is-active" data-panel="overview">
+            <div id="summary-strip" class="summary-strip"></div>
+            <div class="overview-grid">
+              <section class="surface pipeline-surface" aria-labelledby="pipeline-title">
+                <div class="surface-heading"><div><p class="overline">真实后端阶段</p><h2 id="pipeline-title">分析流水线</h2></div><span id="current-node" class="mono-chip">—</span></div>
+                <p class="surface-note">当前工程没有完整自动执行器。请按依赖逐阶段运行；重复操作使用后端幂等结果。</p>
+                <div id="pipeline-list" class="pipeline-list"></div>
+              </section>
+              <section class="surface" aria-labelledby="task-title">
+                <div class="surface-heading"><div><p class="overline">运行控制</p><h2 id="task-title">任务与错误</h2></div><span id="task-count" class="count-pill">0</span></div>
+                <div id="task-list" class="task-list"></div><div class="divider"></div>
+                <h3 class="minor-title">最近错误 <span>已脱敏</span></h3><div id="error-list" class="compact-list"></div>
+              </section>
             </div>
-            <div>
-              <span class="summary-label">运行 ID</span>
-              <code id="run-id">—</code>
-            </div>
-            <div>
-              <span class="summary-label">当前节点</span>
-              <strong id="run-node">—</strong>
-            </div>
-            <div>
-              <span class="summary-label">数据更新时间</span>
-              <time id="run-updated">—</time>
-            </div>
-          </div>
+            <section class="surface event-surface" aria-labelledby="events-title">
+              <div class="surface-heading"><div><p class="overline">审计轨迹</p><h2 id="events-title">生命周期事件</h2></div><span id="event-count" class="count-pill">0</span></div>
+              <ol id="event-list" class="event-list"></ol>
+            </section>
+          </section>
 
-          <div id="run-message" class="notice notice-info" role="status" aria-live="polite">
-            等待服务端返回运行状态。
-          </div>
-
-          <div class="subsection">
-            <div class="subsection-heading">
-              <h3>任务</h3>
-              <span id="task-count" class="muted">—</span>
+          <section class="tab-panel" data-panel="facts">
+            <div class="split-grid">
+              <section class="surface">
+                <div class="surface-heading"><div><p class="overline">来源识别</p><h2>报告与三张表</h2></div><span id="statement-count" class="count-pill">0 / 3</span></div>
+                <div id="source-list" class="source-list"></div><div id="statement-list" class="statement-list"></div>
+              </section>
+              <section class="surface fact-entry-surface">
+                <div class="surface-heading"><div><p class="overline">人工确认入口</p><h2>录入标准化事实</h2></div></div>
+                <p class="surface-note">当前工程没有自动表格字段抽取。这里调用 F005 接口逐条保存真实来源行，不会补造缺失数字。</p>
+                <form id="fact-form" class="fact-form">
+                  <label>来源文件<select id="fact-source" name="source_id" required></select></label>
+                  <label>报表<select name="statement_type" required><option value="balance_sheet">资产负债表</option><option value="income_statement">利润表</option><option value="cashflow_statement">现金流量表</option></select></label>
+                  <label>原始行名<input name="raw_label" maxlength="500" placeholder="资产总计" required /></label>
+                  <label>披露数值<input name="raw_value" inputmode="decimal" placeholder="123456.78" required /></label>
+                  <label>报告期<input id="fact-period-end" name="period_end" type="date" required /></label>
+                  <label>期间类型<select id="fact-period-type" name="period_type"><option value="instant">时点</option><option value="duration">期间</option></select></label>
+                  <label id="period-start-field" hidden>期间开始<input id="fact-period-start" name="period_start" type="date" /></label>
+                  <label>披露单位<select name="display_unit"><option value="yuan">元</option><option value="thousand_yuan">千元</option><option value="million_yuan">百万元</option></select></label>
+                  <label>来源页码<input name="page_number" type="number" min="1" required /></label>
+                  <label>报表章节<input name="section" maxlength="200" placeholder="合并资产负债表" required /></label>
+                  <label>列名<input name="column_label" maxlength="500" placeholder="2025年12月31日" required /></label>
+                  <label>置信度<input name="confidence" type="number" min="0" max="1" step="0.01" value="1" required /></label>
+                  <button class="button button-primary fact-submit" type="submit">保存事实</button>
+                </form>
+              </section>
             </div>
-            <ul id="task-list" class="task-list" aria-live="polite">
-              <li class="empty-state">创建任务后，这里会显示服务端任务状态。</li>
-            </ul>
-          </div>
+            <section class="surface table-surface">
+              <div class="surface-heading"><div><p class="overline">已持久化</p><h2>财务事实</h2></div><span id="fact-count" class="count-pill">0</span></div>
+              <div class="table-wrap"><table><thead><tr><th>概念 / 原始行</th><th>期间</th><th>原始值</th><th>标准值（元）</th><th>定位</th><th>状态</th></tr></thead><tbody id="fact-table"></tbody></table></div>
+            </section>
+          </section>
 
-          <div class="subsection">
-            <div class="subsection-heading">
-              <h3>最近错误</h3>
-              <span class="muted">已脱敏</span>
+          <section class="tab-panel" data-panel="metrics">
+            <div class="panel-heading"><div><p class="overline">确定性计算</p><h2>15 项核心指标</h2></div><button class="button button-primary" type="button" data-action="metrics">计算 / 读取指标</button></div>
+            <div id="metric-grid" class="metric-grid"></div>
+          </section>
+          <section class="tab-panel" data-panel="risks">
+            <div class="panel-heading"><div><p class="overline">规则与限制</p><h2>风险发现</h2></div><button class="button button-primary" type="button" data-action="risks">识别 / 读取风险</button></div>
+            <div id="risk-list" class="risk-grid"></div>
+          </section>
+          <section class="tab-panel" data-panel="report">
+            <div class="panel-heading"><div><p class="overline">结构化候选报告</p><h2>报告与逐项证据</h2></div><button class="button button-primary" type="button" data-action="report">生成 / 读取报告</button></div>
+            <div class="report-layout">
+              <article id="report-view" class="surface report-view"></article>
+              <aside class="surface evidence-browser">
+                <div class="surface-heading"><div><p class="overline">Claim → Evidence → PDF</p><h2>证据浏览器</h2></div><button id="refresh-evidence" class="text-button" type="button">刷新</button></div>
+                <div id="claim-list" class="claim-list"></div><div id="evidence-detail" class="evidence-detail"></div>
+                <div id="pdf-wrap" class="pdf-wrap" hidden><iframe id="pdf-frame" title="原始 PDF 页级证据"></iframe></div>
+              </aside>
             </div>
-            <ul id="error-list" class="error-list" aria-live="polite">
-              <li class="empty-state">暂无服务端错误。</li>
-            </ul>
-          </div>
-
-          <details class="events-details">
-            <summary>生命周期事件</summary>
-            <p class="muted event-help">事件来自有限 SSE 快照，重连时使用服务端游标。</p>
-            <ol id="event-list" class="event-list">
-              <li class="empty-state">尚未收到事件。</li>
-            </ol>
-          </details>
-        </section>
-      </div>
-
-      <section
-        id="evidence-panel"
-        class="card evidence-card"
-        aria-labelledby="evidence-title"
-        hidden
-      >
-        <div class="card-heading evidence-heading">
-          <div>
-            <p class="eyebrow">Step 03</p>
-            <h2 id="evidence-title">报告证据</h2>
-            <p id="evidence-report-meta" class="muted">尚未读取报告。</p>
-          </div>
-          <button id="refresh-evidence" class="button button-secondary" type="button">
-            刷新证据
-          </button>
+          </section>
+          <section class="tab-panel" data-panel="evaluation">
+            <div class="evaluation-grid">
+              <section class="surface"><div class="surface-heading"><div><p class="overline">独立 Evaluator</p><h2>检查结果</h2></div><button class="button button-secondary" type="button" data-action="evaluate">运行评测</button></div><div id="evaluation-view"></div></section>
+              <section class="surface gate-surface"><div class="surface-heading"><div><p class="overline">唯一终止判定</p><h2>Goal Gate</h2></div></div><div id="gate-view"></div><button class="button button-primary" type="button" data-action="gate">提交 Goal Gate</button></section>
+            </div>
+          </section>
+          <section class="tab-panel" data-panel="checkpoints">
+            <div class="panel-heading"><div><p class="overline">版本化控制状态</p><h2>Checkpoint 恢复</h2></div></div>
+            <div class="notice notice-warning">恢复会校验工作流版本、来源哈希和状态版本，并更新运行控制状态。业务实体不会被重新创建。</div>
+            <div id="checkpoint-list" class="checkpoint-list"></div>
+          </section>
         </div>
+      </main>
+    </div>
 
-        <div id="evidence-message" class="notice notice-info" role="status" aria-live="polite">
-          报告生成后，可在这里查看 Claim 与原 PDF 页面的对应关系。
-        </div>
-
-        <div class="evidence-layout">
-          <div class="claim-column" aria-labelledby="claim-list-title">
-            <div class="subsection-heading">
-              <h3 id="claim-list-title">报告结论</h3>
-              <span id="claim-count" class="muted">—</span>
-            </div>
-            <div id="claim-list" class="claim-list" aria-live="polite">
-              <p class="empty-state">尚无报告结论。</p>
-            </div>
-          </div>
-
-          <div class="source-column" aria-labelledby="source-view-title">
-            <div class="subsection-heading">
-              <h3 id="source-view-title">证据与来源页</h3>
-              <span id="source-page-label" class="muted">—</span>
-            </div>
-            <div id="evidence-detail" class="evidence-detail">
-              <p class="empty-state">选择一条结论查看证据关系。</p>
-            </div>
-            <div id="pdf-frame-wrap" class="pdf-frame-wrap" hidden>
-              <iframe id="pdf-frame" title="原始 PDF 页级证据"></iframe>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <p class="disclaimer">
-        CiteFin 只提供可追溯的研究辅助、数据分析和风险提示。页面不执行交易、转账或账户操作，也不构成收益保证或无条件买卖建议。
-      </p>
-    </main>
-
+    <dialog id="create-dialog" class="dialog">
+      <form id="analysis-form" method="dialog" class="create-form">
+        <div class="dialog-heading"><div><p class="overline">NEW ANALYSIS</p><h2>新建年度报告分析</h2></div><button id="close-create" class="icon-button" type="button" aria-label="关闭">×</button></div>
+        <p class="surface-note">支持 A 股非金融公司、中文可检索年度报告 PDF。创建后只上传文件，不会伪装成已自动完成分析。</p>
+        <label class="field-full">公司名称<input name="company_name" maxlength="200" required /></label>
+        <div class="form-row"><label>证券代码<input name="security_code" inputmode="numeric" pattern="(?:00[0-3]|30[01]|60[0135]|688)\d{3}" maxlength="6" required /></label><label>报告期截止日<input id="report-period-end" name="report_period_end" type="date" required /></label></div>
+        <label>分析关注点<select name="analysis_focus"><option value="comprehensive">综合分析</option><option value="profitability">盈利质量</option><option value="cashflow">现金流</option><option value="solvency">偿债能力</option></select></label>
+        <label>年度报告 PDF<input id="report-file" name="file" type="file" accept="application/pdf,.pdf" required /><small>默认上限 50 MiB；扫描件、加密文件和不可检索 PDF 会被拒绝。</small></label>
+        <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
+        <div class="dialog-actions"><button class="button button-secondary" id="cancel-create" type="button">取消</button><button id="submit-button" class="button button-primary" type="submit">创建并上传</button></div>
+      </form>
+    </dialog>
+    <dialog id="confirm-dialog" class="dialog confirm-dialog"><form method="dialog"><p class="overline">CHECKPOINT RESTORE</p><h2>确认恢复运行状态</h2><p id="confirm-copy"></p><div class="dialog-actions"><button class="button button-secondary" value="cancel">取消</button><button id="confirm-restore" class="button button-danger" value="confirm">确认恢复</button></div></form></dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
     <script type="module" src="/assets/app.js"></script>
   </body>
 </html>
