@@ -1147,3 +1147,23 @@ visual spot-check: overview, report/evidence, and evaluation/Goal Gate frames pa
 - 视频文件可由 Microsoft Edge 完整读取元数据并解码，GIF 可在 Markdown 中直接显示。
 - 演示使用合成公司、合成 PDF 和人工经 API 提交的合成事实；不证明真实年报准确率，不构成投资建议或交易操作。
 - 仓库当前没有经验证的公开部署 URL；在真实部署完成前不添加“在线体验”占位链接。
+
+## 2026-09-08：本地工作台数据库配置恢复
+
+### 失败事实
+
+- `http://127.0.0.1:8000/` 的旧服务实例返回 `database_not_configured`，readiness 中数据库和 Redis 均为 `not_configured`。
+- 项目根目录此前没有 `.env`；8000 端口随后仍被来源不明的旧实例占用，因此没有直接终止该进程。
+
+### 修复与验证
+
+- 创建被 `.gitignore` 排除的本地 `.env`，使用 `sqlite+pysqlite:///D:/Finance_Data_Thinking/data/citefin-local.db` 和本地对象目录；文件不进入 Git。
+- 执行 `.\scripts\dev.ps1 migrate`，SQLite 从空库依次升级到 Alembic `0011`。
+- 在 `http://127.0.0.1:8765/` 启动读取该配置的实例。
+- `/api/v1/health/ready` 返回数据库和 Redis 均为 `configured`。
+- 使用 `X-User-ID: configuration-check` 查询 `/api/v1/analysis-runs` 成功并返回空集合，证明数据库会话可用且未创建测试运行。
+
+### 结论与限制
+
+- `database_not_configured` 阻断已在 8765 的已配置实例消除，浏览器已切换至该地址。
+- readiness 当前只验证依赖配置存在，不探测 Redis 实际连接；本次交互流程使用 SQLite 开发数据库，不代表 PostgreSQL 生产部署验收。
