@@ -22,6 +22,18 @@
 
 </div>
 
+## デモ動画
+
+<p align="center">
+  <a href="docs/assets/citefin-workbench-demo.zh-CN.webm">
+    <img src="docs/assets/citefin-workbench-demo-preview.gif" alt="CiteFin ワークベンチのデモ動画プレビュー" width="960">
+  </a>
+</p>
+
+<p align="center"><a href="docs/assets/citefin-workbench-demo.zh-CN.webm">▶ 25 秒・720p の操作デモを見る</a></p>
+
+この動画は再現可能な F018 合成フローを使用し、実際に永続化されたバックエンド状態を表示します。ただし、実年次報告書で検証済みの精度を示すものではありません。
+
 > [!IMPORTANT]
 > CiteFin は調査支援システムです。売買、注文、送金、口座操作を実行せず、収益を保証せず、根拠のない個別投資指示も提供しません。
 

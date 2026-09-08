@@ -22,6 +22,18 @@ Turn searchable Chinese annual reports into reproducible financial facts, determ
 
 </div>
 
+## Demo video
+
+<p align="center">
+  <a href="docs/assets/citefin-workbench-demo.zh-CN.webm">
+    <img src="docs/assets/citefin-workbench-demo-preview.gif" alt="CiteFin workbench demo video preview" width="960">
+  </a>
+</p>
+
+<p align="center"><a href="docs/assets/citefin-workbench-demo.zh-CN.webm">▶ Watch the full 25-second 720p walkthrough</a></p>
+
+The walkthrough uses the reproducible F018 synthetic flow. It demonstrates real persisted backend state but does not represent validated accuracy on real annual reports.
+
 > [!IMPORTANT]
 > CiteFin assists research. It does not execute trades, place orders, transfer funds, operate accounts, guarantee returns, or provide unsupported personalized investment instructions.
 
