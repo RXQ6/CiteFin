@@ -30,7 +30,7 @@
   </a>
 </p>
 
-<p align="center"><a href="docs/assets/citefin-workbench-demo.zh-CN.webm">▶ 查看完整 25 秒 720p 操作演示</a></p>
+<p align="center"><a href="docs/assets/citefin-workbench-demo.zh-CN.webm">▶ 查看完整 23 秒 720p 公开站演示</a></p>
 
 视频使用可复现的 F018 合成流程，展示真实持久化后端状态，但不代表已经验证真实年报准确率。
 

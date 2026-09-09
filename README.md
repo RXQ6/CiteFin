@@ -30,7 +30,7 @@ Turn searchable Chinese annual reports into reproducible financial facts, determ
   </a>
 </p>
 
-<p align="center"><a href="docs/assets/citefin-workbench-demo.zh-CN.webm">▶ Watch the full 25-second 720p walkthrough</a></p>
+<p align="center"><a href="docs/assets/citefin-workbench-demo.zh-CN.webm">▶ Watch the full 23-second 720p public-site walkthrough</a></p>
 
 The walkthrough uses the reproducible F018 synthetic flow. It demonstrates real persisted backend state but does not represent validated accuracy on real annual reports.
 

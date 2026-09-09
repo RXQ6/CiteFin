@@ -30,7 +30,7 @@
   </a>
 </p>
 
-<p align="center"><a href="docs/assets/citefin-workbench-demo.zh-CN.webm">▶ 25 秒・720p の操作デモを見る</a></p>
+<p align="center"><a href="docs/assets/citefin-workbench-demo.zh-CN.webm">▶ 23 秒・720p の公開サイトデモを見る</a></p>
 
 この動画は再現可能な F018 合成フローを使用し、実際に永続化されたバックエンド状態を表示します。ただし、実年次報告書で検証済みの精度を示すものではありません。
 
