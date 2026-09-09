@@ -47,11 +47,14 @@ def acceptance_harness(
 ) -> Iterator[tuple[TestClient, sessionmaker[Session]]]:
     """Provide isolated persistence and object storage for the full flow."""
 
-    engine = build_engine(f"sqlite+pysqlite:///{(tmp_path / 'f018.db').as_posix()}")
+    database_url = f"sqlite+pysqlite:///{(tmp_path / 'f018.db').as_posix()}"
+    engine = build_engine(database_url)
     Base.metadata.create_all(engine)
     sessions = sessionmaker(bind=engine, expire_on_commit=False)
     settings = Settings(
         _env_file=None,
+        environment="test",
+        database_url=database_url,
         object_storage_root=tmp_path / "objects",
         max_upload_bytes=1024 * 1024,
         min_pdf_text_characters=20,
@@ -155,6 +158,49 @@ def _post_replay(
     assert replay.status_code == 200, replay.text
     assert replay.json()["idempotent_replay"] is True
     return first.json(), replay.json()
+
+
+def test_one_click_execution_stops_at_explicit_review(
+    acceptance_harness: tuple[TestClient, sessionmaker[Session]],
+) -> None:
+    client, _ = acceptance_harness
+    run = _create_run(client, "automatic-review-key")
+    run_id = run["run_id"]
+    upload = client.post(
+        f"/api/v1/analysis-runs/{run_id}/documents",
+        headers=_headers(),
+        files={"file": ("synthetic.pdf", _synthetic_pdf(), "application/pdf")},
+    )
+    assert upload.status_code == 201
+
+    started = client.post(f"/api/v1/analysis-runs/{run_id}/execute", headers=_headers())
+    assert started.status_code == 202
+    replay = client.post(f"/api/v1/analysis-runs/{run_id}/execute", headers=_headers())
+    assert replay.status_code == 200
+    assert replay.json()["idempotent_replay"] is True
+
+    review = client.get(f"/api/v1/analysis-runs/{run_id}/review-items", headers=_headers())
+    assert review.status_code == 200
+    assert [item["item_type"] for item in review.json()] == ["financial_facts"]
+    item_id = review.json()[0]["item_id"]
+    invalid = client.post(
+        f"/api/v1/analysis-runs/{run_id}/review-items/{item_id}/resolve",
+        headers=_headers(),
+        json={"action": "select", "candidate_index": 0},
+    )
+    assert invalid.status_code == 422
+    rejected = client.post(
+        f"/api/v1/analysis-runs/{run_id}/review-items/{item_id}/resolve",
+        headers=_headers(),
+        json={"action": "reject"},
+    )
+    assert rejected.status_code == 200
+    assert rejected.json()["status"] == "rejected"
+    hidden = client.get(
+        f"/api/v1/analysis-runs/{run_id}/review-items",
+        headers={"X-User-ID": "another-user"},
+    )
+    assert hidden.status_code == 404
 
 
 def test_synthetic_golden_flow_is_replayable_evidenced_and_verified(

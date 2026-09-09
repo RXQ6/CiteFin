@@ -23,6 +23,7 @@ dependencies = [
   "sqlalchemy>=2.0,<3.0",
   "structlog>=24.4,<26.0",
   "uvicorn[standard]>=0.30,<1.0",
+  "redis>=6,<7",
 ]
 
 [dependency-groups]
@@ -37,6 +38,10 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/citefin"]
+
+[[tool.uv.index]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true
 
 [tool.pytest.ini_options]
 addopts = "--strict-config --strict-markers --cov=src/citefin --cov-report=term-missing --cov-fail-under=90"

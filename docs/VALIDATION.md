@@ -1355,3 +1355,25 @@ frontend typecheck/component test/build: passed
 - 验证了验证码错误/过期、邮箱与 IP 双层限流、摘要存储、HttpOnly/SameSite Cookie、登出撤销、Cookie 创建分析运行和生产环境拒绝伪造 `X-User-ID`。
 - 前端已能完成验证码登录、公司/报告期输入和 PDF 上传；上传仍使用既有大小、类型、加密、页数、可检索性和内容哈希闸门。
 - 本单元尚未启动自动分析队列，上传完成页明确披露该限制；生产 Secure Cookie 行为由环境分支实现，仍需 HTTPS 部署验收。
+
+## 2026-09-09：自动执行队列与冲突确认边界
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 check
+```
+
+```text
+Ruff/format/mypy: passed
+golden: 3/3 passed
+pytest: 168 passed, 1 warning
+coverage: 90.03% (required 90%)
+frontend component test/build: passed
+```
+
+### 结论与限制
+
+- 验证了执行入队幂等、Redis 推送与 Worker 消费、无来源拒绝、解析/三表自动运行、待确认项用户隔离、候选确认/拒绝和恢复入队。
+- 合成三表可自动定位，随后因没有严格自动事实候选而停在 `financial_facts` 待确认项；这证明系统不会把 provisional 数据推进为正式结果。
+- 尚未验证 Redis 断线后的可靠重投、生产多 Worker 竞争、真实中文表格事实抽取、下游全自动编排或长连接 SSE；这些仍是公开上传前的发布阻塞项。

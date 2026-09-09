@@ -7,6 +7,7 @@ services:
       CITEFIN_ENVIRONMENT: development
       CITEFIN_DATABASE_URL: postgresql+psycopg://citefin:citefin@postgres:5432/citefin
       CITEFIN_REDIS_URL: redis://redis:6379/0
+      CITEFIN_ANALYSIS_QUEUE_MODE: redis
       CITEFIN_OBJECT_STORAGE_ROOT: /app/data/objects
     ports:
       - "8000:8000"
@@ -28,6 +29,25 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "citefin.worker"]
+    environment:
+      CITEFIN_ENVIRONMENT: development
+      CITEFIN_DATABASE_URL: postgresql+psycopg://citefin:citefin@postgres:5432/citefin
+      CITEFIN_REDIS_URL: redis://redis:6379/0
+      CITEFIN_ANALYSIS_QUEUE_MODE: redis
+      CITEFIN_OBJECT_STORAGE_ROOT: /app/data/objects
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    volumes:
+      - object-data:/app/data/objects
 
   migrate:
     build:

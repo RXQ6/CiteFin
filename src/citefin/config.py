@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     auth_email_webhook_url: str | None = None
     auth_email_webhook_token: str | None = Field(default=None, repr=False)
     legacy_user_header_enabled: bool = True
+    analysis_queue_mode: Literal["inline", "redis"] = "inline"
+    analysis_queue_name: str = "citefin:analysis-runs"
 
 
 @lru_cache

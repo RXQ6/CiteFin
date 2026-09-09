@@ -617,3 +617,40 @@ class AuthSession(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class AnalysisExecution(Base):
+    """Idempotent asynchronous execution request for one analysis run."""
+
+    __tablename__ = "analysis_executions"
+
+    execution_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_runs.run_id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    status: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    current_node: Mapped[str | None] = mapped_column(String(64))
+    attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    error_code: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ReviewItem(Base):
+    """One explicit ambiguity that prevents automatic workflow continuation."""
+
+    __tablename__ = "review_items"
+
+    item_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_runs.run_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    item_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    checkpoint_node: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    candidates: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    resolution: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
