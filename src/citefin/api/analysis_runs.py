@@ -7,6 +7,7 @@ from typing import Annotated, Self
 from fastapi import APIRouter, Header, Response, status
 from pydantic import BaseModel, Field, StringConstraints, field_validator, model_validator
 
+from citefin.api.auth_dependencies import CurrentUserId
 from citefin.api.dependencies import DatabaseSession
 from citefin.services.analysis_runs import CreateAnalysisRunCommand, create_analysis_run
 
@@ -17,10 +18,7 @@ SecurityCode = Annotated[
     str,
     StringConstraints(pattern=r"^(?:00[0-3]|30[01]|60[0135]|688)\d{3}$"),
 ]
-UserIdHeader = Annotated[
-    str,
-    Header(alias="X-User-ID", min_length=1, max_length=128),
-]
+UserIdHeader = CurrentUserId
 IdempotencyKeyHeader = Annotated[
     str,
     Header(alias="Idempotency-Key", min_length=8, max_length=128),

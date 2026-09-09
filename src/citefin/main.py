@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from citefin import __version__
 from citefin.api.analysis_runs import router as analysis_runs_router
+from citefin.api.auth import router as auth_router
 from citefin.api.checkpoints import router as checkpoints_router
 from citefin.api.demo import router as demo_router
 from citefin.api.documents import router as documents_router
@@ -40,6 +41,7 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json",
     )
     application.include_router(health_router, prefix="/api/v1")
+    application.include_router(auth_router, prefix="/api/v1")
     application.include_router(analysis_runs_router, prefix="/api/v1")
     application.include_router(checkpoints_router, prefix="/api/v1")
     application.include_router(documents_router, prefix="/api/v1")

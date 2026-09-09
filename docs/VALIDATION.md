@@ -1332,3 +1332,26 @@ visual QA: desktop and 390x844 mobile viewport passed
 - G001 公开示例端点只返回代码内版本化合成投影和 allowlist PDF，不读取或写入数据库；未知 source_id 返回 404。
 - `/legacy` 保留原始工程工作台和现有 API 行为，避免一次迁移破坏已有验证链路。
 - 本单元没有实现真实上传登录、自动工作流或导出分享；这些能力不得从界面文案推断为已上线。
+
+## 2026-09-09：邮箱认证与真实上传入口
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 check
+```
+
+```text
+Ruff/format: passed; 93 files formatted
+mypy: passed for 54 source files
+golden: 3/3 passed
+pytest: 164 passed, 1 warning
+coverage: 90.29% (required 90%)
+frontend typecheck/component test/build: passed
+```
+
+### 结论与限制
+
+- 验证了验证码错误/过期、邮箱与 IP 双层限流、摘要存储、HttpOnly/SameSite Cookie、登出撤销、Cookie 创建分析运行和生产环境拒绝伪造 `X-User-ID`。
+- 前端已能完成验证码登录、公司/报告期输入和 PDF 上传；上传仍使用既有大小、类型、加密、页数、可检索性和内容哈希闸门。
+- 本单元尚未启动自动分析队列，上传完成页明确披露该限制；生产 Secure Cookie 行为由环境分支实现，仍需 HTTPS 部署验收。

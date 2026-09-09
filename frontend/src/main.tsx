@@ -117,7 +117,51 @@ function DemoPage({ onBack, onUpload }: { onBack: () => void; onUpload: () => vo
 }
 
 function UploadModal({ onClose }: { onClose: () => void }) {
-  return <div className="modal-backdrop" role="presentation" onMouseDown={onClose}><section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" onClick={onClose} aria-label="关闭">×</button><p className="eyebrow">安全上传</p><h2 id="auth-title">登录后分析真实年报</h2><p>公开示例无需登录。真实 PDF 将进入隔离存储，并只对你的会话可见。</p><label>邮箱地址<input type="email" placeholder="name@example.com" autoFocus /></label><button className="button primary full" disabled>获取邮箱验证码</button><small>邮箱登录与自动分析将在下一交付单元启用。当前可先查看完整合成示例。</small></section></div>;
+  const [step, setStep] = useState<"email" | "code" | "upload" | "done">("email");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [developmentCode, setDevelopmentCode] = useState<string | null>(null);
+  const [company, setCompany] = useState("");
+  const [securityCode, setSecurityCode] = useState("");
+  const [periodEnd, setPeriodEnd] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const requestCode = async () => {
+    setBusy(true); setMessage("");
+    const response = await fetch("/api/v1/auth/email/request", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+    const body = await response.json() as { development_code?: string; detail?: { message?: string } };
+    setBusy(false);
+    if (!response.ok) { setMessage(body.detail?.message ?? "验证码发送失败，请稍后重试。"); return; }
+    setDevelopmentCode(body.development_code ?? null); setStep("code");
+  };
+  const verifyCode = async () => {
+    setBusy(true); setMessage("");
+    const response = await fetch("/api/v1/auth/email/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, code }) });
+    const body = await response.json() as { detail?: { message?: string } };
+    setBusy(false);
+    if (!response.ok) { setMessage(body.detail?.message ?? "验证码不正确。"); return; }
+    setStep("upload");
+  };
+  const uploadReport = async () => {
+    if (!file) return;
+    setBusy(true); setMessage("");
+    const runResponse = await fetch("/api/v1/analysis-runs", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() }, body: JSON.stringify({ company_name: company, security_code: securityCode, report_period_end: periodEnd, as_of: new Date().toISOString(), analysis_focus: ["comprehensive"] }) });
+    const runBody = await runResponse.json() as { run_id?: string; detail?: { message?: string } };
+    if (!runResponse.ok || !runBody.run_id) { setBusy(false); setMessage(runBody.detail?.message ?? "分析任务创建失败。"); return; }
+    const form = new FormData(); form.append("file", file);
+    const uploadResponse = await fetch(`/api/v1/analysis-runs/${runBody.run_id}/documents`, { method: "POST", body: form });
+    const uploadBody = await uploadResponse.json() as { detail?: { message?: string } };
+    setBusy(false);
+    if (!uploadResponse.ok) { setMessage(uploadBody.detail?.message ?? "年报上传失败。"); return; }
+    setStep("done");
+  };
+  return <div className="modal-backdrop" role="presentation" onMouseDown={onClose}><section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" onClick={onClose} aria-label="关闭">×</button><p className="eyebrow">安全上传 · {step === "email" || step === "code" ? "邮箱验证" : "创建分析"}</p><h2 id="auth-title">{step === "done" ? "年报已安全上传" : "分析真实年报"}</h2><p>{step === "done" ? "文件已通过基础校验并进入隔离存储。自动分析队列将在下一步启动。" : "公开示例无需登录。真实 PDF 只对你的安全会话可见。"}</p>
+    {step === "email" && <><label>邮箱地址<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" autoFocus /></label><button className="button primary full" disabled={busy || !email} onClick={() => void requestCode()}>{busy ? "正在发送…" : "获取邮箱验证码"}</button></>}
+    {step === "code" && <><label>6 位验证码<input inputMode="numeric" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))} autoFocus /></label>{developmentCode && <div className="dev-code">开发环境验证码：<strong>{developmentCode}</strong></div>}<button className="button primary full" disabled={busy || code.length !== 6} onClick={() => void verifyCode()}>{busy ? "正在验证…" : "验证并继续"}</button></>}
+    {step === "upload" && <><div className="upload-grid"><label>公司名称<input value={company} onChange={(event) => setCompany(event.target.value)} /></label><label>证券代码<input inputMode="numeric" maxLength={6} value={securityCode} onChange={(event) => setSecurityCode(event.target.value.replace(/\D/g, ""))} /></label><label>报告期<input type="date" value={periodEnd} onChange={(event) => setPeriodEnd(event.target.value)} /></label><label className="file-field">年度报告 PDF<input type="file" accept="application/pdf,.pdf" onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label></div><button className="button primary full" disabled={busy || !company || securityCode.length !== 6 || !periodEnd || !file} onClick={() => void uploadReport()}>{busy ? "正在校验并上传…" : "上传年报"}</button></>}
+    {step === "done" && <button className="button primary full" onClick={onClose}>完成</button>}
+    {message && <div className="form-error" role="alert">{message}</div>}<small>仅支持 A 股非金融类公司的中文可检索年度报告；系统不执行交易，也不构成投资建议。</small></section></div>;
 }
 
 function Footer() { return <footer><Brand /><p>证据驱动的财报研究平台</p><span>辅助决策 · 不构成投资建议 · 不执行交易</span><a href="/legacy">内部兼容工作台</a></footer>; }

@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 50 * 1024 * 1024
     min_pdf_text_characters: int = 50
     max_pdf_pages: int = 2000
+    session_secret: str = Field(default="development-only-change-me", repr=False)
+    auth_code_ttl_seconds: int = 600
+    auth_session_ttl_hours: int = 168
+    auth_email_mode: Literal["development", "webhook"] = "development"
+    auth_email_webhook_url: str | None = None
+    auth_email_webhook_token: str | None = Field(default=None, repr=False)
+    legacy_user_header_enabled: bool = True
 
 
 @lru_cache

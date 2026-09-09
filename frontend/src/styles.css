@@ -222,6 +222,12 @@ footer a { text-decoration: none; }
 .auth-modal > p:not(.eyebrow) { color: var(--muted); line-height: 1.65; }
 .auth-modal label { display: grid; gap: 7px; margin: 24px 0 11px; color: var(--muted); font-size: 12px; font-weight: 650; }
 .auth-modal input { min-height: 48px; padding: 0 13px; color: var(--ink); border: 1px solid #b9c6be; border-radius: 9px; background: #fbfcfb; }
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.upload-grid label { margin-top: 12px; }
+.upload-grid .file-field { grid-column: 1 / -1; }
+.file-field input { padding: 11px; }
+.dev-code { margin: -2px 0 12px; padding: 10px 12px; color: #285f49; border-radius: 8px; background: #edf7f1; font-size: 12px; }
+.form-error { margin-top: 12px; padding: 10px 12px; color: #8f302b; border-radius: 8px; background: #fff0ee; font-size: 12px; }
 .auth-modal > small { display: block; margin-top: 14px; color: var(--subtle); font-size: 10px; line-height: 1.6; }
 .modal-close { position: absolute; top: 16px; right: 16px; display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 50%; background: #eef2ef; cursor: pointer; }
 

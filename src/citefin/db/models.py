@@ -588,3 +588,32 @@ class StatementIdentification(Base):
     source_document: Mapped[SourceDocument] = relationship(
         back_populates="statement_identifications"
     )
+
+
+class AuthLoginCode(Base):
+    """Short-lived, hashed email login challenge with rate-limit evidence."""
+
+    __tablename__ = "auth_login_codes"
+
+    code_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    email_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    code_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    request_ip_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class AuthSession(Base):
+    """Revocable browser session that never persists the raw token or email."""
+
+    __tablename__ = "auth_sessions"
+
+    session_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    email_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
