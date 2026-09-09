@@ -23,10 +23,28 @@ function Invoke-Uv {
     }
 }
 
+function Invoke-Frontend {
+    param([string[]]$Arguments)
+
+    Push-Location (Join-Path $ProjectRoot "frontend")
+    try {
+        & npm @Arguments
+        if ($LASTEXITCODE -ne 0) {
+            throw "npm $($Arguments -join ' ') failed with exit code $LASTEXITCODE"
+        }
+    }
+    finally {
+        Pop-Location
+    }
+}
+
 Push-Location $ProjectRoot
 try {
     switch ($Command) {
-        "setup" { Invoke-Uv @("sync", "--frozen") }
+        "setup" {
+            Invoke-Uv @("sync", "--frozen")
+            Invoke-Frontend @("ci")
+        }
         "test" { Invoke-Uv @("run", "pytest", "--basetemp", $PytestTemp, "-p", "no:cacheprovider") }
         "lint" {
             Invoke-Uv @("run", "ruff", "check", "src", "tests")
@@ -163,6 +181,8 @@ try {
             Invoke-Uv @("run", "mypy")
             Invoke-Uv @("run", "python", "tests/golden/validate.py")
             Invoke-Uv @("run", "pytest", "--basetemp", $PytestTemp, "-p", "no:cacheprovider")
+            Invoke-Frontend @("run", "check")
+            Invoke-Frontend @("run", "build")
         }
         "run" {
             Invoke-Uv @(

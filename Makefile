@@ -4,10 +4,11 @@ UV_PYTHON_INSTALL_DIR ?= $(CURDIR)/.uv-python
 export UV_CACHE_DIR
 export UV_PYTHON_INSTALL_DIR
 
-.PHONY: setup test lint format typecheck check run golden migrate prepare-f004-review validate-f004-review verify-feature
+.PHONY: setup test lint format typecheck check frontend-check frontend-build run golden migrate prepare-f004-review validate-f004-review verify-feature
 
 setup:
 	uv sync --frozen
+	cd frontend && npm ci
 
 test:
 	uv run pytest
@@ -26,7 +27,13 @@ typecheck:
 golden:
 	uv run python tests/golden/validate.py
 
-check: lint typecheck golden test
+frontend-check:
+	cd frontend && npm run check
+
+frontend-build:
+	cd frontend && npm run build
+
+check: lint typecheck golden test frontend-check frontend-build
 
 verify-feature:
 	@if [ "$(FEATURE)" = "F001" ] || [ "$(FEATURE)" = "F002" ] || [ "$(FEATURE)" = "F003" ]; then \

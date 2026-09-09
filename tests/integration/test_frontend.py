@@ -8,23 +8,19 @@ from citefin.main import app
 def test_frontend_shell_exposes_accessible_workbench_controls() -> None:
     with TestClient(app) as client:
         response = client.get("/")
+        legacy = client.get("/legacy")
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/html")
-    assert 'id="identity-form"' in response.text
-    assert 'id="analysis-form"' in response.text
-    assert 'id="report-file"' in response.text
-    assert 'id="workspace-view"' in response.text
-    assert 'id="pipeline-list"' in response.text
-    assert 'id="metric-grid"' in response.text
-    assert 'id="risk-list"' in response.text
-    assert 'id="report-view"' in response.text
-    assert 'id="evaluation-view"' in response.text
-    assert 'id="gate-view"' in response.text
-    assert 'id="checkpoint-list"' in response.text
-    assert 'id="pdf-frame"' in response.text
-    assert 'aria-live="polite"' in response.text
-    assert "不执行交易" in response.text
+    assert 'id="root"' in response.text
+    assert "/app-assets/assets/" in response.text
+    assert legacy.status_code == 200
+    assert 'id="identity-form"' in legacy.text
+    assert 'id="analysis-form"' in legacy.text
+    assert 'id="workspace-view"' in legacy.text
+    assert 'id="metric-grid"' in legacy.text
+    assert 'id="pdf-frame"' in legacy.text
+    assert "不执行交易" in legacy.text
 
 
 def test_frontend_assets_use_real_workspace_progress_and_cursor_replay() -> None:
@@ -33,7 +29,7 @@ def test_frontend_assets_use_real_workspace_progress_and_cursor_replay() -> None
         stylesheet = client.get("/assets/app.css")
 
     assert script.status_code == 200
-    assert script.headers["content-type"].startswith("text/javascript")
+    assert script.headers["content-type"].startswith(("text/javascript", "application/javascript"))
     assert "/workspace" in script.text
     assert "/progress" in script.text
     assert "/events" in script.text

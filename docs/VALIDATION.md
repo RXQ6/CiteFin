@@ -1297,3 +1297,38 @@ feature status: verified 3, provisional 1, candidate_complete 14
 - 当前工程回归基线通过，未发现新的测试失败；唯一警告来自 Starlette TestClient 使用已弃用的 AnyIO 类型别名。
 - 本次只核对现有完成状态，没有执行 F004 正式复核门禁，也没有新增真实年报准确率证据。
 - F004 仍等待真实独立 Reviewer A/B、必要的第三方冲突裁决和公开披露使用依据；F005–F018 仍不得标记为正式 `verified`。
+
+## 2026-09-09：公开产品站与合成示例
+
+### 执行方式与结果
+
+```powershell
+cd frontend
+npm run check
+npm run build
+cd ..
+.\scripts\dev.ps1 check
+```
+
+```text
+frontend typecheck: passed
+frontend component tests: 1/1 passed
+frontend production build: passed; initial application chunk 245.97 kB (77.31 kB gzip)
+ECharts: lazy-loaded after opening the demo
+Python quality gate: Ruff passed; 89 files formatted; mypy passed for 51 source files
+golden: 3/3 passed
+pytest: 161 passed, 1 warning
+coverage: 90.34% (required 90%)
+visual QA: desktop and 390x844 mobile viewport passed
+```
+
+首次把前端门禁接入完整 `check` 后，旧工作台静态资源测试因 Starlette 返回标准
+`application/javascript` 而仅接受 `text/javascript` 失败；测试契约调整为接受两种合法 JavaScript
+媒体类型后重新执行完整门禁。
+
+### 结论与限制
+
+- 根路径不再要求本地用户标识，主入口为“查看示例报告”和“上传年报分析”。
+- G001 公开示例端点只返回代码内版本化合成投影和 allowlist PDF，不读取或写入数据库；未知 source_id 返回 404。
+- `/legacy` 保留原始工程工作台和现有 API 行为，避免一次迁移破坏已有验证链路。
+- 本单元没有实现真实上传登录、自动工作流或导出分享；这些能力不得从界面文案推断为已上线。

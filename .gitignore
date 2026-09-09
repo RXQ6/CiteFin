@@ -10,6 +10,8 @@ coverage.xml
 htmlcov/
 dist/
 build/
+frontend/node_modules/
+frontend/coverage/
 *.egg-info/
 
 # Environments and local tool caches
@@ -35,4 +37,3 @@ logs/
 
 # Temporary inspection files
 tmp/
-

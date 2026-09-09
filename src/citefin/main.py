@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from citefin import __version__
 from citefin.api.analysis_runs import router as analysis_runs_router
 from citefin.api.checkpoints import router as checkpoints_router
+from citefin.api.demo import router as demo_router
 from citefin.api.documents import router as documents_router
 from citefin.api.evaluations import router as evaluations_router
 from citefin.api.evidence import router as evidence_router
@@ -24,6 +25,7 @@ from citefin.api.risk_detection import router as risk_detection_router
 from citefin.api.workbench import router as workbench_router
 
 STATIC_DIR = Path(__file__).with_name("static")
+PRODUCT_STATIC_DIR = Path(__file__).with_name("product_static")
 
 
 def create_app() -> FastAPI:
@@ -41,6 +43,7 @@ def create_app() -> FastAPI:
     application.include_router(analysis_runs_router, prefix="/api/v1")
     application.include_router(checkpoints_router, prefix="/api/v1")
     application.include_router(documents_router, prefix="/api/v1")
+    application.include_router(demo_router, prefix="/api/v1")
     application.include_router(evidence_router, prefix="/api/v1")
     application.include_router(evidence_viewer_router, prefix="/api/v1")
     application.include_router(evaluations_router, prefix="/api/v1")
@@ -55,12 +58,34 @@ def create_app() -> FastAPI:
     application.mount(
         "/assets",
         StaticFiles(directory=STATIC_DIR / "assets"),
-        name="frontend-assets",
+        name="legacy-frontend-assets",
+    )
+    application.mount(
+        "/app-assets/assets",
+        StaticFiles(directory=PRODUCT_STATIC_DIR / "assets"),
+        name="product-frontend-assets",
+    )
+    application.mount(
+        "/app-assets",
+        StaticFiles(directory=PRODUCT_STATIC_DIR),
+        name="product-public-assets",
     )
 
     @application.get("/", include_in_schema=False)
     def frontend_index() -> FileResponse:
-        """Serve the F016 minimal UI without exposing a second API surface."""
+        """Serve the public product experience."""
+
+        return FileResponse(PRODUCT_STATIC_DIR / "index.html", media_type="text/html")
+
+    @application.get("/favicon.svg", include_in_schema=False)
+    def product_favicon() -> FileResponse:
+        """Serve the product favicon without a third-party request."""
+
+        return FileResponse(PRODUCT_STATIC_DIR / "favicon.svg", media_type="image/svg+xml")
+
+    @application.get("/legacy", include_in_schema=False)
+    def legacy_frontend_index() -> FileResponse:
+        """Keep the engineering workbench available during migration."""
 
         return FileResponse(STATIC_DIR / "index.html", media_type="text/html")
 
