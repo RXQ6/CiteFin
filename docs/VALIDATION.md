@@ -1273,3 +1273,27 @@ validator exit code: 2 (expected for a non-scorable package)
 - 验证器已能拒绝占位/模型身份、混用角色、部分提交、证据字段差异、无时区时间、非法页码/哈希、未裁决冲突、非法裁决字段、重复机器目标和 pending 来源使用依据。
 - 真实空白包只生成带输入 SHA-256 的等待状态，没有计算一致率或机器准确率；`validate-f004-review` 的非零退出会继续阻止 F004 正式门禁误通过。
 - Reviewer A/B、裁决人和来源使用依据仍是外部阻塞项；本工作单元只完成可复算验证基础设施，不改变 F004 的 `provisional` 状态。
+
+## 2026-09-09：项目完成状态复核
+
+### 执行方式与结果
+
+```powershell
+.\scripts\dev.ps1 setup
+.\scripts\dev.ps1 test
+git status --short --branch
+```
+
+```text
+setup: 73 packages checked
+pytest: 159 passed, 1 warning
+coverage: 90.29% (required 90%)
+Git baseline before documentation update: clean; main synchronized with origin/main
+feature status: verified 3, provisional 1, candidate_complete 14
+```
+
+### 结论与限制
+
+- 当前工程回归基线通过，未发现新的测试失败；唯一警告来自 Starlette TestClient 使用已弃用的 AnyIO 类型别名。
+- 本次只核对现有完成状态，没有执行 F004 正式复核门禁，也没有新增真实年报准确率证据。
+- F004 仍等待真实独立 Reviewer A/B、必要的第三方冲突裁决和公开披露使用依据；F005–F018 仍不得标记为正式 `verified`。
