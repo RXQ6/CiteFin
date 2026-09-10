@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="黄色拉布拉多戴着头盔骑电瓶车的 SVG 2D 循环动画">
+  <title>兜风去！黄色拉布拉多 SVG 动画</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #173044;
+      --paper: #fffaf0;
+      --sun: #ffc857;
+      --red: #e55745;
+      --blue: #2d7792;
+      --mint: #86bfa3;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; min-height: 100%; }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 15%, rgba(255,255,255,.72), transparent 28%),
+        linear-gradient(150deg, #ffd991 0%, #f1a985 50%, #a85c78 100%);
+      font-family: "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    }
+
+    .stage {
+      width: min(1180px, calc(100vw - 28px));
+      border: 4px solid rgba(23, 48, 68, .88);
+      border-radius: 28px;
+      overflow: hidden;
+      position: relative;
+      background: #f5b47d;
+      box-shadow: 0 24px 64px rgba(70, 30, 46, .34), inset 0 0 0 2px rgba(255,255,255,.35);
+      isolation: isolate;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+    }
+
+    .topbar {
+      position: absolute;
+      z-index: 5;
+      inset: 0 0 auto 0;
+      padding: clamp(14px, 2.5vw, 28px);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      pointer-events: none;
+    }
+
+    .title-block {
+      color: #fffaf0;
+      text-shadow: 0 2px 0 rgba(23,48,68,.22);
+    }
+
+    .eyebrow {
+      display: block;
+      margin-bottom: 2px;
+      font-size: clamp(.72rem, 1.3vw, .9rem);
+      font-weight: 800;
+      letter-spacing: .2em;
+      opacity: .85;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.7rem, 4.8vw, 3.9rem);
+      font-style: italic;
+      line-height: .95;
+      letter-spacing: -.04em;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    button {
+      min-height: 44px;
+      padding: 0 15px;
+      border: 2px solid rgba(23,48,68,.84);
+      border-radius: 999px;
+      color: var(--ink);
+      background: rgba(255,250,240,.9);
+      box-shadow: 0 5px 0 rgba(23,48,68,.72);
+      font: 800 .9rem/1 system-ui, sans-serif;
+      cursor: pointer;
+      backdrop-filter: blur(7px);
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    button:hover { background: #fff; transform: translateY(-1px); box-shadow: 0 6px 0 rgba(23,48,68,.72); }
+    button:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(23,48,68,.72); }
+    button:focus-visible { outline: 4px solid #fff; outline-offset: 3px; }
+
+    .caption {
+      position: absolute;
+      z-index: 5;
+      left: clamp(14px, 2.5vw, 28px);
+      bottom: clamp(14px, 2.5vw, 26px);
+      margin: 0;
+      padding: 9px 14px;
+      border: 2px solid rgba(23,48,68,.76);
+      border-radius: 999px;
+      color: var(--ink);
+      background: rgba(255,250,240,.86);
+      box-shadow: 0 4px 0 rgba(23,48,68,.62);
+      font-size: clamp(.76rem, 1.5vw, .95rem);
+      font-weight: 800;
+      letter-spacing: .04em;
+      backdrop-filter: blur(7px);
+    }
+
+    .moving { animation-play-state: running; }
+    .paused, .paused * { animation-play-state: paused !important; }
+
+    #scene { --speed: 1; }
+    #scene.fast { --speed: .62; }
+
+    .clouds-near { animation: drift calc(18s * var(--speed)) linear infinite; }
+    .clouds-far { animation: drift calc(30s * var(--speed)) linear infinite; }
+    .far-hills { animation: drift calc(20s * var(--speed)) linear infinite; }
+    .near-trees { animation: drift calc(7s * var(--speed)) linear infinite; }
+    .road-marks { animation: drift calc(1.8s * var(--speed)) linear infinite; }
+    .dust { animation: drift calc(2.4s * var(--speed)) linear infinite; }
+    .rider { animation: bob calc(.72s * var(--speed)) ease-in-out infinite; transform-origin: 650px 410px; }
+    .tail { animation: wag calc(.28s * var(--speed)) ease-in-out infinite alternate; transform-origin: 558px 334px; }
+    .ear { animation: ear-flap calc(.58s * var(--speed)) ease-in-out infinite alternate; transform-origin: 642px 272px; }
+    .scarf-end { animation: scarf calc(.7s * var(--speed)) ease-in-out infinite alternate; transform-origin: 589px 352px; }
+    .wheel { animation: spin calc(.82s * var(--speed)) linear infinite; transform-box: fill-box; transform-origin: center; }
+    .blink { animation: blink 4.4s infinite; transform-box: fill-box; transform-origin: center; }
+    .speed-line { animation: streak calc(1.3s * var(--speed)) linear infinite; }
+    .speed-line.delay { animation-delay: -.55s; }
+    .helmet-shine { animation: glint 3.6s ease-in-out infinite; }
+
+    @keyframes drift { to { transform: translateX(-1200px); } }
+    @keyframes bob { 0%,100% { transform: translateY(0) rotate(-.25deg); } 50% { transform: translateY(-5px) rotate(.35deg); } }
+    @keyframes wag { from { transform: rotate(-16deg); } to { transform: rotate(13deg); } }
+    @keyframes ear-flap { from { transform: rotate(-2deg); } to { transform: rotate(9deg); } }
+    @keyframes scarf { from { transform: rotate(-4deg) scaleY(.95); } to { transform: rotate(7deg) scaleY(1.05); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes blink { 0%,44%,48%,100% { transform: scaleY(1); } 46% { transform: scaleY(.08); } }
+    @keyframes streak { from { transform: translateX(0); opacity: 0; } 15% { opacity: .55; } to { transform: translateX(-390px); opacity: 0; } }
+    @keyframes glint { 0%,75%,100% { opacity: .12; transform: translateX(-7px); } 84% { opacity: .8; transform: translateX(7px); } }
+
+    @media (max-width: 650px) {
+      body { align-items: center; }
+      .stage { width: calc(100vw - 16px); border-width: 3px; border-radius: 19px; }
+      .topbar { padding: 12px; }
+      .eyebrow { display: none; }
+      .controls { flex-direction: column; }
+      button { min-height: 38px; padding: 0 12px; font-size: .78rem; }
+      .caption { left: 12px; bottom: 12px; padding: 7px 11px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #scene, #scene * { animation-duration: 1ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" aria-label="黄色拉布拉多戴着头盔骑电瓶车的动画场景">
+    <div class="topbar">
+      <div class="title-block">
+        <span class="eyebrow">WEEKEND RIDE · 周末兜风</span>
+        <h1>追着晚风跑</h1>
+      </div>
+      <div class="controls" aria-label="动画控制">
+        <button id="toggle" type="button" aria-pressed="false">❚❚ 暂停</button>
+        <button id="speed" type="button" aria-pressed="false">×1 速度</button>
+      </div>
+    </div>
+
+    <svg id="scene" class="moving" viewBox="0 0 1200 675" role="img" aria-labelledby="svg-title svg-desc">
+      <title id="svg-title">黄色拉布拉多骑电瓶车</title>
+      <desc id="svg-desc">一只戴红色头盔和护目镜的黄色拉布拉多，迎着晚风骑蓝绿色电瓶车穿过郊外公路。</desc>
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f18d7d"/>
+          <stop offset=".52" stop-color="#ffc780"/>
+          <stop offset="1" stop-color="#ffe7ae"/>
+        </linearGradient>
+        <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3d5d67"/>
+          <stop offset="1" stop-color="#173044"/>
+        </linearGradient>
+        <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#ffe17e"/>
+          <stop offset=".58" stop-color="#f5b83e"/>
+          <stop offset="1" stop-color="#d98c24"/>
+        </linearGradient>
+        <linearGradient id="scooter" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#67c8c2"/>
+          <stop offset="1" stop-color="#24798d"/>
+        </linearGradient>
+        <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="180%">
+          <feGaussianBlur stdDeviation="8"/>
+        </filter>
+        <clipPath id="scene-clip"><rect width="1200" height="675" rx="24"/></clipPath>
+      </defs>
+
+      <g clip-path="url(#scene-clip)">
+        <rect width="1200" height="675" fill="url(#sky)"/>
+        <circle cx="945" cy="164" r="70" fill="#fff3c8" opacity=".9"/>
+        <circle cx="945" cy="164" r="89" fill="none" stroke="#fff0bd" stroke-width="3" opacity=".35"/>
+
+        <g class="clouds-far" fill="#fff7e9" opacity=".54">
+          <g><ellipse cx="120" cy="142" rx="64" ry="20"/><circle cx="99" cy="128" r="23"/><circle cx="144" cy="125" r="29"/></g>
+          <g><ellipse cx="670" cy="105" rx="55" ry="17"/><circle cx="645" cy="94" r="20"/><circle cx="686" cy="90" r="25"/></g>
+          <g transform="translate(1200 0)"><ellipse cx="120" cy="142" rx="64" ry="20"/><circle cx="99" cy="128" r="23"/><circle cx="144" cy="125" r="29"/></g>
+          <g transform="translate(1200 0)"><ellipse cx="670" cy="105" rx="55" ry="17"/><circle cx="645" cy="94" r="20"/><circle cx="686" cy="90" r="25"/></g>
+        </g>
+
+        <g class="clouds-near" fill="#fffaf1" opacity=".78">
+          <g><ellipse cx="400" cy="190" rx="83" ry="23"/><circle cx="370" cy="171" r="29"/><circle cx="424" cy="165" r="36"/></g>
+          <g><ellipse cx="1080" cy="232" rx="72" ry="20"/><circle cx="1055" cy="216" r="26"/><circle cx="1100" cy="211" r="30"/></g>
+          <g transform="translate(1200 0)"><ellipse cx="400" cy="190" rx="83" ry="23"/><circle cx="370" cy="171" r="29"/><circle cx="424" cy="165" r="36"/></g>
+          <g transform="translate(1200 0)"><ellipse cx="1080" cy="232" rx="72" ry="20"/><circle cx="1055" cy="216" r="26"/><circle cx="1100" cy="211" r="30"/></g>
+        </g>
+
+        <g class="far-hills">
+          <path d="M0 395Q110 285 220 385Q335 238 470 386Q590 280 720 390Q850 255 980 389Q1090 300 1200 382V470H0Z" fill="#6c8b7d" opacity=".72"/>
+          <path d="M0 420Q130 335 260 421Q370 306 500 423Q650 332 790 424Q920 318 1060 420Q1130 365 1200 415V492H0Z" fill="#47786d"/>
+          <g transform="translate(1200 0)">
+            <path d="M0 395Q110 285 220 385Q335 238 470 386Q590 280 720 390Q850 255 980 389Q1090 300 1200 382V470H0Z" fill="#6c8b7d" opacity=".72"/>
+            <path d="M0 420Q130 335 260 421Q370 306 500 423Q650 332 790 424Q920 318 1060 420Q1130 365 1200 415V492H0Z" fill="#47786d"/>
+          </g>
+        </g>
+
+        <path d="M0 435Q260 405 522 442T1200 430V548H0Z" fill="#9fc56c"/>
+
+        <g class="near-trees">
+          <g stroke="#173044" stroke-width="6" stroke-linejoin="round">
+            <g transform="translate(70 302)"><rect x="-8" y="67" width="16" height="85" rx="6" fill="#7c5236"/><path d="M0 0L-45 78H45Z" fill="#2f7964"/><path d="M0 35L-55 115H55Z" fill="#3c9471"/></g>
+            <g transform="translate(315 338) scale(.72)"><rect x="-8" y="67" width="16" height="85" rx="6" fill="#7c5236"/><path d="M0 0L-45 78H45Z" fill="#2f7964"/><path d="M0 35L-55 115H55Z" fill="#3c9471"/></g>
+            <g transform="translate(1060 310) scale(1.08)"><rect x="-8" y="67" width="16" height="85" rx="6" fill="#7c5236"/><path d="M0 0L-45 78H45Z" fill="#2f7964"/><path d="M0 35L-55 115H55Z" fill="#3c9471"/></g>
+          </g>
+          <g transform="translate(1200 0)" stroke="#173044" stroke-width="6" stroke-linejoin="round">
+            <g transform="translate(70 302)"><rect x="-8" y="67" width="16" height="85" rx="6" fill="#7c5236"/><path d="M0 0L-45 78H45Z" fill="#2f7964"/><path d="M0 35L-55 115H55Z" fill="#3c9471"/></g>
+            <g transform="translate(315 338) scale(.72)"><rect x="-8" y="67" width="16" height="85" rx="6" fill="#7c5236"/><path d="M0 0L-45 78H45Z" fill="#2f7964"/><path d="M0 35L-55 115H55Z" fill="#3c9471"/></g>
+            <g transform="translate(1060 310) scale(1.08)"><rect x="-8" y="67" width="16" height="85" rx="6" fill="#7c5236"/><path d="M0 0L-45 78H45Z" fill="#2f7964"/><path d="M0 35L-55 115H55Z" fill="#3c9471"/></g>
+          </g>
+        </g>
+
+        <path d="M0 495H1200V675H0Z" fill="url(#road)"/>
+        <path d="M0 501Q300 491 600 502T1200 500" fill="none" stroke="#dce4c8" stroke-width="8"/>
+        <g class="road-marks" fill="#ffe891">
+          <rect x="80" y="604" width="170" height="14" rx="7"/>
+          <rect x="410" y="604" width="170" height="14" rx="7"/>
+          <rect x="740" y="604" width="170" height="14" rx="7"/>
+          <rect x="1070" y="604" width="170" height="14" rx="7"/>
+          <rect x="1280" y="604" width="170" height="14" rx="7"/>
+          <rect x="1610" y="604" width="170" height="14" rx="7"/>
+          <rect x="1940" y="604" width="170" height="14" rx="7"/>
+          <rect x="2270" y="604" width="170" height="14" rx="7"/>
+        </g>
+
+        <g stroke="#fff8dd" stroke-width="7" stroke-linecap="round" opacity=".55">
+          <path class="speed-line" d="M310 326H420"/>
+          <path class="speed-line delay" d="M240 376H380"/>
+          <path class="speed-line" d="M165 430H340"/>
+        </g>
+
+        <ellipse cx="687" cy="581" rx="290" ry="29" fill="#102634" opacity=".32" filter="url(#soft-shadow)"/>
+
+        <g class="rider" stroke="#173044" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Wheels -->
+          <g class="wheel">
+            <circle cx="497" cy="544" r="76" fill="#1a2932"/>
+            <circle cx="497" cy="544" r="55" fill="#edf1df"/>
+            <circle cx="497" cy="544" r="15" fill="#e55745"/>
+            <g stroke-width="5"><path d="M497 489V599M442 544H552M458 505L536 583M458 583L536 505"/></g>
+          </g>
+          <g class="wheel">
+            <circle cx="861" cy="544" r="76" fill="#1a2932"/>
+            <circle cx="861" cy="544" r="55" fill="#edf1df"/>
+            <circle cx="861" cy="544" r="15" fill="#e55745"/>
+            <g stroke-width="5"><path d="M861 489V599M806 544H916M822 505L900 583M822 583L900 505"/></g>
+          </g>
+
+          <!-- Scooter -->
+          <path d="M497 540L565 454H751L832 534" fill="none" stroke="#173044" stroke-width="16"/>
+          <path d="M553 445Q565 410 611 407H748Q784 408 801 436L846 509Q859 536 832 549H606Q561 548 549 517Z" fill="url(#scooter)"/>
+          <path d="M589 457H739Q764 458 775 479L791 511H589Q570 511 572 491L575 474Q577 458 589 457Z" fill="#87d6cd" stroke-width="5"/>
+          <path d="M780 470L813 383" fill="none" stroke-width="13"/>
+          <path d="M787 384H856" fill="none" stroke-width="12"/>
+          <path d="M831 384Q841 408 851 433" fill="none" stroke-width="7"/>
+          <path d="M523 430H686Q703 430 704 446H514Q511 431 523 430Z" fill="#30363d"/>
+          <path d="M805 425Q839 423 852 444L831 461Q809 458 798 442Z" fill="#ffe184" stroke-width="5"/>
+          <rect x="663" y="483" width="71" height="42" rx="13" fill="#fff3d3" stroke-width="5"/>
+          <path d="M678 504H719" stroke="#e55745" stroke-width="7"/>
+          <path d="M600 547H780" stroke="#173044" stroke-width="12"/>
+
+          <!-- Tail behind body -->
+          <path class="tail" d="M573 350Q500 309 466 348Q511 345 547 391" fill="url(#fur)"/>
+
+          <!-- Body and legs -->
+          <path d="M580 337Q617 314 676 329Q728 342 746 399L730 440H593Q567 399 580 337Z" fill="url(#fur)"/>
+          <path d="M646 395Q673 408 679 452L656 483H622L636 444L622 417" fill="#e6a133"/>
+          <path d="M626 477Q636 463 664 466L674 484H628Z" fill="#fff4ce"/>
+          <path d="M711 387Q742 399 770 420L814 388" fill="none" stroke="#efbd4e" stroke-width="26"/>
+          <path d="M792 385Q807 372 825 383Q825 401 810 406" fill="#ffe17e"/>
+
+          <!-- Scarf -->
+          <path d="M582 345Q632 371 679 352" fill="none" stroke="#e55745" stroke-width="19"/>
+          <path class="scarf-end" d="M593 356Q541 372 503 348L521 389Q564 394 607 373Z" fill="#e55745"/>
+          <path d="M521 369L497 387M546 376L527 398" stroke="#fff1d5" stroke-width="5"/>
+
+          <!-- Head -->
+          <path d="M596 309Q589 243 644 215Q709 183 768 218Q809 242 802 291Q797 331 757 351Q701 378 640 348Q609 334 596 309Z" fill="url(#fur)"/>
+          <path class="ear" d="M641 240Q594 235 576 279Q570 318 603 335Q624 307 646 270Z" fill="#c9812d"/>
+          <path d="M753 241Q787 225 812 252Q828 278 802 309Q781 291 758 271Z" fill="#cf8730"/>
+          <path d="M704 276Q759 267 788 300Q793 333 755 348Q712 356 681 326Z" fill="#ffe39a" stroke-width="5"/>
+          <ellipse cx="777" cy="304" rx="21" ry="16" fill="#173044"/>
+          <path d="M755 334Q772 349 787 330" fill="none" stroke-width="5"/>
+          <path d="M789 332Q804 338 813 325" fill="none" stroke="#e55745" stroke-width="7"/>
+
+          <!-- Helmet -->
+          <path d="M618 239Q620 178 685 156Q748 136 791 178Q815 202 811 246Q758 217 690 219Q650 221 618 239Z" fill="#e55745"/>
+          <path d="M612 235Q687 208 815 246" fill="none" stroke="#173044" stroke-width="10"/>
+          <path d="M709 157V219" stroke="#bd3b35" stroke-width="6" opacity=".75"/>
+          <path class="helmet-shine" d="M667 173Q642 183 633 205" fill="none" stroke="#fff3d4" stroke-width="9" opacity=".7"/>
+          <path d="M794 231Q813 253 802 282" fill="none" stroke="#173044" stroke-width="8"/>
+
+          <!-- Goggles and expression -->
+          <path d="M645 255Q675 238 709 253Q738 239 765 254" fill="none" stroke="#173044" stroke-width="9"/>
+          <path d="M650 253Q665 243 688 248Q700 260 691 279Q672 289 652 279Q644 267 650 253Z" fill="#78d4df" opacity=".78"/>
+          <path d="M716 251Q736 243 758 252Q767 264 759 279Q739 290 719 279Q710 266 716 251Z" fill="#78d4df" opacity=".78"/>
+          <ellipse class="blink" cx="677" cy="267" rx="6" ry="10" fill="#173044" stroke="none"/>
+          <ellipse class="blink" cx="740" cy="267" rx="6" ry="10" fill="#173044" stroke="none"/>
+          <path d="M661 255L677 250M727 254L742 250" stroke="#e6ffff" stroke-width="4" opacity=".8"/>
+
+          <!-- Paw on handlebar -->
+          <path d="M790 388Q797 369 817 372Q835 380 825 398Q807 408 790 388Z" fill="#ffe17e"/>
+        </g>
+
+        <g class="dust" fill="#ffd891" opacity=".6">
+          <circle cx="376" cy="560" r="10"/><circle cx="330" cy="541" r="6"/><circle cx="286" cy="570" r="13"/>
+          <circle cx="1576" cy="560" r="10"/><circle cx="1530" cy="541" r="6"/><circle cx="1486" cy="570" r="13"/>
+        </g>
+      </g>
+    </svg>
+
+    <p class="caption">安全第一，快乐第二，耳朵顺风第三。</p>
+  </main>
+
+  <script>
+    const scene = document.querySelector('#scene');
+    const toggle = document.querySelector('#toggle');
+    const speed = document.querySelector('#speed');
+
+    toggle.addEventListener('click', () => {
+      const paused = scene.classList.toggle('paused');
+      toggle.setAttribute('aria-pressed', String(paused));
+      toggle.textContent = paused ? '▶ 继续' : '❚❚ 暂停';
+    });
+
+    speed.addEventListener('click', () => {
+      const fast = scene.classList.toggle('fast');
+      speed.setAttribute('aria-pressed', String(fast));
+      speed.textContent = fast ? '×1.6 速度' : '×1 速度';
+    });
+  </script>
+</body>
+</html>

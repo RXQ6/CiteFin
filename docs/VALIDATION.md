@@ -1396,3 +1396,44 @@ frontend component test/build: passed
 - Alembic 成功从 `20260907_0011` 升级至 `20260909_0013`。
 - Uvicorn 在 `http://127.0.0.1:8000` 启动成功；浏览器确认产品首页标题、主要按钮、合成案例预览和能力说明正常显示。
 - 演示视频重新录制并通过播放器元数据检查：1280×720、22.588 秒、7 帧展示（含片头/片尾），README GIF 预览同步更新。
+## 2026-09-10：黄色拉布拉多 SVG 动画基线检查
+
+### 首次运行
+
+```powershell
+make setup && make test
+```
+
+```text
+失败：当前 Windows 环境未安装全局 make，PowerShell 无法识别 make 命令。
+```
+
+### 处理
+
+- 按仓库既有 Windows 约定，后续使用 `scripts/dev.ps1 setup` 与 `scripts/dev.ps1 test` 作为等价入口。
+- 本次动画作为 `demos` 下的独立静态 HTML，不修改金融研究、数据口径、模型、权限或合规边界。
+
+### 等价验证与结果
+
+```powershell
+.\scripts\dev.ps1 setup
+.\scripts\dev.ps1 test
+node -e "<提取内联脚本并使用 Function 编译>"
+.\.venv\Scripts\python.exe -c "<提取 SVG 并使用 ElementTree 解析>"
+Invoke-WebRequest http://127.0.0.1:4173/
+```
+
+```text
+setup: 74 packages checked
+pytest: 168 passed, 1 warning
+coverage: 90.03%（门禁 90%）
+JavaScript syntax: passed
+SVG XML: passed; 169 elements
+local preview: HTTP 200, text/html
+```
+
+### 结论与限制
+
+- 单文件动画可由本地静态服务器正常提供，内联 JavaScript 与 SVG 结构解析通过。
+- 页面包含动画暂停/继续、1.6 倍速度切换、响应式布局和减少动画偏好降级。
+- 未执行多浏览器像素回归；本次验证不涉及金融数据、投资判断或交易操作。
