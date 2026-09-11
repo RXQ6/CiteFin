@@ -126,7 +126,7 @@ def test_evaluation_persists_result_and_replays_without_verifying_run(tmp_path: 
     assert first.status_code == 201
     body = first.json()
     assert body["status"] == "passed"
-    assert body["evaluator_version"] == "deterministic-evaluator-v1"
+    assert body["evaluator_version"] == "deterministic-evaluator-v2"
     assert body["idempotent_replay"] is False
     assert body["input_snapshot"]["report_id"] == report_id
     assert all(check["result"] == "passed" for check in body["checks"])

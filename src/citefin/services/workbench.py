@@ -16,6 +16,7 @@ from citefin.db.models import (
     RiskFinding,
     SourceDocument,
     StatementIdentification,
+    VisualizationSpec,
     WorkflowCheckpoint,
 )
 
@@ -42,6 +43,7 @@ class WorkbenchSnapshot:
     claims: list[Claim]
     risks: list[RiskFinding]
     reports: list[Report]
+    visualizations: list[VisualizationSpec]
     evaluations: list[Evaluation]
     gate_decisions: list[GoalGateDecision]
     checkpoints: list[WorkflowCheckpoint]
@@ -133,6 +135,13 @@ def get_workbench_snapshot(session: Session, run_id: str, user_id: str) -> Workb
         reports=list(
             session.scalars(
                 select(Report).where(Report.run_id == run_id).order_by(Report.version.desc())
+            )
+        ),
+        visualizations=list(
+            session.scalars(
+                select(VisualizationSpec)
+                .where(VisualizationSpec.run_id == run_id)
+                .order_by(VisualizationSpec.created_at, VisualizationSpec.chart_key)
             )
         ),
         evaluations=list(

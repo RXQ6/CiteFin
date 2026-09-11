@@ -137,6 +137,24 @@ class ReportSummaryResponse(BaseModel):
     created_at: datetime
 
 
+class VisualizationSummaryResponse(BaseModel):
+    visualization_id: str
+    report_id: str
+    chart_key: str
+    spec_version: str
+    chart_type: str
+    title: str
+    question: str
+    dataset: dict[str, Any]
+    encoding: dict[str, Any]
+    evidence_ids: list[str]
+    limitations: list[str]
+    data_snapshot_hash: str
+    renderer_version: str
+    status: str
+    created_at: datetime
+
+
 class EvaluationSummaryResponse(BaseModel):
     evaluation_id: str
     report_id: str
@@ -186,6 +204,7 @@ class WorkbenchResponse(BaseModel):
     claims: list[ClaimSummaryResponse]
     risks: list[RiskSummaryResponse]
     reports: list[ReportSummaryResponse]
+    visualizations: list[VisualizationSummaryResponse]
     evaluations: list[EvaluationSummaryResponse]
     gate_decisions: list[GateSummaryResponse]
     checkpoints: list[CheckpointSummaryResponse]
@@ -247,6 +266,10 @@ def get_workbench_endpoint(
         claims=[ClaimSummaryResponse.model_validate(item.__dict__) for item in snapshot.claims],
         risks=[RiskSummaryResponse.model_validate(item.__dict__) for item in snapshot.risks],
         reports=[ReportSummaryResponse.model_validate(item.__dict__) for item in snapshot.reports],
+        visualizations=[
+            VisualizationSummaryResponse.model_validate(item.__dict__)
+            for item in snapshot.visualizations
+        ],
         evaluations=[
             EvaluationSummaryResponse.model_validate(item.__dict__) for item in snapshot.evaluations
         ],

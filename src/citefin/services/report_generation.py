@@ -24,8 +24,9 @@ from citefin.db.models import (
     SourceDocument,
 )
 from citefin.ids import new_prefixed_id
+from citefin.services.visualizations import build_visualization_specs
 
-REPORT_SCHEMA_VERSION = "financial-report-v1"
+REPORT_SCHEMA_VERSION = "financial-report-v2"
 REPORT_GENERATOR_VERSION = "deterministic-report-v1"
 
 
@@ -357,8 +358,21 @@ def generate_and_persist_report(
         session.scalar(select(func.max(Report.version)).where(Report.run_id == run_id)) or 0
     )
     now = datetime.now(UTC)
+    report_id = new_prefixed_id("report")
+    visualizations = build_visualization_specs(
+        run, report_id, facts, metrics, risk_findings, evidence
+    )
+    content["visualizations"] = [
+        {
+            "visualization_id": item.visualization_id,
+            "chart_key": item.chart_key,
+            "placement": "executive_summary" if index < 2 else "risks",
+            "order": index + 1,
+        }
+        for index, item in enumerate(visualizations)
+    ]
     report = Report(
-        report_id=new_prefixed_id("report"),
+        report_id=report_id,
         run_id=run_id,
         version=latest_version + 1,
         status="candidate",
@@ -384,6 +398,6 @@ def generate_and_persist_report(
         },
         created_at=now,
     )
-    session.add_all([report, event])
+    session.add_all([report, *visualizations, event])
     session.commit()
     return ReportGenerationResult(report, False)

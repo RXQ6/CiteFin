@@ -73,6 +73,9 @@ class AnalysisRun(Base):
         back_populates="run", cascade="all, delete-orphan"
     )
     reports: Mapped[list[Report]] = relationship(back_populates="run", cascade="all, delete-orphan")
+    visualizations: Mapped[list[VisualizationSpec]] = relationship(
+        back_populates="run", cascade="all, delete-orphan"
+    )
     evaluations: Mapped[list[Evaluation]] = relationship(
         back_populates="run", cascade="all, delete-orphan"
     )
@@ -458,6 +461,55 @@ class Report(Base):
     evaluations: Mapped[list[Evaluation]] = relationship(
         back_populates="report", cascade="all, delete-orphan"
     )
+    visualizations: Mapped[list[VisualizationSpec]] = relationship(
+        back_populates="report", cascade="all, delete-orphan"
+    )
+
+
+class VisualizationSpec(Base):
+    """A validated, versioned chart contract backed by persisted analysis entities."""
+
+    __tablename__ = "visualization_specs"
+    __table_args__ = (
+        UniqueConstraint(
+            "report_id",
+            "chart_key",
+            "spec_version",
+            name="uq_visualization_specs_report_key_version",
+        ),
+        CheckConstraint(
+            "chart_type IN ('bar', 'grouped_bar')",
+            name="visualization_chart_type_allowed",
+        ),
+        CheckConstraint(
+            "status IN ('validated', 'invalid')",
+            name="visualization_status_allowed",
+        ),
+    )
+
+    visualization_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_runs.run_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    report_id: Mapped[str] = mapped_column(
+        ForeignKey("reports.report_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    chart_key: Mapped[str] = mapped_column(String(64), nullable=False)
+    spec_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    chart_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    dataset: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    encoding: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    evidence_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    limitations: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    data_snapshot_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    renderer_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    run: Mapped[AnalysisRun] = relationship(back_populates="visualizations")
+    report: Mapped[Report] = relationship(back_populates="visualizations")
 
 
 class Evaluation(Base):

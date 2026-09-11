@@ -148,14 +148,16 @@ flowchart TD
 ### 5.11 write_report
 
 - 读取结构化事实、指标、风险、Claim 和 Evidence。
-- 输出符合版本化 Schema 的报告，不直接读取原始 PDF 自由发挥。
+- 输出符合 `financial-report-v2` 的报告，不直接读取原始 PDF 自由发挥。
+- 同一事务中生成白名单内的 `VisualizationSpec`，记录来源引用、数据快照哈希、渲染器版本和限制。
+- 缺失、冲突、期间或币种不一致的数据不绘制，不以零值、插值或推断补齐。
 - 保存模型、提示模板和报告版本。
 - 完成后状态只能为 `candidate_complete`。
 
 ### 5.12 goal_evaluator
 
 Evaluator 与生成器使用独立版本和独立实现，不得调用业务工具或报告生成器；F012 当前使用确定性
-规则直接读取已经持久化的事实、指标、Claim、Evidence、RiskFinding、Report 和 AuditEvent。
+规则直接读取已经持久化的事实、指标、Claim、Evidence、RiskFinding、Report、VisualizationSpec 和 AuditEvent。
 评测器持久化输入实体 ID/数量、报告内容哈希、逐项检查、阻断原因、最小修复节点和修复指令。
 
 必需检查：
@@ -165,6 +167,7 @@ Evaluator 与生成器使用独立版本和独立实现，不得调用业务工�
 - 重大数字和结论证据覆盖率。
 - 引用是否真正支持对应 Claim。
 - 事实、计算、推断、限制是否正确区分。
+- 图表引用、来源证据、数据快照哈希和受限 Schema 是否完整一致。
 - 是否存在编造、过度确定表达或投资指令。
 - 所有任务是否满足验收条件。
 - Checkpoint、Journal 和审计事件是否完整。

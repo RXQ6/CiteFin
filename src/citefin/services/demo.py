@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from functools import lru_cache
 from io import BytesIO
 from typing import Any
@@ -10,6 +12,38 @@ from pypdf import PdfWriter
 from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
 DEMO_SOURCE_ID = "demo_g001_annual_report"
+
+
+def _snapshot_hash(dataset: dict[str, Any]) -> str:
+    payload = json.dumps(dataset, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _demo_visualization(
+    chart_key: str,
+    chart_type: str,
+    title: str,
+    question: str,
+    dataset: dict[str, Any],
+    encoding: dict[str, Any],
+    evidence_ids: list[str],
+    limitations: list[str],
+) -> dict[str, Any]:
+    return {
+        "visualization_id": f"demo-viz-{chart_key}",
+        "chart_key": chart_key,
+        "spec_version": "financial-chart-v1",
+        "chart_type": chart_type,
+        "title": title,
+        "question": question,
+        "dataset": dataset,
+        "encoding": encoding,
+        "evidence_ids": evidence_ids,
+        "limitations": limitations,
+        "data_snapshot_hash": _snapshot_hash(dataset),
+        "renderer_version": "echarts-svg-v1",
+        "status": "validated",
+    }
 
 
 def get_demo_workspace() -> dict[str, Any]:
@@ -32,6 +66,130 @@ def get_demo_workspace() -> dict[str, Any]:
         ("accounts_receivable_growth", "应收账款增长率", "经营质量", "33.3%", 33.33, "同比"),
         ("inventory_growth", "存货增长率", "经营质量", "20.0%", 20.0, "同比"),
     ]
+    metric_items = [
+        {
+            "code": code,
+            "label": label,
+            "category": category,
+            "display_value": display_value,
+            "chart_value": chart_value,
+            "unit_label": unit_label,
+            "status": "calculated",
+        }
+        for code, label, category, display_value, chart_value, unit_label in metrics
+    ]
+    growth_rows = [
+        {
+            "label": label,
+            "value": f"{chart_value / 100:g}",
+            "metric_id": f"demo-metric-{code}",
+            "period_end": "2025-12-31",
+        }
+        for code, label, _category, _display, chart_value, _unit in metrics
+        if code in {"revenue_growth", "net_profit_growth", "gross_margin", "net_margin", "roe"}
+    ]
+    visualizations = [
+        _demo_visualization(
+            "growth_profitability",
+            "bar",
+            "增长与盈利指标",
+            "本报告期的增长与盈利指标处于什么水平？",
+            {
+                "dimensions": ["label", "period_end"],
+                "measures": ["value"],
+                "rows": growth_rows,
+                "source_refs": [
+                    {"entity_type": "metric", "entity_id": row["metric_id"]} for row in growth_rows
+                ],
+            },
+            {
+                "x_field": "label",
+                "y_field": "value",
+                "series_field": None,
+                "unit": "ratio",
+                "value_format": "percent",
+                "display_scale": "1",
+            },
+            ["demo-claim-growth"],
+            [],
+        ),
+        _demo_visualization(
+            "cash_profit_quality",
+            "grouped_bar",
+            "净利润与经营现金流对比",
+            "经营现金流是否覆盖净利润？",
+            {
+                "dimensions": ["period_end", "measure"],
+                "measures": ["value"],
+                "rows": [
+                    {
+                        "period_end": "2025-12-31",
+                        "measure": "净利润",
+                        "value": "120000000",
+                        "fact_id": "demo-fact-net-profit",
+                    },
+                    {
+                        "period_end": "2025-12-31",
+                        "measure": "经营现金流",
+                        "value": "150000000",
+                        "fact_id": "demo-fact-operating-cash-flow",
+                    },
+                ],
+                "source_refs": [
+                    {
+                        "entity_type": "fact",
+                        "entity_id": "demo-fact-net-profit",
+                        "source_id": DEMO_SOURCE_ID,
+                        "page_number": 2,
+                    },
+                    {
+                        "entity_type": "fact",
+                        "entity_id": "demo-fact-operating-cash-flow",
+                        "source_id": DEMO_SOURCE_ID,
+                        "page_number": 3,
+                    },
+                ],
+            },
+            {
+                "x_field": "period_end",
+                "y_field": "value",
+                "series_field": "measure",
+                "unit": "CNY",
+                "value_format": "currency_100m",
+                "display_scale": "100000000",
+            },
+            ["demo-claim-cashflow"],
+            [],
+        ),
+        _demo_visualization(
+            "risk_distribution",
+            "bar",
+            "风险发现分布",
+            "当前证据支持的风险发现按严重程度如何分布？",
+            {
+                "dimensions": ["severity"],
+                "measures": ["value"],
+                "rows": [
+                    {
+                        "severity": "观察",
+                        "value": "1",
+                        "risk_ids": ["demo-risk-receivables"],
+                    }
+                ],
+                "source_refs": [{"entity_type": "risk", "entity_id": "demo-risk-receivables"}],
+            },
+            {
+                "x_field": "severity",
+                "y_field": "value",
+                "series_field": None,
+                "unit": "count",
+                "value_format": "integer",
+                "display_scale": "1",
+            },
+            ["demo-claim-receivables"],
+            ["风险数量反映规则命中，不代表发生概率或投资评级。"],
+        ),
+    ]
     return {
         "schema_version": "public-demo-v1",
         "case_id": "G001_standard_profitable",
@@ -52,18 +210,8 @@ def get_demo_workspace() -> dict[str, Any]:
             "high_risk_count": 0,
             "evidence_coverage": "100%",
         },
-        "metrics": [
-            {
-                "code": code,
-                "label": label,
-                "category": category,
-                "display_value": display_value,
-                "chart_value": chart_value,
-                "unit_label": unit_label,
-                "status": "calculated",
-            }
-            for code, label, category, display_value, chart_value, unit_label in metrics
-        ],
+        "metrics": metric_items,
+        "visualizations": visualizations,
         "risks": [
             {
                 "severity": "watch",

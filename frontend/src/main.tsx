@@ -14,6 +14,33 @@ type Metric = {
 };
 type Evidence = { page: number; section: string; snippet: string };
 type Claim = { claim_id: string; type: string; text: string; evidence: Evidence[] };
+type VisualizationSpec = {
+  visualization_id: string;
+  chart_key: string;
+  spec_version: string;
+  chart_type: "bar" | "grouped_bar";
+  title: string;
+  question: string;
+  dataset: {
+    dimensions: string[];
+    measures: string[];
+    rows: Array<Record<string, unknown>>;
+    source_refs: Array<Record<string, unknown>>;
+  };
+  encoding: {
+    x_field: string;
+    y_field: string;
+    series_field: string | null;
+    unit: string;
+    value_format: "percent" | "currency_100m" | "integer";
+    display_scale: string;
+  };
+  evidence_ids: string[];
+  limitations: string[];
+  data_snapshot_hash: string;
+  renderer_version: string;
+  status: "validated" | "invalid";
+};
 type Demo = {
   schema_version: string;
   synthetic: boolean;
@@ -21,6 +48,7 @@ type Demo = {
   company: { name: string; security_code: string; report_period_end: string; status: string };
   summary: Record<string, string | number> & { headline: string };
   metrics: Metric[];
+  visualizations: VisualizationSpec[];
   risks: Array<{ severity: string; title: string; description: string; basis: string; limitations: string[]; evidence_claim_id: string }>;
   claims: Claim[];
   report: { sections: Array<{ title: string; paragraphs: string[] }> };
@@ -71,13 +99,30 @@ function Landing({ onDemo, onUpload }: { onDemo: () => void; onUpload: () => voi
   </>;
 }
 
-function MetricChart({ metrics }: { metrics: Metric[] }) {
+function formattedChartValue(value: number, format: VisualizationSpec["encoding"]["value_format"]) {
+  if (format === "percent") return `${value.toFixed(1)}%`;
+  if (format === "currency_100m") return `${value.toFixed(2)} 亿元`;
+  return Math.round(value).toLocaleString("zh-CN");
+}
+
+function FinancialChart({ spec }: { spec: VisualizationSpec }) {
   const element = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!element.current) return;
     let disposed = false;
     let chart: { resize: () => void; dispose: () => void } | undefined;
-    const selected = metrics.filter((metric) => ["revenue_growth", "net_profit_growth", "gross_margin", "net_margin", "roe"].includes(metric.code));
+    const { rows } = spec.dataset;
+    const { x_field: xField, y_field: yField, series_field: seriesField, value_format: valueFormat } = spec.encoding;
+    const categories = Array.from(new Set(rows.map((row) => String(row[xField]))));
+    const seriesNames = seriesField
+      ? Array.from(new Set(rows.map((row) => String(row[seriesField]))))
+      : [spec.title];
+    const scale = Number(spec.encoding.display_scale);
+    const chartValue = (raw: unknown) => {
+      const value = Number(raw);
+      if (valueFormat === "percent") return value * 100;
+      return value / scale;
+    };
     void Promise.all([
       import("echarts/core"),
       import("echarts/charts"),
@@ -85,15 +130,67 @@ function MetricChart({ metrics }: { metrics: Metric[] }) {
       import("echarts/renderers"),
     ]).then(([core, charts, components, renderers]) => {
       if (disposed || !element.current) return;
-      core.use([charts.BarChart, components.GridComponent, components.TooltipComponent, renderers.CanvasRenderer]);
-      const instance = core.init(element.current);
-      instance.setOption({ grid: { left: 40, right: 12, top: 20, bottom: 48 }, tooltip: { trigger: "axis" }, xAxis: { type: "category", data: selected.map((item) => item.label), axisLabel: { color: "#617168", interval: 0, rotate: 18 } }, yAxis: { type: "value", axisLabel: { formatter: "{value}%", color: "#617168" }, splitLine: { lineStyle: { color: "#e7ece8" } } }, series: [{ type: "bar", data: selected.map((item) => item.chart_value), barWidth: 28, itemStyle: { color: "#2f8762", borderRadius: [6, 6, 0, 0] } }] });
+      core.use([charts.BarChart, components.GridComponent, components.TooltipComponent, components.LegendComponent, components.AriaComponent, renderers.SVGRenderer]);
+      const instance = core.init(element.current, undefined, { renderer: "svg" });
+      const palette = ["#2f8762", "#d39b2c", "#d66a4e", "#64748b", "#8b5cf6"];
+      instance.setOption({
+        aria: { enabled: true, decal: { show: true } },
+        animation: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+        color: palette,
+        grid: { left: 56, right: 20, top: seriesField ? 46 : 20, bottom: 62 },
+        legend: { show: Boolean(seriesField), top: 2, textStyle: { color: "#44534b" } },
+        tooltip: {
+          trigger: "axis",
+          valueFormatter: (value: number) => formattedChartValue(value, valueFormat),
+        },
+        xAxis: {
+          type: "category",
+          data: categories,
+          axisLabel: { color: "#617168", interval: 0, formatter: (value: string) => value.length > 8 ? `${value.slice(0, 8)}…` : value },
+          axisLine: { lineStyle: { color: "#aeb9b3" } },
+        },
+        yAxis: {
+          type: "value",
+          min: 0,
+          minInterval: valueFormat === "integer" ? 1 : undefined,
+          axisLabel: { formatter: (value: number) => formattedChartValue(value, valueFormat), color: "#617168" },
+          splitLine: { lineStyle: { color: "#e7ece8" } },
+        },
+        series: seriesNames.map((name, index) => ({
+          name,
+          type: "bar",
+          data: categories.map((category) => {
+            const row = rows.find((item) => String(item[xField]) === category && (!seriesField || String(item[seriesField]) === name));
+            return row ? chartValue(row[yField]) : null;
+          }),
+          barMaxWidth: 34,
+          itemStyle: { color: palette[index % palette.length], borderRadius: [5, 5, 0, 0] },
+        })),
+      });
       chart = instance;
     });
     const resize = () => chart?.resize(); window.addEventListener("resize", resize);
     return () => { disposed = true; window.removeEventListener("resize", resize); chart?.dispose(); };
-  }, [metrics]);
-  return <div className="metric-chart" ref={element} role="img" aria-label="主要盈利与增长指标柱状图" />;
+  }, [spec]);
+  const downloadSvg = () => {
+    const svg = element.current?.querySelector("svg");
+    if (!svg) return;
+    const blob = new Blob([svg.outerHTML], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${spec.chart_key}.svg`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+  const xField = spec.encoding.x_field;
+  const yField = spec.encoding.y_field;
+  const seriesField = spec.encoding.series_field;
+  return <figure className="financial-chart" aria-labelledby={`${spec.visualization_id}-title`}>
+    <figcaption className="chart-heading"><div><h3 id={`${spec.visualization_id}-title`}>{spec.title}</h3><p>{spec.question}</p></div><button className="text-link" type="button" onClick={downloadSvg}>下载 SVG</button></figcaption>
+    <div className="metric-chart" ref={element} role="img" aria-label={`${spec.title}。${spec.question}`} />
+    <details className="chart-data"><summary>查看图表数据与来源</summary><div className="table-scroll"><table><thead><tr><th>{xField}</th>{seriesField && <th>{seriesField}</th>}<th>值</th></tr></thead><tbody>{spec.dataset.rows.map((row, index) => <tr key={`${String(row[xField])}-${index}`}><td>{String(row[xField])}</td>{seriesField && <td>{String(row[seriesField])}</td>}<td>{String(row[yField])} {spec.encoding.unit}</td></tr>)}</tbody></table></div><p>数据快照：{spec.data_snapshot_hash.slice(0, 12)}… · {spec.renderer_version}</p>{spec.limitations.map((limitation) => <p key={limitation}>限制：{limitation}</p>)}</details>
+  </figure>;
 }
 
 function DemoPage({ onBack, onUpload }: { onBack: () => void; onUpload: () => void }) {
@@ -107,9 +204,9 @@ function DemoPage({ onBack, onUpload }: { onBack: () => void; onUpload: () => vo
     <aside className="report-sidebar"><Brand /><div className="sidebar-label">公开示例</div><button className="side-link active">分析报告</button><button className="side-link" onClick={onUpload}>上传年报</button><button className="side-link" onClick={onBack}>返回首页</button><div className="sidebar-boundary"><ShieldIcon /><p>辅助研究，不构成投资建议，不执行任何交易。</p></div></aside>
     <main className="report-main"><div className="demo-notice"><strong>合成示例</strong><span>{data.notice}</span></div><header className="report-header"><div><p className="eyebrow">{data.company.security_code} · 年度报告分析</p><h1>{data.company.name}</h1><p>报告期 {data.company.report_period_end}</p></div><div className="report-header-actions"><span className="status good">合成案例已验证</span><button className="button secondary" onClick={() => window.print()}>导出预览</button><button className="button primary small" onClick={onUpload}>分析我的年报</button></div></header>
       <nav className="report-tabs" aria-label="报告内容">{[["overview","概览"],["metrics","财务指标"],["risks","风险"],["report","报告与证据"],["audit","高级审计"]].map(([id,label]) => <button key={id} className={tab===id?"active":""} onClick={() => setTab(id)}>{label}</button>)}</nav>
-      {tab === "overview" && <section className="report-panel"><article className="headline-card"><div><p className="eyebrow">核心结论</p><h2>{data.summary.headline}</h2></div><div className="confidence"><strong>{data.summary.evidence_coverage}</strong><span>重大结论证据覆盖</span></div></article><div className="kpi-grid">{keyMetrics.map((metric) => <article key={metric.code}><span>{metric.label}</span><strong>{metric.display_value}</strong><small>{metric.unit_label} · 已计算</small></article>)}</div><div className="overview-columns"><article className="content-card"><div className="card-title"><div><p className="eyebrow">关键指标</p><h2>增长与盈利概览</h2></div><button className="text-link" onClick={() => setTab("metrics")}>查看全部 →</button></div><MetricChart metrics={data.metrics} /></article><article className="content-card"><div className="card-title"><div><p className="eyebrow">风险雷达</p><h2>1 项观察</h2></div></div>{data.risks.map((risk) => <button className="risk-row" key={risk.title} onClick={() => setTab("risks")}><span>观察</span><div><strong>{risk.title}</strong><small>{risk.description}</small></div><b>→</b></button>)}<div className="positive-note"><ShieldIcon /><span>未触发高等级确定性风险规则</span></div></article></div></section>}
+      {tab === "overview" && <section className="report-panel"><article className="headline-card"><div><p className="eyebrow">核心结论</p><h2>{data.summary.headline}</h2></div><div className="confidence"><strong>{data.summary.evidence_coverage}</strong><span>重大结论证据覆盖</span></div></article><div className="kpi-grid">{keyMetrics.map((metric) => <article key={metric.code}><span>{metric.label}</span><strong>{metric.display_value}</strong><small>{metric.unit_label} · 已计算</small></article>)}</div><div className="visualization-grid">{data.visualizations.filter((spec) => spec.chart_key !== "risk_distribution").map((spec) => <FinancialChart key={spec.visualization_id} spec={spec} />)}</div><div className="overview-columns"><article className="content-card"><div className="card-title"><div><p className="eyebrow">风险观察</p><h2>1 项观察</h2></div></div>{data.risks.map((risk) => <button className="risk-row" key={risk.title} onClick={() => setTab("risks")}><span>观察</span><div><strong>{risk.title}</strong><small>{risk.description}</small></div><b>→</b></button>)}<div className="positive-note"><ShieldIcon /><span>未触发高等级确定性风险规则</span></div></article></div></section>}
       {tab === "metrics" && <section className="report-panel"><div className="panel-intro"><div><p className="eyebrow">15 项确定性计算</p><h2>财务指标</h2></div><p>所有结果由版本化公式计算，不由模型自由生成。</p></div>{metricCategories.map((category) => <div className="metric-section" key={category}><h3>{category}</h3><div className="metric-list">{data.metrics.filter((metric) => metric.category === category).map((metric) => <article key={metric.code}><div><span>{metric.label}</span><small>{metric.code}</small></div><strong>{metric.display_value}</strong><span className="verified-dot">已计算</span></article>)}</div></div>)}</section>}
-      {tab === "risks" && <section className="report-panel"><div className="panel-intro"><div><p className="eyebrow">规则、证据与限制</p><h2>风险与观察</h2></div><p>风险只在有确定事实或指标支撑时展示。</p></div>{data.risks.map((risk) => <article className="risk-detail" key={risk.title}><div className="risk-level">观察</div><div><h3>{risk.title}</h3><p>{risk.description}</p><dl><dt>判断依据</dt><dd>{risk.basis}</dd><dt>限制条件</dt><dd>{risk.limitations.join("；")}</dd></dl><button className="text-link" onClick={() => { setClaim(data.claims.find((item) => item.claim_id === risk.evidence_claim_id) ?? null); setTab("report"); }}>查看证据 →</button></div></article>)}</section>}
+      {tab === "risks" && <section className="report-panel"><div className="panel-intro"><div><p className="eyebrow">规则、证据与限制</p><h2>风险与观察</h2></div><p>风险只在有确定事实或指标支撑时展示。</p></div>{data.visualizations.filter((spec) => spec.chart_key === "risk_distribution").map((spec) => <FinancialChart key={spec.visualization_id} spec={spec} />)}{data.risks.map((risk) => <article className="risk-detail" key={risk.title}><div className="risk-level">观察</div><div><h3>{risk.title}</h3><p>{risk.description}</p><dl><dt>判断依据</dt><dd>{risk.basis}</dd><dt>限制条件</dt><dd>{risk.limitations.join("；")}</dd></dl><button className="text-link" onClick={() => { setClaim(data.claims.find((item) => item.claim_id === risk.evidence_claim_id) ?? null); setTab("report"); }}>查看证据 →</button></div></article>)}</section>}
       {tab === "report" && <section className="report-panel report-reading"><article className="document"><p className="eyebrow">结构化研究报告</p><h2>{data.company.name} {data.company.report_period_end.slice(0,4)} 年度财报分析</h2>{data.report.sections.map((section) => <section key={section.title}><h3>{section.title}</h3>{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</section>)}</article><aside className="evidence-drawer"><p className="eyebrow">结论 → 证据 → PDF</p><h2>证据浏览器</h2><div className="claim-stack">{data.claims.map((item) => <button key={item.claim_id} className={claim?.claim_id===item.claim_id?"active":""} onClick={() => setClaim(item)}><span>{item.type}</span>{item.text}</button>)}</div>{claim && <div className="evidence-result"><strong>{claim.text}</strong>{claim.evidence.map((item) => <div key={`${item.page}-${item.snippet}`}><span>{item.section} · 第 {item.page} 页</span><p>{item.snippet}</p><a href={`${data.evidence_document.content_url}#page=${item.page}`} target="_blank" rel="noreferrer">打开原始页 ↗</a></div>)}</div>}</aside></section>}
       {tab === "audit" && <section className="report-panel"><div className="panel-intro"><div><p className="eyebrow">专业复核信息</p><h2>高级审计</h2></div><p>普通阅读无需处理这些工程细节。</p></div><div className="audit-grid">{Object.entries(data.audit).map(([key,value]) => <article key={key}><span>{key.replaceAll("_", " ")}</span><strong>{value}</strong></article>)}</div><div className="audit-boundary"><ShieldIcon /><div><h3>验收边界</h3><p>此状态只适用于 G001 合成黄金案例。真实中文年报仍需独立 Reviewer A/B 和正式 Goal Gate，不得据此声明真实准确率。</p></div></div></section>}
     </main>

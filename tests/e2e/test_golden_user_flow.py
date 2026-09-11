@@ -347,7 +347,11 @@ def test_synthetic_golden_flow_is_replayable_evidenced_and_verified(
         {"report_id": report["report_id"]},
     )
     assert evaluation["status"] == "passed"
-    assert len(evaluation["checks"]) == 7
+    assert len(evaluation["checks"]) == 8
+    visualization_check = next(
+        check for check in evaluation["checks"] if check["code"] == "visualization_integrity"
+    )
+    assert visualization_check["result"] == "passed"
     assert all(check["result"] == "passed" for check in evaluation["checks"])
     assert evaluation_replay["evaluation_id"] == evaluation["evaluation_id"]
 

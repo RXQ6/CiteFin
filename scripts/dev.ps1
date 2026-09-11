@@ -3,7 +3,7 @@ param(
     [ValidateSet("setup", "test", "lint", "format", "typecheck", "golden", "check", "migrate", "prepare-f004-review", "validate-f004-review", "verify-feature", "run")]
     [string]$Command = "check",
     [Parameter(Mandatory = $false)]
-    [ValidateSet("F001", "F002", "F003", "F004", "F005", "F006", "F007", "F008", "F009", "F010", "F011", "F012", "F013", "F014", "F015", "F016", "F017", "F018")]
+    [ValidateSet("F001", "F002", "F003", "F004", "F005", "F006", "F007", "F008", "F009", "F010", "F011", "F012", "F013", "F014", "F015", "F016", "F017", "F018", "F019")]
     [string]$Feature
 )
 
@@ -165,6 +165,13 @@ try {
                 Invoke-Uv @("run", "python", "tests/golden/validate.py")
                 Invoke-Uv @("run", "pytest", "--basetemp", $PytestTemp, "-p", "no:cacheprovider")
                 Invoke-Uv @("run", "python", "scripts/verify_f018.py")
+            } elseif ($Feature -eq "F019") {
+                Invoke-Uv @("run", "ruff", "check", "src", "tests")
+                Invoke-Uv @("run", "ruff", "format", "--check", "src", "tests")
+                Invoke-Uv @("run", "mypy")
+                Invoke-Uv @("run", "python", "tests/golden/validate.py")
+                Invoke-Uv @("run", "pytest", "--basetemp", $PytestTemp, "-p", "no:cacheprovider")
+                Invoke-Uv @("run", "python", "scripts/verify_f019.py")
             } elseif ($Feature -in @("F001", "F002", "F003")) {
                 Invoke-Uv @("run", "ruff", "check", "src", "tests")
                 Invoke-Uv @("run", "ruff", "format", "--check", "src", "tests")

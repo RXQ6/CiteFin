@@ -22,13 +22,18 @@ from citefin.db.models import (
     FinancialFact,
     Report,
     RiskFinding,
+    VisualizationSpec,
 )
 from citefin.ids import new_prefixed_id
+from citefin.services.visualizations import (
+    VisualizationValidationError,
+    validate_visualization_payload,
+)
 
-EVALUATOR_VERSION = "deterministic-evaluator-v1"
-REPORT_SCHEMA_VERSION = "financial-report-v1"
+EVALUATOR_VERSION = "deterministic-evaluator-v2"
+REPORT_SCHEMA_VERSION = "financial-report-v2"
 
-_EXPECTED_REPORT_SECTIONS = {
+_V1_REPORT_SECTIONS = {
     "schema_version",
     "run",
     "facts",
@@ -38,6 +43,7 @@ _EXPECTED_REPORT_SECTIONS = {
     "limitations",
     "evidence",
 }
+_V2_REPORT_SECTIONS = {*_V1_REPORT_SECTIONS, "visualizations"}
 _FORBIDDEN_WORDING = ("买入", "卖出", "目标价", "收益保证", "保证收益", "无风险")
 
 
@@ -132,6 +138,7 @@ def _input_snapshot(
     claims: list[Claim],
     evidence: list[Evidence],
     risks: list[RiskFinding],
+    visualizations: list[VisualizationSpec],
     audit_events: list[AuditEvent],
 ) -> dict[str, Any]:
     return {
@@ -146,6 +153,7 @@ def _input_snapshot(
             "claim_ids": sorted(claim.claim_id for claim in claims),
             "evidence_ids": sorted(item.evidence_id for item in evidence),
             "risk_ids": sorted(risk.risk_id for risk in risks),
+            "visualization_ids": sorted(item.visualization_id for item in visualizations),
             "audit_event_ids": sorted(event.event_id for event in audit_events),
         },
         "entity_counts": {
@@ -154,6 +162,7 @@ def _input_snapshot(
             "claims": len(claims),
             "evidence": len(evidence),
             "risks": len(risks),
+            "visualizations": len(visualizations),
             "audit_events": len(audit_events),
         },
     }
@@ -167,6 +176,7 @@ def _evaluate_checks(
     claims: list[Claim],
     evidence: list[Evidence],
     risks: list[RiskFinding],
+    visualizations: list[VisualizationSpec],
     audit_events: list[AuditEvent],
 ) -> list[dict[str, Any]]:
     fact_ids = {fact.fact_id for fact in facts}
@@ -178,10 +188,15 @@ def _evaluate_checks(
     content_evidence = content.get("evidence")
     content_evidence_map = content_evidence if isinstance(content_evidence, dict) else {}
 
+    schema_sections = (
+        _V1_REPORT_SECTIONS
+        if report.schema_version == "financial-report-v1"
+        else _V2_REPORT_SECTIONS
+    )
     schema_ok = (
-        report.schema_version == REPORT_SCHEMA_VERSION
-        and content.get("schema_version") == REPORT_SCHEMA_VERSION
-        and set(content) == _EXPECTED_REPORT_SECTIONS
+        report.schema_version in {"financial-report-v1", REPORT_SCHEMA_VERSION}
+        and content.get("schema_version") == report.schema_version
+        and set(content) == schema_sections
         and content.get("run", {}).get("run_id") == report.run_id
     )
     checks = [
@@ -232,6 +247,56 @@ def _evaluate_checks(
             repair_instruction=(
                 "Add or repair Evidence for every supported major Claim, then rebuild "
                 "the report candidate."
+            ),
+        )
+    )
+
+    visualization_refs = content.get("visualizations", [])
+    rendered_visualization_ids: set[str] = set()
+    if isinstance(visualization_refs, list):
+        for reference in visualization_refs:
+            if isinstance(reference, dict):
+                visualization_id = reference.get("visualization_id")
+                if isinstance(visualization_id, str):
+                    rendered_visualization_ids.add(visualization_id)
+    persisted_visualization_ids = {item.visualization_id for item in visualizations}
+    visualization_problems: list[str] = []
+    if report.schema_version == REPORT_SCHEMA_VERSION:
+        if rendered_visualization_ids != persisted_visualization_ids:
+            visualization_problems.extend(
+                sorted(rendered_visualization_ids ^ persisted_visualization_ids)
+            )
+        for visualization in visualizations:
+            if (
+                visualization.status != "validated"
+                or visualization.data_snapshot_hash != _canonical_digest(visualization.dataset)
+            ):
+                visualization_problems.append(visualization.visualization_id)
+                continue
+            if set(visualization.evidence_ids) - set(evidence_map):
+                visualization_problems.append(visualization.visualization_id)
+                continue
+            try:
+                validate_visualization_payload(
+                    visualization.dataset,
+                    visualization.encoding,
+                    visualization.chart_type,
+                )
+            except VisualizationValidationError:
+                visualization_problems.append(visualization.visualization_id)
+    visualization_ok = not visualization_problems
+    checks.append(
+        _check(
+            "visualization_integrity",
+            visualization_ok,
+            "Visualization specs, data snapshots, and evidence references are valid."
+            if visualization_ok
+            else f"Invalid visualization specs: {sorted(set(visualization_problems))}.",
+            evidence=visualization_problems,
+            node_hint="write_report",
+            repair_instruction=(
+                "Rebuild validated visualization specs from persisted facts, metrics, risks, "
+                "and evidence before evaluating the report again."
             ),
         )
     )
@@ -421,14 +486,25 @@ def evaluate_and_persist_report(
         )
     )
     risks = list(session.scalars(select(RiskFinding).where(RiskFinding.run_id == run_id)))
+    visualizations = list(
+        session.scalars(select(VisualizationSpec).where(VisualizationSpec.report_id == report_id))
+    )
     audit_events = list(session.scalars(select(AuditEvent).where(AuditEvent.run_id == run_id)))
     content = report.content
     snapshot = _input_snapshot(
-        report, content, facts, metrics, claims, evidence, risks, audit_events
+        report, content, facts, metrics, claims, evidence, risks, visualizations, audit_events
     )
     try:
         checks = _evaluate_checks(
-            report, content, facts, metrics, claims, evidence, risks, audit_events
+            report,
+            content,
+            facts,
+            metrics,
+            claims,
+            evidence,
+            risks,
+            visualizations,
+            audit_events,
         )
         blocking = [check for check in checks if check["result"] == "failed"]
         status = "failed" if blocking else "passed"

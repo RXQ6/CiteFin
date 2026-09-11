@@ -13,7 +13,7 @@
       "enabled": true,
       "status": "provisional",
       "requires_owner_approval": true,
-      "allowed_features": ["F004", "F005", "F006", "F007", "F008", "F009", "F010", "F011", "F012", "F013", "F014"],
+      "allowed_features": ["F004", "F005", "F006", "F007", "F008", "F009", "F010", "F011", "F012", "F013", "F014", "F019"],
       "real_report_accuracy_claim": "prohibited",
       "formal_verified_still_requires_goal_gate": true
     }
@@ -470,6 +470,44 @@
           "tests/golden/cases/G001_standard_profitable/expected.json",
           "src/citefin/services/financial_facts.py",
           "scripts/verify_f018.py"
+        ]
+      }
+    },
+    {
+      "id": "F019",
+      "title": "报告数据可视化",
+      "description": "从已验证事实、指标和风险生成可追溯、可复算并可导出 SVG 的报告图表。",
+      "status": "candidate_complete",
+      "owner": "codex",
+      "blocked_by": ["F006", "F010", "F011", "F016"],
+      "acceptance": [
+        "图表使用版本化 VisualizationSpec，并保存数据快照哈希、证据引用和渲染器版本",
+        "只生成白名单内的增长盈利、现金利润质量和风险分布图，不补造缺失或冲突数据",
+        "前端使用同一规范渲染 SVG，提供无障碍数据表和 SVG 下载",
+        "Evaluator 校验图表引用、快照和证据完整性，失败时 Goal Gate 拒绝完成"
+      ],
+      "start_mode": "provisional_engineering_progression",
+      "start_reason": "Project owner requested report and analysis visualization capability",
+      "limitations": [
+        "当前仅支持三个确定性图表模板和客户端 SVG 导出，尚未提供服务端 PDF 报告导出",
+        "图表只反映已持久化的合成或契约数据，不代表真实中文年报分析准确率",
+        "缺失、口径冲突或币种不一致的数据会省略并披露限制，不进行插值或猜测",
+        "正式 verified 仍需要独立 Goal Gate 和真实数据复核"
+      ],
+      "verification": {
+        "command": "make verify-feature FEATURE=F019",
+        "mode": "provisional_engineering_progression",
+        "formal_verification_status": "pending_goal_gate",
+        "real_report_accuracy_claim": "prohibited",
+        "evidence": [
+          "docs/VALIDATION.md#2026-09-11f019-报告数据可视化",
+          "tests/unit/test_visualizations.py",
+          "tests/integration/test_reports_api.py",
+          "tests/integration/test_demo_api.py",
+          "migrations/versions/20260911_0014_visualization_specs.py",
+          "src/citefin/services/visualizations.py",
+          "frontend/src/main.tsx",
+          "scripts/verify_f019.py"
         ]
       }
     }

@@ -21,6 +21,7 @@ from citefin.db.models import (
     RiskFinding,
     SourceDocument,
     StoredObject,
+    VisualizationSpec,
 )
 from citefin.db.session import build_engine
 from citefin.main import create_app
@@ -218,7 +219,7 @@ def test_generates_and_replays_structured_report_without_mutating_inputs(
     body = first.json()
     assert body["idempotent_replay"] is False
     assert body["status"] == "candidate"
-    assert body["schema_version"] == "financial-report-v1"
+    assert body["schema_version"] == "financial-report-v2"
     assert set(body["content"]) == {
         "schema_version",
         "run",
@@ -228,10 +229,45 @@ def test_generates_and_replays_structured_report_without_mutating_inputs(
         "risks",
         "limitations",
         "evidence",
+        "visualizations",
     }
     assert body["content"]["calculations"]["metrics"][0]["metric_id"] == "metric_report_api"
     assert body["content"]["facts"][0]["source"]["page_number"] == 12
     assert body["content"]["risks"][0]["risk_id"] == "risk_report_api"
+    assert [item["chart_key"] for item in body["content"]["visualizations"]] == [
+        "growth_profitability",
+        "risk_distribution",
+    ]
+
+    visualizations = client.get(
+        f"/api/v1/analysis-runs/{run_id}/visualizations",
+        headers={"X-User-ID": "report_user"},
+        params={"report_id": body["report_id"]},
+    )
+    assert visualizations.status_code == 200
+    specs = visualizations.json()
+    assert [item["chart_key"] for item in specs] == [
+        "growth_profitability",
+        "risk_distribution",
+    ]
+    assert all(item["status"] == "validated" for item in specs)
+    assert all(len(item["data_snapshot_hash"]) == 64 for item in specs)
+    forbidden = client.get(
+        f"/api/v1/analysis-runs/{run_id}/visualizations",
+        headers={"X-User-ID": "other_user"},
+    )
+    assert forbidden.status_code == 404
+
+    evaluation = client.post(
+        f"/api/v1/analysis-runs/{run_id}/evaluations",
+        headers={"X-User-ID": "report_user"},
+        json={"report_id": body["report_id"]},
+    )
+    assert evaluation.status_code == 201
+    visualization_check = next(
+        check for check in evaluation.json()["checks"] if check["code"] == "visualization_integrity"
+    )
+    assert visualization_check["result"] == "passed"
 
     replay = client.post(
         endpoint,
@@ -248,6 +284,7 @@ def test_generates_and_replays_structured_report_without_mutating_inputs(
         assert after_metric is not None
         assert after_metric.value == before_value
         assert session.scalar(select(func.count()).select_from(Report)) == 1
+        assert session.scalar(select(func.count()).select_from(VisualizationSpec)) == 2
 
 
 def test_report_requires_owned_run_and_matching_period(tmp_path: Path) -> None:

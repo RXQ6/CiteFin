@@ -34,6 +34,7 @@ def test_upgrade_head_creates_analysis_run_bundle(tmp_path: Path, monkeypatch: M
         "evaluations",
         "goal_gate_decisions",
         "workflow_checkpoints",
+        "visualization_specs",
     }.issubset(inspect(engine).get_table_names())
     engine.dispose()
     assert not unintended_path.exists()

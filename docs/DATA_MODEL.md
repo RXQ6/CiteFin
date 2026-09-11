@@ -290,9 +290,9 @@ created → validating → running → candidate_complete → evaluating → ver
 
 ### 4.11 Report
 
-报告内容使用版本化 `financial-report-v1` Schema，只能由已持久化事实、指标、Claim、Evidence 和
+报告内容使用版本化 `financial-report-v2` Schema，只能由已持久化事实、指标、Claim、Evidence 和
 RiskFinding 组装；报告生成器不得修改这些来源实体。`content` 至少包含 `facts`、`calculations`、
-`inferences`、`risks`、`limitations` 和 `evidence` 分区，重大 Claim 的 `evidence_ids` 必须能在
+`inferences`、`risks`、`limitations`、`evidence` 和 `visualizations` 分区，重大 Claim 的 `evidence_ids` 必须能在
 `evidence` 中定位到事实、指标、规则或来源页。
 
 | 字段 | 类型 | 约束 |
@@ -307,7 +307,34 @@ RiskFinding 组装；报告生成器不得修改这些来源实体。`content` �
 | `generated_by` | string | 模型与提示版本 |
 | `created_at` | datetime | 必填 |
 
-### 4.12 Evaluation
+### 4.12 VisualizationSpec
+
+报告图表不是任意前端配置，而是由已持久化事实、指标、风险和证据确定性生成的受限规范。数值以十进制
+字符串保存；缺失、冲突、期间或币种不一致时省略图表并披露限制，不插值、不补零。前端和后续导出器必须
+消费同一份数据快照。
+
+| 字段 | 类型 | 约束 |
+| --- | --- | --- |
+| `visualization_id` | string | 主键 |
+| `run_id` | string | 外键 |
+| `report_id` | string | 外键 |
+| `chart_key` | string | 报告内稳定图表键 |
+| `spec_version` | string | 当前为 `financial-chart-v1` |
+| `chart_type` | enum | `bar/grouped_bar` |
+| `title`、`question` | string | 图表标题和回答的问题 |
+| `dataset` | object | 长表数据、维度、度量和来源实体引用 |
+| `encoding` | object | x/y/series 字段、单位、显示格式与缩放 |
+| `evidence_ids` | string[] | 可为空，但存在时必须引用同一报告 Evidence |
+| `limitations` | string[] | 省略项和解释边界 |
+| `data_snapshot_hash` | string | 规范化 `dataset` 的 SHA-256 |
+| `renderer_version` | string | 当前为 `echarts-svg-v1` |
+| `status` | enum | `validated/invalid` |
+| `created_at` | datetime | 必填 |
+
+同一 `report_id + chart_key + spec_version` 唯一。当前白名单包含增长与盈利、净利润与经营现金流对比、
+风险发现分布三种图表；风险数量不解释为发生概率或投资评级。
+
+### 4.13 Evaluation
 
 | 字段 | 类型 | 约束 |
 | --- | --- | --- |
@@ -327,7 +354,7 @@ RiskFinding 组装；报告生成器不得修改这些来源实体。`content` �
 也不得写入事实、指标、Claim、Evidence、Report 或 `verified` 状态；它只读取已经持久化的事实、
 指标、证据、报告和运行信号，并将输入快照、检查结果和失败修复指令持久化。
 
-### 4.13 GoalGateDecision
+### 4.14 GoalGateDecision
 
 Goal Gate 依据同一运行的独立 `Evaluation` 做唯一终止判定。只有该服务可以将候选报告和运行写入
 `verified`；拒绝时保存最小修复节点、阻断原因和证据引用，不修改事实或指标。
@@ -350,7 +377,7 @@ Goal Gate 依据同一运行的独立 `Evaluation` 做唯一终止判定。只�
 运行状态进入 `verified` 并写入完成时间；失败时运行进入 `revision_required` 或 `blocked`，报告保留
 `candidate` 状态。
 
-### 4.14 Approval
+### 4.15 Approval
 
 记录用户对冲突口径、身份修正或敏感导出的决定。
 
@@ -364,7 +391,7 @@ Goal Gate 依据同一运行的独立 `Evaluation` 做唯一终止判定。只�
 | `decided_by` | string/null | 决定后必填 |
 | `decided_at` | datetime/null | 决定后必填 |
 
-### 4.15 AuditEvent 与 WorkflowCheckpoint
+### 4.16 AuditEvent 与 WorkflowCheckpoint
 
 `AuditEvent` 保存不可变事件：节点进入/退出、工具请求、权限结果、状态迁移、人工决定和评测结果。
 最小字段为 `event_id`、`run_id`、`trace_id`、`node`、`event_type`、`status`、`payload` 和

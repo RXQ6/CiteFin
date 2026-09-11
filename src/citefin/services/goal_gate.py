@@ -19,9 +19,10 @@ from citefin.db.models import (
 )
 from citefin.ids import new_prefixed_id
 
-GOAL_GATE_VERSION = "deterministic-goal-gate-v1"
+GOAL_GATE_VERSION = "deterministic-goal-gate-v2"
 _REQUIRED_EVALUATION_CHECKS = {
     "report_schema",
+    "visualization_integrity",
     "claim_evidence_coverage",
     "evidence_referential_integrity",
     "metric_lineage",

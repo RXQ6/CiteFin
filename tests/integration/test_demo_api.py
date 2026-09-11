@@ -15,6 +15,12 @@ def test_demo_workspace_is_public_versioned_and_explicitly_synthetic() -> None:
     assert body["synthetic"] is True
     assert body["case_id"] == "G001_standard_profitable"
     assert len(body["metrics"]) == 15
+    assert [item["chart_key"] for item in body["visualizations"]] == [
+        "growth_profitability",
+        "cash_profit_quality",
+        "risk_distribution",
+    ]
+    assert all(len(item["data_snapshot_hash"]) == 64 for item in body["visualizations"])
     assert body["audit"]["major_claim_evidence_coverage"] == "100%"
     assert "不代表真实公司" in body["notice"]
 

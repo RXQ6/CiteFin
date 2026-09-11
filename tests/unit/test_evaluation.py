@@ -13,9 +13,10 @@ from citefin.db.models import (
     Report,
     RiskFinding,
     SourceDocument,
+    VisualizationSpec,
 )
 from citefin.services.evaluation import _evaluate_checks, _input_snapshot
-from citefin.services.report_generation import build_report_content
+from citefin.services.report_generation import REPORT_SCHEMA_VERSION, build_report_content
 
 NOW = datetime(2026, 9, 7, tzinfo=UTC)
 PERIOD_END = date(2025, 12, 31)
@@ -183,12 +184,13 @@ def _bundle() -> tuple[
         [risk],
         [source],
     )
+    content["visualizations"] = []
     report = Report(
         report_id="report_evaluation",
         run_id=run.run_id,
         version=1,
         status="candidate",
-        schema_version="financial-report-v1",
+        schema_version=REPORT_SCHEMA_VERSION,
         content=content,
         claim_ids=claim_ids,
         generated_by="deterministic-report-v1",
@@ -218,11 +220,12 @@ def _bundle() -> tuple[
 def test_evaluator_passes_auditable_report_bundle() -> None:
     report, facts, metrics, claims, evidence, risks, audit_events = _bundle()
     checks = _evaluate_checks(
-        report, report.content, facts, metrics, claims, evidence, risks, audit_events
+        report, report.content, facts, metrics, claims, evidence, risks, [], audit_events
     )
 
     assert {check["code"] for check in checks} == {
         "report_schema",
+        "visualization_integrity",
         "claim_evidence_coverage",
         "evidence_referential_integrity",
         "metric_lineage",
@@ -232,7 +235,7 @@ def test_evaluator_passes_auditable_report_bundle() -> None:
     }
     assert all(check["result"] == "passed" for check in checks)
     snapshot = _input_snapshot(
-        report, report.content, facts, metrics, claims, evidence, risks, audit_events
+        report, report.content, facts, metrics, claims, evidence, risks, [], audit_events
     )
     assert snapshot["report_content_sha256"]
     assert snapshot["entity_counts"] == {
@@ -241,6 +244,7 @@ def test_evaluator_passes_auditable_report_bundle() -> None:
         "claims": 3,
         "evidence": 3,
         "risks": 1,
+        "visualizations": 0,
         "audit_events": 1,
     }
 
@@ -249,10 +253,65 @@ def test_evaluator_returns_repair_routing_for_missing_major_evidence() -> None:
     report, facts, metrics, claims, evidence, risks, audit_events = _bundle()
     report.content["evidence"].pop("ev_evaluation_metric")
     checks = _evaluate_checks(
-        report, report.content, facts, metrics, claims, evidence, risks, audit_events
+        report, report.content, facts, metrics, claims, evidence, risks, [], audit_events
     )
 
     coverage = next(check for check in checks if check["code"] == "claim_evidence_coverage")
     assert coverage["result"] == "failed"
     assert coverage["node_hint"] == "build_evidence_map"
     assert coverage["repair_instruction"]
+
+
+def test_evaluator_rejects_tampered_visualization_snapshot() -> None:
+    report, facts, metrics, claims, evidence, risks, audit_events = _bundle()
+    visualization = VisualizationSpec(
+        visualization_id="viz_tampered",
+        run_id=report.run_id,
+        report_id=report.report_id,
+        chart_key="growth_profitability",
+        spec_version="financial-chart-v1",
+        chart_type="bar",
+        title="增长与盈利指标",
+        question="增长与盈利指标处于什么水平？",
+        dataset={
+            "rows": [{"label": "营业收入增长率", "value": "0.1"}],
+            "source_refs": [{"entity_type": "metric", "entity_id": metrics[0].metric_id}],
+        },
+        encoding={
+            "x_field": "label",
+            "y_field": "value",
+            "series_field": None,
+            "unit": "ratio",
+        },
+        evidence_ids=[],
+        limitations=[],
+        data_snapshot_hash="0" * 64,
+        renderer_version="echarts-svg-v1",
+        status="validated",
+        created_at=NOW,
+    )
+    report.content["visualizations"] = [
+        {
+            "visualization_id": visualization.visualization_id,
+            "chart_key": visualization.chart_key,
+            "placement": "overview",
+            "order": 1,
+        }
+    ]
+
+    checks = _evaluate_checks(
+        report,
+        report.content,
+        facts,
+        metrics,
+        claims,
+        evidence,
+        risks,
+        [visualization],
+        audit_events,
+    )
+
+    integrity = next(check for check in checks if check["code"] == "visualization_integrity")
+    assert integrity["result"] == "failed"
+    assert integrity["node_hint"] == "write_report"
+    assert integrity["evidence"] == [visualization.visualization_id]

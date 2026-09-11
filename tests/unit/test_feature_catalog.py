@@ -24,6 +24,7 @@ EXPECTED_FEATURES = {
     "F016": ("最小前端", ["F002", "F015"]),
     "F017": ("证据查看界面", ["F007", "F016"]),
     "F018": ("端到端验收", ["F013", "F014", "F017"]),
+    "F019": ("报告数据可视化", ["F006", "F010", "F011", "F016"]),
 }
 
 
@@ -68,6 +69,7 @@ def test_feature_catalog_matches_authoritative_product_plan() -> None:
         "F016",
         "F017",
         "F018",
+        "F019",
     }
     assert all(feature["owner"] == "codex" for feature in candidate_complete)
 

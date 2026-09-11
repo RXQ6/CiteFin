@@ -155,11 +155,23 @@ footer a { text-decoration: none; }
 .kpi-grid article, .content-card { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
 .kpi-grid span, .kpi-grid small { display: block; color: var(--muted); font-size: 10px; }
 .kpi-grid strong { display: block; margin: 14px 0 4px; color: var(--green); font-size: 21px; letter-spacing: -.035em; }
+.visualization-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin: 14px 0; }
+.financial-chart { min-width: 0; margin: 0; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.chart-heading { display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; }
+.chart-heading h3 { margin: 0 0 5px; font-size: 18px; }
+.chart-heading p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.chart-data { padding-top: 10px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+.chart-data summary { color: var(--green); cursor: pointer; }
+.chart-data table { width: 100%; margin-top: 10px; border-collapse: collapse; text-align: left; }
+.chart-data th, .chart-data td { padding: 7px 9px; border-bottom: 1px solid var(--line); }
+.chart-data p { margin: 8px 0 0; overflow-wrap: anywhere; }
+.table-scroll { overflow-x: auto; }
 .overview-columns { display: grid; grid-template-columns: 1.3fr .7fr; gap: 14px; }
 .card-title { display: flex; align-items: flex-start; justify-content: space-between; }
 .card-title h2 { margin: 0; font-size: 20px; }
 .text-link { padding: 3px; color: var(--green); border: 0; background: transparent; font-size: 12px; cursor: pointer; }
 .metric-chart { width: 100%; height: 300px; margin-top: 8px; }
+.metric-chart svg { width: 100%; height: 100%; fill: initial; stroke: initial; stroke-linecap: initial; stroke-linejoin: initial; stroke-width: initial; }
 .risk-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; width: 100%; padding: 16px 0; text-align: left; border: 0; border-block: 1px solid var(--line); background: transparent; cursor: pointer; }
 .risk-row > span { padding: 5px 8px; color: var(--amber); border-radius: 6px; background: var(--amber-soft); font-size: 10px; }
 .risk-row strong, .risk-row small { display: block; }
@@ -252,6 +264,7 @@ footer a { text-decoration: none; }
   .proof-strip { gap: 9px; font-size: 10px; }
   .section { padding: 76px 20px; }
   .feature-grid, .method { grid-template-columns: 1fr; }
+  .visualization-grid { grid-template-columns: 1fr; }
   .feature-grid article { min-height: 280px; }
   .method { gap: 30px; }
   footer { grid-template-columns: 1fr; gap: 8px; }
@@ -382,8 +395,9 @@ body { background: radial-gradient(circle at 10% 0%, rgba(219, 237, 226, .72), t
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }
 @media print {
-  .report-sidebar, .report-tabs, .report-header-actions, .demo-notice { display: none !important; }
+  .report-sidebar, .report-tabs, .report-header-actions, .demo-notice, .chart-heading button, .chart-data { display: none !important; }
   .report-shell { display: block; }
   .report-main { padding: 0; }
   body { background: #fff; }
+  .financial-chart { break-inside: avoid; }
 }

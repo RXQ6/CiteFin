@@ -279,6 +279,7 @@ def test_workbench_empty_state_limits_and_user_isolation(
     assert empty.status_code == 200
     assert empty.json()["sources"] == []
     assert empty.json()["metrics"] == []
+    assert empty.json()["visualizations"] == []
     assert hidden.status_code == 404
     assert hidden.json()["detail"]["code"] == "run_not_found"
     assert invalid_limit.status_code == 422

@@ -24,6 +24,7 @@ from citefin.api.metrics import router as metrics_router
 from citefin.api.progress import router as progress_router
 from citefin.api.reports import router as reports_router
 from citefin.api.risk_detection import router as risk_detection_router
+from citefin.api.visualizations import router as visualizations_router
 from citefin.api.workbench import router as workbench_router
 
 STATIC_DIR = Path(__file__).with_name("static")
@@ -58,6 +59,7 @@ def create_app() -> FastAPI:
     application.include_router(progress_router, prefix="/api/v1")
     application.include_router(risk_detection_router, prefix="/api/v1")
     application.include_router(reports_router, prefix="/api/v1")
+    application.include_router(visualizations_router, prefix="/api/v1")
     application.include_router(workbench_router, prefix="/api/v1")
     application.mount(
         "/assets",
