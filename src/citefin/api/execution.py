@@ -44,7 +44,7 @@ class ReviewItemResponse(BaseModel):
 
 
 class ReviewResolution(BaseModel):
-    action: str = Field(pattern="^(select|reject)$")
+    action: str = Field(pattern="^(select|confirm|reject)$")
     candidate_index: int | None = Field(default=None, ge=0)
 
 

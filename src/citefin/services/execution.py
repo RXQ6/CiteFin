@@ -20,6 +20,12 @@ from citefin.db.models import (
 from citefin.db.session import get_session_factory
 from citefin.ids import new_prefixed_id
 from citefin.services.document_parsing import parse_annual_report
+from citefin.services.evaluation import evaluate_and_persist_report
+from citefin.services.financial_analysis import analyze_and_persist_claims
+from citefin.services.goal_gate import decide_goal_gate
+from citefin.services.metrics import calculate_and_persist_metrics
+from citefin.services.report_generation import generate_and_persist_report
+from citefin.services.risk_detection import detect_and_persist_risks
 from citefin.services.statement_identification import identify_statements
 from citefin.storage import LocalObjectStore
 
@@ -169,6 +175,64 @@ def _add_fact_review(session: Session, run_id: str) -> None:
         session.commit()
 
 
+def _advance_completed_facts(
+    session: Session,
+    run: AnalysisRun,
+    execution: AnalysisExecution,
+) -> None:
+    """Run the deterministic downstream chain from persisted facts to Goal Gate."""
+
+    steps = (
+        (
+            "calculate_metrics",
+            lambda: calculate_and_persist_metrics(
+                session, run.run_id, run.user_id, run.report_period_end
+            ),
+        ),
+        (
+            "analyze_financials",
+            lambda: analyze_and_persist_claims(
+                session, run.run_id, run.user_id, run.report_period_end
+            ),
+        ),
+        (
+            "detect_risks",
+            lambda: detect_and_persist_risks(
+                session, run.run_id, run.user_id, run.report_period_end
+            ),
+        ),
+    )
+    for node, operation in steps:
+        execution.current_node = run.current_node = node
+        execution.updated_at = run.updated_at = datetime.now(UTC)
+        session.commit()
+        operation()
+
+    execution.current_node = run.current_node = "write_report"
+    execution.updated_at = run.updated_at = datetime.now(UTC)
+    session.commit()
+    report = generate_and_persist_report(
+        session, run.run_id, run.user_id, run.report_period_end
+    ).report
+
+    execution.current_node = run.current_node = "goal_evaluator"
+    execution.updated_at = run.updated_at = datetime.now(UTC)
+    session.commit()
+    evaluate_and_persist_report(session, run.run_id, run.user_id, report.report_id)
+
+    execution.current_node = run.current_node = "goal_gate"
+    execution.updated_at = run.updated_at = datetime.now(UTC)
+    session.commit()
+    decision = decide_goal_gate(session, run.run_id, run.user_id, report.report_id).decision
+
+    session.refresh(run)
+    execution.status = run.status
+    execution.current_node = run.current_node
+    execution.error_code = None if decision.decision == "verified" else decision.decision
+    execution.updated_at = datetime.now(UTC)
+    session.commit()
+
+
 def process_execution(session: Session, settings: Settings, execution_id: str) -> None:
     execution = session.get(AnalysisExecution, execution_id)
     if execution is None or execution.status not in {"queued", "running"}:
@@ -210,10 +274,7 @@ def process_execution(session: Session, settings: Settings, execution_id: str) -
             _stop_for_review(session, run, execution, [])
             _add_fact_review(session, run.run_id)
             return
-        execution.status = run.status = "candidate_complete"
-        execution.current_node = run.current_node = "field_normalization"
-        execution.updated_at = run.updated_at = datetime.now(UTC)
-        session.commit()
+        _advance_completed_facts(session, run, execution)
     except Exception as error:
         session.rollback()
         execution = session.get(AnalysisExecution, execution_id)
@@ -268,10 +329,17 @@ def resolve_review_item(
         raise ExecutionError("review_item_not_found", "待确认项不存在。", 404)
     if item.status != "pending":
         return item, None
+    fact_confirmation = item.item_type == "financial_facts" and action == "confirm"
     if action == "select" and (candidate_index is None or candidate_index >= len(item.candidates)):
         raise ExecutionError("invalid_candidate", "请选择有效候选项。", 422)
-    if action not in {"select", "reject"}:
+    if action == "confirm" and not fact_confirmation:
+        raise ExecutionError("invalid_resolution", "该待确认项不能使用事实确认操作。", 422)
+    if action not in {"select", "reject", "confirm"}:
         raise ExecutionError("invalid_resolution", "确认操作无效。", 422)
+    if fact_confirmation and not session.scalar(
+        select(FinancialFact).where(FinancialFact.run_id == run_id)
+    ):
+        raise ExecutionError("financial_facts_required", "请先录入并确认财务事实。", 409)
     if action == "select" and item.item_type.startswith("statement:"):
         chosen = item.candidates[candidate_index or 0]
         statement_type = item.item_type.removeprefix("statement:")
@@ -292,7 +360,7 @@ def resolve_review_item(
             statement.locator = chosen.get("locator")
             if chosen.get("period_end"):
                 statement.period_end = date.fromisoformat(str(chosen["period_end"]))
-    item.status = "resolved" if action == "select" else "rejected"
+    item.status = "resolved" if action in {"select", "confirm"} else "rejected"
     item.resolution = {"action": action, "candidate_index": candidate_index}
     item.resolved_at = datetime.now(UTC)
     session.commit()
@@ -300,7 +368,7 @@ def resolve_review_item(
         select(ReviewItem).where(ReviewItem.run_id == run_id, ReviewItem.status == "pending")
     )
     execution = session.scalar(select(AnalysisExecution).where(AnalysisExecution.run_id == run_id))
-    if action == "select" and pending is None and execution:
+    if action in {"select", "confirm"} and pending is None and execution:
         execution.status = "queued"
         execution.updated_at = datetime.now(UTC)
         run = session.get(AnalysisRun, run_id)

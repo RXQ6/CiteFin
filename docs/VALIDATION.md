@@ -1461,3 +1461,12 @@ local preview: HTTP 200, text/html
 - 迁移集成测试从空数据库升级到 `20260911_0014` 并确认当前模型无漂移。
 - 浏览器在约 411px 移动视口复核三类 SVG 图表、金额/百分比/整数刻度、响应式单列、无障碍数据表和下载按钮。复核发现并修复全局图标 SVG 宽度覆盖图表、风险计数小数刻度被格式化为重复 0 两个问题。
 - 未执行桌面多浏览器像素回归；客户端 SVG 下载已验证触发，但尚未建立下载文件内容的自动化浏览器断言。
+
+## 2026-09-13：人工确认事实后的持久化闭环
+
+- `scripts/dev.ps1 test`：172/172 pytest 通过，覆盖率 90.24%，保留 1 条既有 Starlette/AnyIO 弃用警告。
+- `tests/e2e/test_golden_user_flow.py`：4/4 通过；新增用例确认无事实时拒绝确认，提交 23 项合成黄金事实后恢复同一执行并生成 15 项指标，最终以持久化 Goal Gate 进入 `verified`。
+- `ruff check src tests`、`ruff format --check src tests`、`mypy`：全部通过；`tests/golden/validate.py`：3/3 通过。
+- `tsc --noEmit -p tsconfig.app.json` 与 Node 配置类型检查通过；`vitest --configLoader runner`：2/2 通过；Vite 生产构建成功（660 modules）。默认临时构建目录在当前 Windows 环境遇到 `EPERM`，改用项目授权的可写构建目录生成后复制静态制品。
+- 浏览器在 `http://127.0.0.1:8000/#workspace` 复核通过：哈希路由刷新后显示认证门禁，未登录不返回任务内容；静态资源引用为本次生产构建哈希。
+- 结论边界：上述端到端数据为合成 PDF 与人工提交事实，只证明编排、持久化、权限和状态门禁的工程闭环；不验证任意真实中文年报的自动事实抽取准确率、研究结论质量或生产可用性。

@@ -203,6 +203,65 @@ def test_one_click_execution_stops_at_explicit_review(
     assert hidden.status_code == 404
 
 
+def test_confirmed_facts_resume_and_finish_the_persisted_workflow(
+    acceptance_harness: tuple[TestClient, sessionmaker[Session]],
+) -> None:
+    """Prove the real execution path resumes after human fact confirmation."""
+
+    client, sessions = acceptance_harness
+    run = _create_run(client, "automatic-resume-key")
+    run_id = run["run_id"]
+    pdf = _synthetic_pdf()
+    upload = client.post(
+        f"/api/v1/analysis-runs/{run_id}/documents",
+        headers=_headers(),
+        files={"file": ("synthetic-annual-report.pdf", pdf, "application/pdf")},
+    )
+    assert upload.status_code == 201
+    source_id = upload.json()["source_id"]
+
+    started = client.post(f"/api/v1/analysis-runs/{run_id}/execute", headers=_headers())
+    assert started.status_code == 202
+    review = client.get(f"/api/v1/analysis-runs/{run_id}/review-items", headers=_headers())
+    assert review.status_code == 200
+    fact_review = review.json()[0]
+    assert fact_review["item_type"] == "financial_facts"
+
+    premature = client.post(
+        f"/api/v1/analysis-runs/{run_id}/review-items/{fact_review['item_id']}/resolve",
+        headers=_headers(),
+        json={"action": "confirm"},
+    )
+    assert premature.status_code == 409
+    assert premature.json()["detail"]["code"] == "financial_facts_required"
+
+    fact_path = f"/api/v1/analysis-runs/{run_id}/documents/{source_id}/facts/normalize"
+    for row in GOLDEN["expected_facts"]:
+        response = client.post(fact_path, headers=_headers(), json=_fact_payload(row))
+        assert response.status_code == 201, response.text
+
+    confirmed = client.post(
+        f"/api/v1/analysis-runs/{run_id}/review-items/{fact_review['item_id']}/resolve",
+        headers=_headers(),
+        json={"action": "confirm"},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    assert confirmed.json()["status"] == "resolved"
+
+    progress = client.get(f"/api/v1/analysis-runs/{run_id}/progress", headers=_headers())
+    assert progress.status_code == 200
+    assert progress.json()["status"] == "verified"
+    assert progress.json()["current_node"] == "finalize"
+
+    workspace = client.get(f"/api/v1/analysis-runs/{run_id}/workspace", headers=_headers()).json()
+    assert len(workspace["metrics"]) == 15
+    assert workspace["reports"][0]["status"] == "verified"
+    assert workspace["evaluations"][0]["status"] == "passed"
+    assert workspace["gate_decisions"][0]["decision"] == "verified"
+    with sessions() as session:
+        assert session.scalar(select(func.count()).select_from(Report)) == 1
+
+
 def test_synthetic_golden_flow_is_replayable_evidenced_and_verified(
     acceptance_harness: tuple[TestClient, sessionmaker[Session]],
 ) -> None:

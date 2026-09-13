@@ -55,6 +55,26 @@ type Demo = {
   evidence_document: { file_name: string; page_count: number; content_url: string };
   audit: Record<string, string | number>;
 };
+type SessionState = { authenticated: boolean; user_id: string | null };
+type RunSummary = {
+  run_id: string; company_name: string; security_code: string; report_period_end: string;
+  status: string; current_node: string | null; updated_at: string; failure_code: string | null;
+};
+type ReviewItem = {
+  item_id: string; item_type: string; status: string; title: string; prompt: string;
+  candidates: Array<Record<string, unknown>>;
+};
+type Workspace = {
+  run: RunSummary;
+  sources: Array<{ source_id: string; file_name: string; page_count: number }>;
+  statements: Array<{ statement_type: string; status: string; page_number: number | null }>;
+  facts: Array<{ fact_id: string; concept: string; label_raw: string; normalized_value: string; period_end: string; page_number: number }>;
+  metrics: Array<{ metric_code: string; value: string | null; unit: string; status: string; reason: string | null }>;
+  risks: Array<{ risk_id: string; severity: string; title: string; description: string }>;
+  reports: Array<{ report_id: string; status: string; content: Record<string, unknown> }>;
+  evaluations: Array<{ evaluation_id: string; status: string; blocking_reasons: Array<Record<string, unknown>> }>;
+  gate_decisions: Array<{ gate_id: string; decision: string; blocking_reasons: Array<Record<string, unknown>> }>;
+};
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 60_000, retry: 1 } } });
 const metricCategories = ["增长", "盈利", "偿债", "现金流", "经营质量"];
@@ -75,17 +95,29 @@ async function getDemo(): Promise<Demo> {
   return response.json() as Promise<Demo>;
 }
 
+async function getSession(): Promise<SessionState> {
+  const response = await fetch("/api/v1/auth/session");
+  if (!response.ok) return { authenticated: false, user_id: null };
+  return response.json() as Promise<SessionState>;
+}
+
+async function getRuns(): Promise<RunSummary[]> {
+  const response = await fetch("/api/v1/analysis-runs");
+  if (!response.ok) throw new Error(response.status === 401 ? "请先登录。" : "分析任务暂时无法载入。");
+  return response.json() as Promise<RunSummary[]>;
+}
+
 function Brand() {
   return <button className="brand" type="button" onClick={() => location.assign("/")} aria-label="返回 CiteFin 首页"><span>CF</span><strong>CiteFin</strong></button>;
 }
 
-function Header({ onDemo, onUpload }: { onDemo: () => void; onUpload: () => void }) {
-  return <header className="site-header"><Brand /><nav aria-label="主导航"><button onClick={onDemo}>示例报告</button><a href="#capabilities">产品能力</a><a href="#method">工作方式</a></nav><div className="header-actions"><button className="button ghost" onClick={onUpload}>登录</button><button className="button primary small" onClick={onUpload}>上传年报</button></div></header>;
+function Header({ onDemo, onUpload, onWorkspace, authenticated }: { onDemo: () => void; onUpload: () => void; onWorkspace: () => void; authenticated: boolean }) {
+  return <header className="site-header"><Brand /><nav aria-label="主导航"><button onClick={onDemo}>示例报告</button><a href="#capabilities">产品能力</a><a href="#method">工作方式</a></nav><div className="header-actions"><button className="button ghost" onClick={authenticated ? onWorkspace : onUpload}>{authenticated ? "我的分析" : "登录"}</button><button className="button primary small" onClick={onUpload}>上传年报</button></div></header>;
 }
 
-function Landing({ onDemo, onUpload }: { onDemo: () => void; onUpload: () => void }) {
+function Landing({ onDemo, onUpload, onWorkspace, authenticated }: { onDemo: () => void; onUpload: () => void; onWorkspace: () => void; authenticated: boolean }) {
   return <>
-    <Header onDemo={onDemo} onUpload={onUpload} />
+    <Header onDemo={onDemo} onUpload={onUpload} onWorkspace={onWorkspace} authenticated={authenticated} />
     <main>
       <section className="hero">
         <div className="hero-copy"><p className="eyebrow"><span /> 证据驱动的财报研究</p><h1>看懂一份年报，<br /><em>不必相信黑箱。</em></h1><p className="hero-lead">上传年度报告，获得可复算指标、结构化风险和逐页证据。每个重要数字，都能回到原文核验。</p><div className="hero-actions"><button className="button primary" onClick={onDemo}>查看示例报告 <ArrowIcon /></button><button className="button secondary" onClick={onUpload}>上传年报分析</button></div><div className="trust-row"><span><ShieldIcon />不执行交易</span><span>确定性计算</span><span>重大结论 100% 证据覆盖</span></div></div>
@@ -97,6 +129,75 @@ function Landing({ onDemo, onUpload }: { onDemo: () => void; onUpload: () => voi
       <section className="final-cta"><p className="eyebrow">先看结果，再决定是否上传</p><h2>用一份完整示例，了解 CiteFin。</h2><button className="button inverse" onClick={onDemo}>打开合成示例报告 <ArrowIcon /></button></section>
     </main><Footer />
   </>;
+}
+
+const workflowSteps = [
+  ["document_parse", "解析年报"], ["statement_extract", "定位三张表"],
+  ["field_normalization", "确认财务事实"], ["calculate_metrics", "计算指标"],
+  ["analyze_financials", "生成分析"], ["detect_risks", "识别风险"],
+  ["write_report", "生成报告"], ["goal_evaluator", "独立评测"],
+  ["goal_gate", "完成判定"], ["finalize", "完成"],
+] as const;
+
+const statusLabels: Record<string, string> = {
+  created: "已创建", queued: "已排队", running: "分析中", awaiting_review: "等待确认",
+  candidate_complete: "候选完成", revision_required: "需要修订", verified: "已完成",
+  blocked: "已阻断", failed: "失败",
+};
+
+function WorkspacePage({ initialRunId, onBack, onUpload, onLogin }: { initialRunId: string | null; onBack: () => void; onUpload: () => void; onLogin: () => void }) {
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(initialRunId);
+  const [actionMessage, setActionMessage] = useState("");
+  const runsQuery = useQuery({ queryKey: ["owned-runs"], queryFn: getRuns, refetchInterval: 4000 });
+  const selected = selectedRunId ?? runsQuery.data?.[0]?.run_id ?? null;
+  const workspaceQuery = useQuery({
+    queryKey: ["workspace", selected],
+    enabled: Boolean(selected),
+    queryFn: async () => {
+      const response = await fetch(`/api/v1/analysis-runs/${selected}/workspace`);
+      if (!response.ok) throw new Error("任务详情暂时无法载入。");
+      return response.json() as Promise<Workspace>;
+    },
+    refetchInterval: 2500,
+  });
+  const reviewsQuery = useQuery({
+    queryKey: ["review-items", selected],
+    enabled: Boolean(selected),
+    queryFn: async () => {
+      const response = await fetch(`/api/v1/analysis-runs/${selected}/review-items`);
+      if (!response.ok) throw new Error("待确认事项暂时无法载入。");
+      return response.json() as Promise<ReviewItem[]>;
+    },
+    refetchInterval: 2500,
+  });
+  const refresh = async () => { await Promise.all([runsQuery.refetch(), workspaceQuery.refetch(), reviewsQuery.refetch()]); };
+  const resolveReview = async (item: ReviewItem, action: "select" | "confirm" | "reject", candidateIndex?: number) => {
+    if (!selected) return;
+    setActionMessage("正在提交确认并恢复分析…");
+    const response = await fetch(`/api/v1/analysis-runs/${selected}/review-items/${item.item_id}/resolve`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, candidate_index: candidateIndex ?? null }),
+    });
+    const body = await response.json() as { detail?: { message?: string } };
+    setActionMessage(response.ok ? "确认已保存，分析将从断点自动继续。" : body.detail?.message ?? "确认失败。");
+    await refresh();
+  };
+  if (runsQuery.error) return <div className="workspace-empty"><Brand /><h1>登录后查看真实分析任务</h1><p>{runsQuery.error instanceof Error ? runsQuery.error.message : "请先登录。"}</p><button className="button primary" onClick={onLogin}>邮箱登录</button><button className="text-link" onClick={onBack}>返回首页</button></div>;
+  const data = workspaceQuery.data;
+  const pendingReviews = reviewsQuery.data?.filter((item) => item.status === "pending") ?? [];
+  const nodeIndex = workflowSteps.findIndex(([node]) => node === data?.run.current_node);
+  const latestReport = data?.reports[0];
+  return <div className="live-workspace">
+    <aside className="task-sidebar"><Brand /><div className="sidebar-label">我的分析</div><button className="button primary full" onClick={onUpload}>＋ 新建分析</button><div className="task-run-list">{runsQuery.data?.map((run) => <button key={run.run_id} className={selected===run.run_id?"active":""} onClick={() => setSelectedRunId(run.run_id)}><strong>{run.company_name}</strong><span>{run.security_code} · {run.report_period_end}</span><small>{statusLabels[run.status] ?? run.status}</small></button>)}</div><button className="side-link" onClick={onBack}>返回首页</button><a className="side-link" href="/legacy">高级工程工作台</a></aside>
+    <main className="task-main">{!selected ? <div className="workspace-empty"><h1>还没有分析任务</h1><p>上传一份中文可检索年度报告开始分析。</p><button className="button primary" onClick={onUpload}>上传年报</button></div> : !data ? <div className="loading-page"><div className="skeleton wide" /><div className="skeleton" /></div> : <>
+      <header className="task-heading"><div><p className="eyebrow">真实持久化任务 · {data.run.security_code}</p><h1>{data.run.company_name}</h1><p>报告期 {data.run.report_period_end} · 更新于 {new Date(data.run.updated_at).toLocaleString("zh-CN")}</p></div><div><span className={`status ${data.run.status === "verified" ? "good" : ""}`}>{statusLabels[data.run.status] ?? data.run.status}</span><button className="button secondary small" onClick={() => void refresh()}>刷新</button></div></header>
+      <section className="workflow-card"><div className="panel-intro"><div><p className="eyebrow">服务端真实状态</p><h2>分析流水线</h2></div><p>{pendingReviews.length ? `${pendingReviews.length} 项内容需要确认` : "系统按持久化节点推进，不显示模拟进度。"}</p></div><ol className="workflow-track">{workflowSteps.map(([node,label], index) => <li key={node} className={index < nodeIndex || data.run.status === "verified" ? "done" : index === nodeIndex ? "current" : ""}><i>{index < nodeIndex || data.run.status === "verified" ? "✓" : index + 1}</i><span>{label}</span></li>)}</ol>{data.run.failure_code && <div className="form-error">失败原因：{data.run.failure_code}</div>}</section>
+      {pendingReviews.length > 0 && <section className="review-center"><div className="panel-intro"><div><p className="eyebrow">Human in the loop</p><h2>待确认中心</h2></div><p>系统不会静默选择冲突项。</p></div>{pendingReviews.map((item) => <article key={item.item_id}><div><strong>{item.title}</strong><p>{item.prompt}</p></div>{item.item_type === "financial_facts" ? <div className="review-actions"><span>当前已录入 {data.facts.length} 项事实</span><a className="button secondary small" href="/legacy">录入或核对事实</a><button className="button primary small" disabled={!data.facts.length} onClick={() => void resolveReview(item,"confirm")}>确认事实并继续</button></div> : <div className="candidate-list">{item.candidates.map((candidate,index) => <button key={index} onClick={() => void resolveReview(item,"select",index)}><strong>候选 {index+1}</strong><span>第 {String(candidate.page_number ?? "—")} 页 · {String(candidate.title ?? "未命名")}</span></button>)}<button className="text-link" onClick={() => void resolveReview(item,"reject")}>以上都不是</button></div>}</article>)}{actionMessage && <div className="notice-inline">{actionMessage}</div>}</section>}
+      <section className="result-grid"><article><span>财务事实</span><strong>{data.facts.length}</strong><small>均保留来源页码</small></article><article><span>核心指标</span><strong>{data.metrics.length} / 15</strong><small>{data.metrics.filter((item) => item.status === "calculated").length} 项已计算</small></article><article><span>风险与限制</span><strong>{data.risks.length}</strong><small>确定性规则结果</small></article><article><span>报告状态</span><strong>{latestReport ? latestReport.status : "未生成"}</strong><small>{data.gate_decisions[0]?.decision ?? "尚未进入 Goal Gate"}</small></article></section>
+      {data.metrics.length > 0 && <section className="workspace-section"><div className="panel-intro"><div><p className="eyebrow">确定性计算</p><h2>指标结果</h2></div><p>缺失和零分母不会补零。</p></div><div className="metric-list">{data.metrics.map((metric) => <article key={metric.metric_code}><div><span>{metric.metric_code}</span><small>{metric.reason ?? "输入快照已保存"}</small></div><strong>{metric.value ?? "不可用"}</strong><span className="verified-dot">{metric.status}</span></article>)}</div></section>}
+      {latestReport && <section className="workspace-section final-report"><div className="panel-intro"><div><p className="eyebrow">候选报告与验收</p><h2>{data.run.status === "verified" ? "报告已通过 Goal Gate" : "报告等待修订"}</h2></div><button className="button secondary" onClick={() => window.print()}>导出预览</button></div><p>报告、指标、风险和证据均来自本次真实持久化运行。真实中文年报准确率仍以独立 Reviewer A/B 结果为准。</p><div className="audit-grid"><article><span>Report</span><strong>{latestReport.status}</strong></article><article><span>Evaluator</span><strong>{data.evaluations[0]?.status ?? "—"}</strong></article><article><span>Goal Gate</span><strong>{data.gate_decisions[0]?.decision ?? "—"}</strong></article></div></section>}
+    </>}</main>
+  </div>;
 }
 
 function formattedChartValue(value: number, format: VisualizationSpec["encoding"]["value_format"]) {
@@ -213,7 +314,7 @@ function DemoPage({ onBack, onUpload }: { onBack: () => void; onUpload: () => vo
   </div>;
 }
 
-function UploadModal({ onClose }: { onClose: () => void }) {
+function UploadModal({ onClose, onCreated }: { onClose: () => void; onCreated: (runId: string) => void }) {
   const [step, setStep] = useState<"email" | "code" | "upload" | "done">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -254,7 +355,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
     const executeBody = await executeResponse.json() as { detail?: { message?: string } };
     setBusy(false);
     if (!executeResponse.ok) { setMessage(executeBody.detail?.message ?? "自动分析启动失败。"); return; }
-    setStep("done");
+    onCreated(runBody.run_id);
   };
   return <div className="modal-backdrop" role="presentation" onMouseDown={onClose}><section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" onClick={onClose} aria-label="关闭">×</button><p className="eyebrow">安全上传 · {step === "email" || step === "code" ? "邮箱验证" : "创建分析"}</p><h2 id="auth-title">{step === "done" ? "自动分析已启动" : "分析真实年报"}</h2><p>{step === "done" ? "文件已通过基础校验并进入隔离存储。系统会自动解析与定位报表，只有遇到无法唯一判断的内容才会请你确认。" : "公开示例无需登录。真实 PDF 只对你的安全会话可见。"}</p>
     {step === "email" && <><label>邮箱地址<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" autoFocus /></label><button className="button primary full" disabled={busy || !email} onClick={() => void requestCode()}>{busy ? "正在发送…" : "获取邮箱验证码"}</button></>}
@@ -266,15 +367,41 @@ function UploadModal({ onClose }: { onClose: () => void }) {
 
 function Footer() { return <footer><Brand /><p>证据驱动的财报研究平台</p><span>辅助决策 · 不构成投资建议 · 不执行交易</span><a href="/legacy">内部兼容工作台</a></footer>; }
 
-export function App() {
-  const [page, setPage] = useState<"home" | "demo">(() => location.hash === "#demo" ? "demo" : "home");
+function AppContent() {
+  const [page, setPage] = useState<"home" | "demo" | "workspace">(() => location.hash === "#demo" ? "demo" : location.hash.startsWith("#workspace") ? "workspace" : "home");
   const [upload, setUpload] = useState(false);
+  const [activeRunId, setActiveRunId] = useState<string | null>(() => location.hash.startsWith("#workspace=") ? location.hash.slice("#workspace=".length) : null);
+  const sessionQuery = useQuery({ queryKey: ["auth-session"], queryFn: getSession });
+  useEffect(() => {
+    const syncPageFromHash = () => {
+      if (location.hash === "#demo") {
+        setPage("demo");
+        setActiveRunId(null);
+        return;
+      }
+      if (location.hash.startsWith("#workspace")) {
+        setPage("workspace");
+        setActiveRunId(location.hash.startsWith("#workspace=") ? location.hash.slice("#workspace=".length) : null);
+        return;
+      }
+      setPage("home");
+      setActiveRunId(null);
+    };
+    window.addEventListener("hashchange", syncPageFromHash);
+    return () => window.removeEventListener("hashchange", syncPageFromHash);
+  }, []);
   const showDemo = () => { location.hash = "demo"; setPage("demo"); window.scrollTo(0,0); };
   const showHome = () => { history.pushState(null, "", "/"); setPage("home"); window.scrollTo(0,0); };
-  return <>{page === "demo" ? <DemoPage onBack={showHome} onUpload={() => setUpload(true)} /> : <Landing onDemo={showDemo} onUpload={() => setUpload(true)} />}{upload && <UploadModal onClose={() => setUpload(false)} />}</>;
+  const showWorkspace = (runId: string | null = activeRunId) => { setActiveRunId(runId); location.hash = runId ? `workspace=${runId}` : "workspace"; setPage("workspace"); window.scrollTo(0,0); };
+  const created = (runId: string) => { setUpload(false); void sessionQuery.refetch(); showWorkspace(runId); };
+  return <>{page === "demo" ? <DemoPage onBack={showHome} onUpload={() => setUpload(true)} /> : page === "workspace" ? <WorkspacePage initialRunId={activeRunId} onBack={showHome} onUpload={() => setUpload(true)} onLogin={() => setUpload(true)} /> : <Landing onDemo={showDemo} onUpload={() => setUpload(true)} onWorkspace={() => showWorkspace(null)} authenticated={Boolean(sessionQuery.data?.authenticated)} />}{upload && <UploadModal onClose={() => setUpload(false)} onCreated={created} />}</>;
+}
+
+export function App() {
+  return <QueryClientProvider client={queryClient}><AppContent /></QueryClientProvider>;
 }
 
 const rootElement = document.getElementById("root");
 if (rootElement) {
-  createRoot(rootElement).render(<StrictMode><QueryClientProvider client={queryClient}><App /></QueryClientProvider></StrictMode>);
+  createRoot(rootElement).render(<StrictMode><App /></StrictMode>);
 }
